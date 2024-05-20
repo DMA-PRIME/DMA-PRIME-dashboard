@@ -97,8 +97,6 @@ for (let i = 0; i < counties.length; i++) {
 
 // colors and handy stuff
 const colors = ["#2E1E30", "#331427", "#A20D32", "#FF073A"];
-const quartiles = [0, 4000, 40000, 180000];
-var colorMap = d3.scaleLinear().domain(quartiles).range(colors)
 
 var margin = { top: 25, right: 0, bottom: 1, left: 0 },
     width = 205 - margin.left - margin.right,
@@ -137,7 +135,7 @@ function createBaseObjects() {
             .append("rect")
             .attr("width", width + margin.left + margin.right)
             .attr("height", height + margin.top + margin.bottom)
-            .style("fill", colorMap(0));
+            .style("fill", "rgb(22, 22, 37)");
 
         // line of linechart
         svg
@@ -194,6 +192,36 @@ function createBaseObjects() {
 }
 
 function initialVisualisation() {
+
+
+    // const arePeopleReady = true;
+ 
+    // // Promise accepts executor function as argument
+    // const invitationBirthday = new Promise((resolve, reject) => {
+    //     if (arePeopleReady) {
+    //         return resolve('People are ready to come to your Birthday party');
+    //     } else {
+    //         var reason = new Error('People are not Ready');
+    //         return reject(reason);
+    //     }
+    // });
+     
+    // // Call our promise
+    // const askPeople = () => {
+    //     invitationBirthday
+    //         .then((fulfilled) => {
+     
+    //             // Awesome!, People have accepted your invitation
+    //             console.log(fulfilled);
+    //         })
+    //         .catch(error => {
+     
+    //             // Hard luck, people are not ready 
+    //             console.log(error.message);
+    //         });
+    // }
+    // askPeople();
+
     uploadAbsolute();
     countyPOPCsvMapping.forEach(({ county }) => {
 
@@ -223,7 +251,7 @@ function uploadAveraged() {
 
 function updateCountyGraphs(type) {
     countyPOPCsvMapping.forEach(({ county, countyPop }) => {
-        d3.csv("/DMA-PRIME-dashboard/dashboardOverview/Counties daily cases/" + county + "_case_daily.csv").then(function (data) {
+        d3.csv("static/data/Counties daily cases/" + county + "_case_daily.csv").then(function (data) {
 
             // Parse the date
             var parseDate = d3.timeParse("%Y-%m-%d");
@@ -238,6 +266,7 @@ function updateCountyGraphs(type) {
 
             // information to display total values
             // may be redefined in the switch if we are not displaying total
+            let quartiles = [0, 4000, 40000, 180000];
             let fixedMaxYValue = 2500;
             let maxYValue = d3.max(data, (d) => d[chosenColumn]);
             const maxDataPoint = data.find((d) => d[chosenColumn] === maxYValue);
@@ -245,7 +274,6 @@ function updateCountyGraphs(type) {
             let countyValue = aggregate;
             let lineFunc = function (val) { return val; };
             let countyTitle = "Total Cases";
-            let quartiles = [0, 4000, 40000, 180000];
 
             switch (type) {
                 case "popAdjusted":
@@ -260,7 +288,7 @@ function updateCountyGraphs(type) {
                 // in the event we have many different things, I'm using a switch statement the default is total, see above
             }
 
-            var colorMap = d3.scaleLinear().domain(quartiles).range(colors);
+            var colorMap = d3.scaleLinear().domain(quartiles).range(colors)
 
             d3.select("#" + county)
                 .select("rect")
@@ -298,13 +326,14 @@ function updateCountyGraphs(type) {
                 .attr("cx", x(maxDataPoint.date)) // x-coordinate
                 .attr("cy", y(maxYValue)); // y-coordinate
 
+            console.log(
             d3.select("#" + county)
                 .select(".pointlabel")
                 .transition()
                 .duration(2000)
                 .attr("x", x(maxDataPoint.date) + 8) // x-coordinate
                 .attr("y", y(maxYValue) - 4) // Adjust the position to be above the circle
-                .text(pointLabel);
+                .text(pointLabel));
 
 
             d3.select("#" + county)
