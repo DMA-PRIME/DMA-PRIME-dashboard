@@ -1,0 +1,49 @@
+<!-- Probably should draw something out
+I'm thinking a top bar with some data and "home page" and any other important stuff like links
+Side resizeable menu that will serve as selectors for the visualization
+Main viz which is a map of SC at the zip code level
+Need to find a spot for the line/bar graph -->
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DMA-PRIME</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/light.css" />
+    <script type="module" src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/shoelace-autoloader.js"></script>
+
+    <!-- <link rel="stylesheet" type="text/css" href="style.css" /> -->
+    <!-- <script src="https://d3js.org/d3-collection.v1.min.js"></script> -->
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script><!-- <link rel="preconnect" href="https://fonts.googleapis.com" /> -->
+    <!-- <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin /> -->
+    <!-- <link
+      href="https://fonts.googleapis.com/css2?family=Josefin+Sans:ital,wght@0,100..700;1,100..700&display=swap"
+      rel="stylesheet"
+    /> -->
+  </head>
+  <body>
+    <!-- Top nav bar -->
+    <sl-tab-group>
+        <sl-tab slot="nav" panel="general">General</sl-tab>
+        <sl-tab slot="nav" panel="custom">Custom</sl-tab>
+        <sl-tab slot="nav" panel="advanced">Advanced</sl-tab>
+        <sl-tab slot="nav" panel="disabled" disabled>Disabled</sl-tab>
+
+    </sl-tab-group>
+    <!-- Main content -->
+    <sl-split-panel position="20" id="mainContent" style="height:200px">
+        <div slot="divider" id="mainContentDivider"><sl-icon-button name="chevron-compact-left" id="hideMenuButton" style="font-size: 2rem; background-color: lightgray;"></sl-icon-button></div>
+        <div slot="start" id="options" style="height:100%; display: flex; flex-flow: column; overflow: hidden; overflow-wrap: normal;">Start asdfj;l asdfjkklasdjf asld;fj alskdfjasldfj asdl</div>
+        <div slot="end">
+            <svg id="main-vis" width="400" height="300"></svg>
+        </div>
+    </sl-split-panel>
+    <script src="../static/js/interactions.js"></script>
+    <script src="../static/js/main-vis.js"></script>
+    
+
+  </body>
+</html>
+

@@ -4,4 +4,6 @@ dashboardOverview is the original dashboard. `county-vis.html` was reduced and t
 
 flaskDashboard contains the reworked dashboard from dashboardOverview but structured so it runs using Flask as the server. The flask app is contained in the flaskr directory and the flask portion is in `__init__.py`. To run it, run `flask --app flaskr run` in the command line. Currently I'm running flask using an anaconda environment on my personal computer. I will create a requirements file to recreate this at a later time.
 
-dvtDashboard is the newest iteration of the DMA-PRIME dashboard. It will also be a flask app. It should contain a d3 map of SC at the zipcode level. It will also have a line chart somewhere, some menu items, and a scrollbar. To run this, I believe you should run `flask --app mainApp run` in the command line. 
+dvtDashboard is the newest iteration of the DMA-PRIME dashboard. It will also be a flask app. It should contain a d3 map of SC at the zipcode level. It will also have a line chart somewhere, some menu items, and a scrollbar. To run this, I believe you should run `flask --app mainApp run` in the command line. The json for the zipcode map is found at https://cartographyvectors.com/map/1610-south-carolina-zip-codes.
+
+To automatically reload flask applications on changes, run it with the --debug flag :)
