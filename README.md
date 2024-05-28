@@ -5,14 +5,15 @@ dashboardOverview is the original dashboard. `county-vis.html` was reduced and t
 flaskDashboard contains the reworked dashboard from dashboardOverview but structured so it runs using Flask as the server. The flask app is contained in the flaskr directory and the flask portion is in `__init__.py`. To run it, run `flask --app flaskr run` in the command line. Currently I'm running flask using an anaconda environment on my personal computer. I will create a requirements file to recreate this at a later time.
 
 dvtDashboard is the newest iteration of the DMA-PRIME dashboard. It will also be a flask app. It should contain a d3 map of SC at the zipcode level. It will also have a line chart somewhere, some menu items, and a scrollbar. To run this, I believe you should run `flask --app mainApp run` in the command line.
-The json for the maps are generated using gdal.
-.shx for county map: https://catalog.data.gov/dataset/tiger-line-shapefile-2022-nation-u-s-county-and-equivalent-entities
-.shx for zip code map:
+The json for the maps are generated using gdal and shape files found on https://www.census.gov/cgi-bin/geo/shapefiles/index.php. 
+
+You need to download the proper data from the link above, unzip the folder, then run the gdal command, using -where [sql command here] to filter, e.g. STATEFP='45' and "CAST(ZCTA5CE20 AS SMALLINT) BETWEEN 29000 AND 29999" (the former for counties, and the latter for zip code). 
+
+
+gdal command: ogr2ogr -f GeoJSON [path to dest file] [path to .shp file]
+
+which zip codes belong to sc: https://www.irs.gov/pub/irs-utl/zip_code_and_state_abbreviations.pdf
 
 To fill page with content: https://dev.to/lennythedev/css-gotcha-how-to-fill-page-with-a-div-270j
 
-gdal command: ogr2ogr -f GeoJSON [path to dest file] [path to .shp/.shx file]
-
-ogrinfo -where STATEFP=45 tl_2022_us_county.shp tl_2022_us_county
-
-To automatically reload flask applications on changes, run it with the --debug flag :)
+To automatically reload flask applications on changes, run it with the --debugger flag :)
