@@ -32,24 +32,53 @@ Need to find a spot for the line/bar graph -->
         <!-- <sl-tab slot="nav" panel="disabled" disabled>Disabled</sl-tab> -->
     </sl-tab-group>
     <!-- Main content -->
-    <sl-split-panel position="20" id="mainContent">
-        <div slot="divider" id="mainContentDivider"><sl-icon-button name="chevron-compact-left" id="hideOptionsButton"></sl-icon-button></div>
-        <div slot="start" id="options" >
-          <sl-radio-group id="visSelector" name="visSelector" value="none">
-            <label>Select a visualization</label>
-            <sl-radio value="none">None</sl-radio>
-            <sl-radio value="aggregated" >Aggregated</sl-radio>
-            <sl-radio value="3" disabled>Option 3</sl-radio>
-          </sl-radio-group>
-        </div>
-        <div slot="end" id="mainVisDiv" >
-            <svg id="mainVis" ></svg>
-        </div>
+    <sl-split-panel position="20" id="mainContent" class="fillHeight"> 
+
+      <!-- Line w/ button to resize the options panel and open/close it -->
+      <div slot="divider" id="mainContentDivider">
+        <sl-icon-button name="chevron-compact-left" id="hideOptionsButton"></sl-icon-button>
+      </div>
+
+      <!-- Visualization options panel -->
+      <div slot="start" id="options" class="fillHeight"> <!-- This is the -->
+        <sl-radio-group id="visSelector" name="visSelector" value="none">
+          <label>Select a visualization</label>
+          <sl-radio value="none">None</sl-radio>
+          <sl-radio value="aggregated" >Aggregated</sl-radio>
+          <sl-radio value="3" disabled>Option 3</sl-radio>
+        </sl-radio-group>
+      </div>
+
+      <!-- This is where the extra options for a visualization and the visualizations will reside -->
+      <div slot="end" class="hideOverflow">
+
+        <!-- Splits into visualization/extra options panel -->
+        <sl-split-panel vertical disabled position="100" id="visContainer" class="fillHeight">
+          
+          <!-- This is where the visualizations will sit -->
+          <div slot="start">
+            <sl-split-panel position="100" class="fillHeight">
+              <div slot="start">
+                <sl-resize-observer id="mainVisResizer">
+                  <svg id="mainVis" class="fillHeight"></svg>
+                </sl-resize-observer>
+              </div>
+              <div slot="end"></div>
+            </sl-split-panel>
+          </div>
+
+          <!-- Extra options here -->
+          <div slot="end" id="extrasDiv">
+            <label>Date</label>
+            <sl-range min="0" max="10" step="1" id="timeSlider"></sl-range>
+          </div>
+        </sl-split-panel>
+      </div>
     </sl-split-panel>
 
-    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/main-vis.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/interactions.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script> <!-- Contains helper functions/data/constants -->
+    <script src="{{ url_for('static', filename='js/main-vis.js') }}"></script> <!-- Functions to get the main (left) vis working -->
+    <script src="{{ url_for('static', filename='js/interactions.js') }}"></script> <!-- All the magic for panel resizing/vis options -->
     <script>
       displayMap(mapType);
     </script>

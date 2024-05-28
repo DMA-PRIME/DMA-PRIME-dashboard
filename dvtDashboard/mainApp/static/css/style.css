@@ -1,4 +1,11 @@
 /*  */
+.fillHeight {
+  height: 100%;
+}
+
+.hideOverflow {
+  overflow:hidden
+}
 
 #mainContent {
   height: 100%;
@@ -15,14 +22,12 @@
   overflow-wrap: normal;
 }
 
-#mainVisDiv {
-  height:100%;
-}
-
 #mainVis {
   height: 100%;
   width: 100%;
 }
+
+
 
 /* The following is from  https://dev.to/lennythedev/css-gotcha-how-to-fill-page-with-a-div-270j*/
 /* override browser default */

@@ -5,6 +5,7 @@ var mainContentDivider = document.getElementById("mainContentDivider")
 var mainContent = document.getElementById("mainContent")
 var navBar = document.getElementById("navBar")
 var selector = document.getElementById("visSelector")
+var mainVisResizer = document.getElementById("mainVisResizer")
 
 // nav bar interaction functionality
 var mapType = "county"
@@ -43,7 +44,6 @@ optionsHider.addEventListener("click", () => {
         mainContent.position = 0
         optionsHider.name = "chevron-compact-right"
     }
-    resizeMap(mapType)
 });
 
 mainContent.addEventListener("sl-reposition", () => {
@@ -54,12 +54,11 @@ mainContent.addEventListener("sl-reposition", () => {
         options_open = false;
         optionsHider.name = "chevron-compact-right"
     }
-    resizeMap(mapType)
 });
 }
 
 // main visualization visual functionality
-window.addEventListener("resize", () => {
+mainVisResizer.addEventListener("sl-resize", () => {
     resizeMap(mapType)
 })
 
