@@ -26,5 +26,33 @@ mainContent.addEventListener("sl-reposition", () => {
         options_open = false;
         menuHider.name = "chevron-compact-right"
     }
-    
+    determineMap(mapType)
 });
+
+var navBar = document.getElementById("navBar")
+var mapType = "county"
+
+navBar.addEventListener("sl-tab-show", (tabName) => {
+    mapType = tabName.detail.name 
+    determineMap(mapType)
+})
+
+
+window.addEventListener("resize", () => {
+    determineMap(mapType)
+})
+
+function determineMap(mapType) {
+    switch (mapType) {
+        case "zip": 
+            displayMap("../static/data/tl_2023_sc_zcta.json");
+            break;
+        case "block":
+        displayMap("../static/data/tl_2023_sc_block.json");
+            break;
+        default: 
+        case "county":
+            displayMap("../static/data/tl_2023_sc_county.json");
+            break;
+    }
+}
