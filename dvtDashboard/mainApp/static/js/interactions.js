@@ -4,6 +4,7 @@
 {
 navBar.addEventListener("sl-tab-show", (tabName) => {
     mapType = tabName.detail.name 
+    selector.value = "none"
     displayMap(mapType)
 })
 }
@@ -11,8 +12,8 @@ navBar.addEventListener("sl-tab-show", (tabName) => {
 // options interaction functionality
 {
 selector.addEventListener("sl-change", () => {
-    console.log(selector.value)
-    switch(selector.value) {
+    visType = selector.value
+    switch(visType) {
         case "none":
             clearVisualization()
             break;
@@ -26,9 +27,9 @@ selector.addEventListener("sl-change", () => {
 // options visual functionality
 {
 optionsHider.addEventListener("click", () => {
-    options_open = !options_open;
+    optionsOpen = !optionsOpen;
 
-    if (options_open) {
+    if (optionsOpen) {
         optionsHider.name = "chevron-compact-left"
         mainContent.position = optionsPosition
     } else {
@@ -40,10 +41,10 @@ optionsHider.addEventListener("click", () => {
 
 mainContent.addEventListener("sl-reposition", () => {
     if (mainContent.position > 0) {
-        options_open = true;
+        optionsOpen = true;
         optionsHider.name = "chevron-compact-left"
     } else {
-        options_open = false;
+        optionsOpen = false;
         optionsHider.name = "chevron-compact-right"
     }
 });

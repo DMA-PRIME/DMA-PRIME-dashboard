@@ -19,8 +19,12 @@ var mapItemsD3 = mainSVG.selectAll(".mapItems")
 var mapType = "county"
 var visType = "none"
 var optionsPosition = mainContent.position
-var options_open = true;
+var optionsOpen = true;
 var numMinorVis = 0
+
+type = null
+chosenColumn = 0
+countyPop = 1
 
 
 // Takes a feature object and gets county/zip code, can be extended later if need be

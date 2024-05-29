@@ -95,9 +95,7 @@ function aggregatedVisualization() {
 function calculateValue(county, countyObject) {
     // some day I want to move this into python
     const colors = ["#2E1E30", "#331427", "#A20D32", "#FF073A"];
-    type = null
-    chosenColumn = 0
-    countyPop = 1
+
     d3.csv("static/data/county/Counties daily cases/" + county + "_case_daily.csv").then((data) => {
         // Parse the date
         var parseDate = d3.timeParse("%Y-%m-%d");
