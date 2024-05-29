@@ -42,9 +42,9 @@ function displayMap(mapType) {
                             tab.setAttribute("slot", "nav")
                             tab.setAttribute("closable", "")
                             tab.setAttribute("id", "minor_vis_tab:"+d.target.id)
-                            // newVis = document.createElementNS("http://www.w3.org/2000/svg", "svg")
-                            // newVis.setAttribute("id", "minor_"+d.target.id)
-                            // tab.append(newVis)
+                            tab.addEventListener("sl-close", (event) => {
+                                event.target.remove()
+                            })
                             minorVisResizer.append(tab)
                             newMinorVis(tab, d.target.id, "line")
                         })            
