@@ -40,10 +40,12 @@ Need to find a spot for the line/bar graph -->
 
     <!-- Visualization options panel -->
     <div slot="start" id="options" class="fillHeight"> <!-- This is the -->
+      <sl-switch id="normalizePopSwitch">Normalize by Population</sl-switch>
       <sl-radio-group id="visSelector" name="visSelector" value="none">
         <label>Select a visualization</label>
         <sl-radio value="none">None</sl-radio>
         <sl-radio value="aggregated">Aggregated</sl-radio>
+        <sl-radio value="daily" >Daily</sl-radio>
         <sl-radio value="3" disabled>Option 3</sl-radio>
       </sl-radio-group>
     </div>
@@ -69,7 +71,7 @@ Need to find a spot for the line/bar graph -->
       <!-- Extra options here -->
       <div slot="end" id="extrasDiv">
         <label>Date</label>
-        <sl-range min="0" max="10" step="1" id="timeSlider"></sl-range>
+        <sl-range min="1585008000" max="1680134400" step="86400" id="timeSlider"></sl-range>
       </div>
     </sl-split-panel>
   </sl-split-panel>

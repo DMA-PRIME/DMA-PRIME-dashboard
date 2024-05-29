@@ -8,6 +8,8 @@ var minorVisResizer = document.getElementById("minorVisResizer")
     // options
 var optionsHider = document.getElementById("hideOptionsButton")
 var selector = document.getElementById("visSelector")
+var normalizePopSwitch = document.getElementById("normalizePopSwitch")
+var timeSlider = document.getElementById("timeSlider")
     // resizing
 var mainContentDivider = document.getElementById("mainContentDivider")
     // visualization
@@ -17,15 +19,14 @@ var mapItemsD3 = mainSVG.selectAll(".mapItems")
 
 // variables
 var mapType = "county"
+var populationNormalized = false
 var visType = "none"
 var optionsPosition = mainContent.position
 var optionsOpen = true;
+var chosenDate = new Date(timeSlider.value * 1000)
 var numMinorVis = 0
 
-type = null
 chosenColumn = 0
-countyPop = 1
-
 
 // Takes a feature object and gets county/zip code, can be extended later if need be
 function getSignifier(d){

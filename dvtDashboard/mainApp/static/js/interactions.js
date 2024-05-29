@@ -20,7 +20,28 @@ selector.addEventListener("sl-change", () => {
         case "aggregated":
             aggregatedVisualization()
             break;
+        case "daily":
+            dailyVisualization()
+            break;
     }
+})
+
+normalizePopSwitch.addEventListener("sl-change", () => {
+    populationNormalized = normalizePopSwitch.checked
+    if(visType == "daily")
+        dailyVisualization()
+    else {
+        aggregatedVisualization()
+    }
+})
+}
+
+// extra options interaction functionality
+{
+timeSlider.addEventListener("sl-change", (details) => {
+    chosenDate = new Date(timeSlider.value * 1000)
+    if(visType == "daily")
+        dailyVisualization()
 })
 }
 
@@ -48,6 +69,14 @@ mainContent.addEventListener("sl-reposition", () => {
         optionsHider.name = "chevron-compact-right"
     }
 });
+}
+
+// extra options visual functionality
+{
+timeSlider.tooltipFormatter = (t) => {
+    d = new Date(t * 1000);
+    return d.toLocaleDateString()
+}
 }
 
 // main visualization visual functionality

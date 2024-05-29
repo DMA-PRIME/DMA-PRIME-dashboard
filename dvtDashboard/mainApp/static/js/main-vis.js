@@ -42,8 +42,8 @@ function displayMap(mapType) {
                             tab.setAttribute("slot", "nav")
                             tab.setAttribute("closable", "")
                             tab.setAttribute("id", "minor_vis_tab:"+d.target.id)
-                            tab.addEventListener("sl-close", (event) => {
-                                event.target.remove()
+                            tab.addEventListener("sl-close", (details) => {
+                                details.target.remove()
                             })
                             minorVisResizer.append(tab)
                             newMinorVis(tab, d.target.id, "line")
@@ -89,55 +89,102 @@ function clearVisualization() {
 
 function aggregatedVisualization() {
     let counties = mainSVG.selectAll(".mapItems")
-    counties.each(d => calculateValue(d.properties.NAME.toLowerCase(), d))
+    counties.each(d => calculateValue(d.properties.NAME.toLowerCase()))
 }
 
-function calculateValue(county, countyObject) {
+function dailyVisualization() {
+    let counties = mainSVG.selectAll(".mapItems")
+    counties.each(d => dailyValue(d.properties.NAME.toLowerCase()))
+}
+
+function calculateValue(county) {
     // some day I want to move this into python
     const colors = ["#2E1E30", "#331427", "#A20D32", "#FF073A"];
 
-    d3.csv("static/data/county/Counties daily cases/" + county + "_case_daily.csv").then((data) => {
-        // Parse the date
-        var parseDate = d3.timeParse("%Y-%m-%d");
-        data.forEach(function (d) {
-            d.date = parseDate(d.date);
-            d[chosenColumn] = +d[chosenColumn];
-        });
-
-        const aggregate = Math.round(
-            data.reduce((total, d) => total + d[chosenColumn], 0)
-        );
-
-        // information to display total values
-        // may be redefined in the switch if we are not displaying total
-        let quartiles = [0, 4000, 40000, 180000];
-        let fixedMaxYValue = 2500;
-        let maxYValue = d3.max(data, (d) => d[chosenColumn]);
-        const maxDataPoint = data.find((d) => d[chosenColumn] === maxYValue);
-        let pointLabel = Math.round(maxYValue);
-        let countyValue = aggregate;
-        let lineFunc = function (val) { return val; };
-        let countyTitle = "Total Cases";
-
-        switch (type) {
-            case "popAdjusted":
+    d3.csv("static/data/county/countyPopulations.csv").then((pops) => {
+        
+        d3.csv("static/data/county/Counties daily cases/" + county + "_case_daily.csv").then((data) => {
+            countyPop = 1
+            pops.forEach((d) => {
+                if(d.county == county) {
+                    countyPop = d.population
+                }
+            })
+            // Parse the date
+            var parseDate = d3.timeParse("%Y-%m-%d");
+            data.forEach(function (d) {
+                d.date = parseDate(d.date);
+                d[chosenColumn] = +d[chosenColumn];
+            });
+    
+            const aggregate = Math.round(
+                data.reduce((total, d) => total + d[chosenColumn], 0)
+            );
+    
+            // information to display total values
+            // may be redefined in the switch if we are not displaying total
+            let quartiles = [0, 4000, 40000, 180000];
+            let countyValue = aggregate;
+            let lineFunc = function (val) { return val; };
+    
+            if (populationNormalized) {
                 quartiles = [0.0, 0.03, 0.2, 0.5];
-                fixedMaxYValue = 0.006;
-                maxYValue = d3.max(data, (d) => d[chosenColumn] / countyPop);
-                pointLabel = maxYValue.toFixed(3);
                 countyValue = (aggregate / countyPop).toFixed(3);
                 lineFunc = function (val) { return val / countyPop; };
-                countyTitle = "Pop Adjusted Cases";
-                break;
-            // in the event we have many different things, I'm using a switch statement the default is total, see above
-        }
-
-        var colorMap = d3.scaleLinear().domain(quartiles).range(colors)
-        d3.select("#" + county)
-            .transition()
-            .duration(2000)
-            .style("fill", colorMap(countyValue));
+            }
+    
+            var colorMap = d3.scaleLinear().domain(quartiles).range(colors)
+            d3.select("#" + county)
+                .transition()
+                .duration(2000)
+                .style("fill", colorMap(countyValue));
+        })
     })
+}
+
+function dailyValue(county) {
+    // some day I want to move this into python
+    const colors = ["#2E1E30", "#331427", "#A20D32", "#FF073A"];
+
+    d3.csv("static/data/county/countyPopulations.csv").then((pops) => {
+        d3.csv("static/data/county/Counties daily cases/" + county + "_case_daily.csv").then((data) => {
+            countyPop = 1
+            pops.forEach((d) => {
+                if(d.county == county) {
+                    countyPop = d.population
+                }
+            })
+            
+            // Parse the date
+            let countyValue = 0;
+            
+            var parseDate = d3.timeParse("%Y-%m-%d");
+            data.some(function (d) {
+                dataDate = new Date(d.date)
+                if(dataDate.getTime() == chosenDate.getTime()) {
+                    countyValue = d[chosenColumn]
+                }
+                d.date = parseDate(d.date);
+                d[chosenColumn] = +d[chosenColumn];
+            });
+    
+            let quartiles = [0, 100, 500, 2500];
+            let lineFunc = function (val) { return val; };
+    
+            if (populationNormalized) {
+                quartiles = [0.0, 0.0003, 0.002, 0.005];
+                countyValue = (countyValue / countyPop).toFixed(3);
+                lineFunc = function (val) { return val / countyPop; };
+            }
+    
+            var colorMap = d3.scaleLinear().domain(quartiles).range(colors)
+            d3.select("#" + county)
+                .transition()
+                .duration(1000)
+                .style("fill", colorMap(countyValue));
+        })
+    })
+    
 }
 
 
