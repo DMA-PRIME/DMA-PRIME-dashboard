@@ -50,12 +50,16 @@ function displayMap(mapType) {
                         })        
     }).then(() => {
         predictionItems = mainSVG.append("g").attr("id", "prediction-items")
-        predLength = Math.min(height, width) * 0.035
+        // predLength = Math.min(height, width) * 0.035
+        // if(mapType == "zip") {
+        //     predLength *= 0.3
+        // }
 
         mapItems = document.getElementsByClassName("map-item")
         for(i = 0; i < mapItems.length; i++) {
             item = mapItems[i]
             boundingBox = item.getBBox()
+            predLength = Math.min(boundingBox.height, boundingBox.width) * 0.25
             predictionItems
                 .append("rect")
                 .attr("id", "predvis-" + item.id)
@@ -97,12 +101,15 @@ function resizeMap(mapType) {
         })           
     }).then(() => {
         predLength = Math.min(height, width) * 0.025
+        if(mapType == "zip") {
+            predLength *= 0.3
+            console.log(predLength)
+        }
 
         mapItems = document.getElementsByClassName("map-item")
         for(i = 0; i < mapItems.length; i++) {
             item = mapItems[i]
             boundingBox = item.getBBox()
-            console.log(item)
             d3.select("#predvis-" + item.id)
                 .attr("width", predLength)
                 .attr("height", predLength)

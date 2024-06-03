@@ -33,6 +33,6 @@ function getSignifier(d){
     if("NAME" in d.properties)
         return d.properties.NAME.toLowerCase()
     else if("ZCTA5CE20" in d.properties)
-        return +d.properties.ZCTA5CE20
+        return "zip-" + d.properties.ZCTA5CE20
     else throw("no signifier")
 }

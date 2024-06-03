@@ -2,8 +2,6 @@
 function newMinorVis(tab, signifier, type){
     switch(type) {
         case "line":
-            console.log(tab)
-            console.log(signifier)
             lineVis(tab, signifier)
             break;
         default:
@@ -13,17 +11,12 @@ function newMinorVis(tab, signifier, type){
 }
 
 function lineVis(tab, signifier) {
-    console.log("creating")
     newVis = document.createElementNS("http://www.w3.org/2000/svg", "svg")
     newVis.setAttribute("id", "minorvis-" + signifier)
     newVis.setAttribute("width", 300)
     newVis.setAttribute("height", 300)
     tab.append(newVis)
 
-    console.log(tab)
-    console.log(signifier)
-    console.log(newVis)
-    
     svg = d3.select("#minorvis-" + signifier)
     d3.csv("static/data/county/Counties daily cases/" + signifier + "_case_daily.csv").then( (data) => {
         d3.csv("static/data/county/RealDataCounties/" + signifier + "covid19.csv").then((real_data) => {
@@ -45,8 +38,6 @@ function lineVis(tab, signifier) {
 
                 return maxInRow;
             });
-            // console.log("Max across columns:", maxAcrossColumns);
-            // console.log("Parsed data:", data);
 
             const chosenColumn = "cases 7-day averange"; // Change this to the column you want to display on the y-axis
 
@@ -61,14 +52,8 @@ function lineVis(tab, signifier) {
             const aggregate = Math.round(
                 real_data.reduce((total, d) => total + d[chosenColumn], 0)
             );
-            // console.log(
-            //     `Aggregate value for ${chosenColumn}th day:`,
-            //     aggregate
-            // );
 
             const maxYValue = d3.max(real_data, (d) => d[chosenColumn]);
-            // console.log(Math.round(maxYValue));
-
 
             const x = d3
                 .scaleTime()
@@ -168,8 +153,6 @@ function lineVis(tab, signifier) {
                         .transition()
                         .duration(1200)
                         .style("opacity", !isActive ? 1 : 0); // Adjust opacity based on active status
-                    // console.log(`button ${i}`);
-                    // console.log(isActive);
                 });
 
 
@@ -205,9 +188,6 @@ function lineVis(tab, signifier) {
                         .transition()
                         .duration(1000)
                         .style("opacity", !isActive ? 1 : 0);
-
-                    console.log(`button ${i}`);
-                    console.log(isActive);
 
                 });
 
@@ -267,8 +247,6 @@ function lineVis(tab, signifier) {
                     .on("click", function (d, i) {
                         const isActive = d3.select(this).classed("active");
                         const obj = d3.select(this)
-
-                        console.log(obj, isActive)
 
                         obj.classed("active", !isActive)
                             .style("opacity", isActive ? 1 : 0);
