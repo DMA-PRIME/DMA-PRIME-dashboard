@@ -69,6 +69,10 @@ mainContent.addEventListener("sl-reposition", () => {
         optionsHider.name = "chevron-compact-right"
     }
 });
+
+forecastSelector.addEventListener("sl-after-hide", () => {
+    changePrediction()
+})
 }
 
 // extra options visual functionality

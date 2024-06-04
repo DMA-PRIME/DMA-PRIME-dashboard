@@ -1,6 +1,6 @@
 # This is where the main flask code should lie
 
-from flask import Flask, jsonify, render_template
+from flask import Flask, jsonify, render_template, request
 import os
 import pandas as pd
 import numpy as np
@@ -39,6 +39,26 @@ def create_app(test_config=None):
     @app.route('/')
     def index():
         return render_template("index.html")
+    
+    @app.route('/get-prediction/<mapType>/<region>', methods=['POST', 'GET'])
+    def random(mapType, region):
+        if region == "all":
+            if mapType == "county":
+                items = request.get_json()
+                values = (np.random.rand(len(items)) - .5) * 20
+                print(np.ptp(values))
+                response = jsonify({
+                    "values": dict(zip(items, values)),
+                    "min": min(values),
+                    "max": max(values),
+                    "q1": np.quantile(values, .25),
+                    "q2": np.quantile(values, .50),
+                    "q3": np.quantile(values, .75),
+                })
+                return response
+            if mapType == "zip":
+                return "0"
+
     
     loadData()
     # print(county_dict)

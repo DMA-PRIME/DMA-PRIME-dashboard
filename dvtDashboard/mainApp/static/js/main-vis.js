@@ -45,24 +45,23 @@ function displayMap(mapType) {
                             minorVisResizer.append(tab)
                             newMinorVis(tab, d.target.id, "line")
                         })
-                        .on("mouseover", (d) => {
-                            changePrediction(d.target)
-                        })        
+                                
     }).then(() => {
         predictionItems = mainSVG.append("g").attr("id", "prediction-items")
-        // predLength = Math.min(height, width) * 0.035
-        // if(mapType == "zip") {
-        //     predLength *= 0.3
-        // }
+        predLength = Math.min(height, width) * 0.035
+        if(mapType == "zip") {
+            predLength *= 0.5
+        }
 
         mapItems = document.getElementsByClassName("map-item")
         for(i = 0; i < mapItems.length; i++) {
             item = mapItems[i]
             boundingBox = item.getBBox()
-            predLength = Math.min(boundingBox.height, boundingBox.width) * 0.25
             predictionItems
-                .append("rect")
+                .append("svg")
+                .attr("class", "predvis")
                 .attr("id", "predvis-" + item.id)
+                .html(iconNeutal)
                 .attr("width", predLength)
                 .attr("height", predLength)
                 .attr("x", boundingBox.x + (boundingBox.width - predLength)/2)
@@ -102,7 +101,7 @@ function resizeMap(mapType) {
     }).then(() => {
         predLength = Math.min(height, width) * 0.025
         if(mapType == "zip") {
-            predLength *= 0.3
+            predLength *= 0.5
             console.log(predLength)
         }
 
@@ -229,4 +228,18 @@ function dailyValue(county) {
 
 function changePrediction() {
     // TODO
+    items = []
+    d3.selectAll(".map-item").each((item) => items.push(getSignifier(item)))
+    console.log(items)
+    console.log(document.getElementsByClassName("predvis"))
+    url = "/get-prediction/" + mapType + "/all"
+        
+    d3.json(url, {
+        "method": "POST",
+        "headers": {"Content-Type": "application/json"},
+        "body": JSON.stringify(items)
+    }).then((data) => {
+        console.log(data)
+    })
+    
 }
