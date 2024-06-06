@@ -9,6 +9,11 @@ import glob
 
 from .definitions import counties
 
+# Data:
+#    map, county, zip code
+#        past, current, prediction
+#            prediction history vs actual
+
 county_dict = {}
 
 def create_app(test_config=None):
@@ -41,7 +46,9 @@ def create_app(test_config=None):
         return render_template("index.html")
     
     @app.route('/get-prediction/<mapType>/<region>', methods=['POST', 'GET'])
-    def random(mapType, region):
+    def getPrediction(mapType="county", region="all"):
+        # if we're showing all, get max day
+        # if we're showing one specific region, show all values until max predicted day
         if region == "all":
             if mapType == "county":
                 items = request.get_json()
@@ -49,15 +56,13 @@ def create_app(test_config=None):
                 values_list = []
                 for pair in zip(items, values):
                     values_list.append({"item":pair[0], "value":pair[1]})
-
+                quantiles = [min(values), np.quantile(values, .20), np.quantile(values, .40), 
+                             np.quantile(values, .60), np.quantile(values, .80), max(values)]
                 response = jsonify({
                     "values": values_list,
                     "min": min(values),
                     "max": max(values),
-                    "q20": np.quantile(values, .20),
-                    "q40": np.quantile(values, .40),
-                    "q60": np.quantile(values, .60),
-                    "q80": np.quantile(values, .80),
+                    "quantiles": quantiles,
                 })
                 return response
             if mapType == "zip":

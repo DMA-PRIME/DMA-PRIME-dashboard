@@ -238,7 +238,7 @@ function changePrediction() {
         "headers": {"Content-Type": "application/json"},
         "body": JSON.stringify(items)
     }).then((data) => {
-        quantiles = [data.min, data.q20, data.q40, data.q60, data.q80, data.max]
+        quantiles = data.quantiles
         console.log(d3.interpolatePiYG)
         colorMap = d3.scaleLinear().domain(quantiles).range(d3.schemePiYG[5])
         iconMap = d3.scaleOrdinal().domain(quantiles).range([iconDoubleDown, iconDown, iconNeutal, iconUp, iconDoubleUp])
