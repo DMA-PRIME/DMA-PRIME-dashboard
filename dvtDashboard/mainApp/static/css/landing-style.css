@@ -1,0 +1,61 @@
+.fill-height {
+height: 100%;
+}
+
+.hide-overflow {
+overflow:hidden
+}
+
+.scroll {
+overflow:scroll;
+}
+
+#main-content {
+height: 100%;
+}
+
+#main-content-divider {
+font-size: 2rem; 
+background-color: lightgray;
+}
+
+#options {
+height: 100%;
+overflow: hidden; 
+overflow-wrap: normal;
+padding: var(--sl-spacing-2x-small);
+padding-bottom: 0;
+}
+#options-divider-1 {
+--spacing: var(--sl-spacing-2x-small);
+}
+
+#disease-header {
+font-family: var(--sl-font-sans);
+font-size: var(--sl-font-size-large);
+}
+
+
+
+
+/* The following is from  https://dev.to/lennythedev/css-gotcha-how-to-fill-page-with-a-div-270j*/
+/* override browser default */
+html,
+body {
+margin: 0;
+padding: 0;
+}
+
+/* use viewport-relative units to cover page fully */
+body {
+height: 100vh;
+width: 100vw;
+display: flex;
+flex-flow: column;
+}
+
+/* include border and padding in element width and height */
+* {
+box-sizing: border-box;
+}
+

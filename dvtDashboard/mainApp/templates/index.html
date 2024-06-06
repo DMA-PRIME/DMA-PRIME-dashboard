@@ -4,13 +4,13 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
   <title>DMA-PRIME</title>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/light.css" />
   <script type="module"
     src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/shoelace-autoloader.js"></script>
 
-  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
+  <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/landing-style.css') }}" />
   <!-- <script src="https://d3js.org/d3-collection.v1.min.js"></script> -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script>
@@ -20,8 +20,9 @@
 <body>
   <!-- Top nav bar -->
   <sl-tab-group id="nav-bar">
-    <sl-tab slot="nav" panel="county">County</sl-tab>
-    <sl-tab slot="nav" panel="zip">Zip Code</sl-tab>
+    <sl-tab slot="nav" >DMA-PRIME</sl-tab>
+    <!-- <sl-tab slot="nav" panel="county">County</sl-tab>
+    <sl-tab slot="nav" panel="zip">Zip Code</sl-tab> -->
     <!-- <sl-tab slot="nav" panel="block">Census Block</sl-tab> -->
     <!-- <sl-tab slot="nav" panel="disabled" disabled>Disabled</sl-tab> -->
   </sl-tab-group>
@@ -35,59 +36,38 @@
 
     <!-- Visualization options panel -->
     <div slot="start" id="options" class="fill-height"> <!-- This is the -->
-      <sl-switch id="normalize-pop-switch">Normalize by Population</sl-switch>
-      <sl-divider></sl-divider>
-      <sl-radio-group id="vis-selector" name="vis-selector" value="none">
-        <label>Select a visualization</label>
-        <sl-radio value="none">None</sl-radio>
-        <sl-radio value="aggregated">Aggregated</sl-radio>
-        <sl-radio value="daily" >Daily</sl-radio>
-        <sl-radio value="3" disabled>Option 3</sl-radio>
-      </sl-radio-group>
-      <sl-divider></sl-divider>
-      <sl-select id="forecast-selector" value="day-1">
-        <p slot="label">Forecast Length</p>
-        <sl-option value="day-1">1 Day</sl-option>
-        <sl-option value="day-3">3 Day</sl-option>
-        <sl-option value="day-7">Week</sl-option>
-      </sl-select>
+      <sl-switch id="show-hospitals">Show Hospitals</sl-switch>
+      <sl-divider id="options-divider-1"></sl-divider>
+      <p id="disease-header">Diseases</p>
+      <sl-checkbox>COVID-19</sl-checkbox>
     </div>
+    <!-- This is where the visualizations will sit -->
+    <sl-split-panel slot="end" position="100" class="fill-height hide-overflow">
+    <div slot="start" class="fill-height scroll">
+        <sl-resize-observer id="main-vis-resizer">
+        <svg id="main-vis" class="fill-height"></svg>
+        </sl-resize-observer>
+    </div>
+    <div slot="end" id="minor-vis-div">
+        <sl-resize-observer >
+        <sl-tab-group placement="end" id="minor-vis-resizer">
+            <!-- stuff will go in here from main vis interaction -->
+        </sl-tab-group>
+        </sl-resize-observer>
+    </div>
+    </sl-spit-panel>
 
-    <!-- This is where the visualizatin and extra options for a visualization will reside -->
-    <sl-split-panel slot="end" vertical disabled position="90" id="vis-container" class="fill-height hide-overflow">
-      <!-- This is where the visualizations will sit -->
-      <sl-split-panel slot="start" position="100" class="fill-height">
-        <div slot="start">
-          <sl-resize-observer id="main-vis-resizer">
-            <svg id="main-vis" class="fill-height"></svg>
-          </sl-resize-observer>
-        </div>
-        <div slot="end" id="minor-vis-div">
-          <sl-resize-observer >
-            <sl-tab-group placement="end" id="minor-vis-resizer">
-              <!-- stuff will go in here from main vis interaction -->
-            </sl-tab-group>
-          </sl-resize-observer>
-        </div>
-      </sl-split-panel>
-
-      <!-- Extra options here -->
-      <div slot="end" id="extras-div">
-        <label>Date</label>
-        <sl-range min="1585008000" max="1680134400" step="86400" id="time-slider"></sl-range>
-      </div>
-    </sl-split-panel>
   </sl-split-panel>
 
   <!-- Contains helper functions/data/constants -->
-  <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+  <!-- <script src="{{ url_for('static', filename='js/main-vis/script.js') }}"></script> -->
   <!-- Functions to get the main (left) vis working -->
-  <script src="{{ url_for('static', filename='js/minor-vis.js') }}"></script>
-  <script src="{{ url_for('static', filename='js/main-vis.js') }}"></script>
+  <!-- <script src="{{ url_for('static', filename='js/main-vis/minor-vis.js') }}"></script> -->
+  <!-- <script src="{{ url_for('static', filename='js/main-vis/main-vis.js') }}"></script> -->
   <!-- All the magic for panel resizing/vis options -->
-  <script src="{{ url_for('static', filename='js/interactions.js') }}"></script>
+  <!-- <script src="{{ url_for('static', filename='js/main-vis/interactions.js') }}"></script> -->
   <script>
-    displayMap(mapType);
+    // displayMap(mapType);
   </script>
 
 </body>
