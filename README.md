@@ -21,4 +21,6 @@ Note: To automatically reload flask applications on changes, run it with the --d
 - D3: https://d3js.org/api
 - HTML/CSS/JS: https://developer.mozilla.org/en-US/docs/Web
 - Shoelace: https://shoelace.style/
+- Flask: https://flask.palletsprojects.com/en/2.3.x/
+- Jinja: https://jinja.palletsprojects.com/en/3.0.x/api/
 

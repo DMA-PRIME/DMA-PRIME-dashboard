@@ -3,7 +3,7 @@ function displayMap() {
     var width = jsmapSVG.width.baseVal.value
     var height = jsmapSVG.height.baseVal.value
     
-    d3.json("../../static/data/tl_2023_sc_county.json").then(function(mapdata) {d3.json("../../static/data/Hospitals.geojson").then(function(hospdata){
+    d3.json("../../static/data/tl_2023_sc_county.json").then(function(mapdata) {
         mapData = mapdata
         mapProjection = d3.geoAlbers().fitExtent(
             [[margins.left, margins.top], [width-margins.right,height-margins.bottom]],
@@ -23,17 +23,34 @@ function displayMap() {
 
               hospitals = mapSVG.append("g")
               .attr("id", "hospitals")
-        temp = null
-        hospitals.selectAll("circle")
+    }).then(() => d3.json("../../static/data/Hospitals.geojson").then(function(hospdata){
+              hospitals.selectAll("svg")
               .data(hospdata.features)
               .enter()
-              .append("circle")
+              .append("svg")
               .attr("class", "hospital")
               .attr("id", d => fixHospitalName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
-              .attr("cx", (d) => mapProjection(d.geometry.coordinates)[0])
-              .attr("cy", (d) => mapProjection(d.geometry.coordinates)[1])
-              .attr("r", Math.min(width, height) * 0.005)
-    })})
+              .attr("width", Math.max(10, Math.min(width, height) * 0.02))
+              .attr("height", Math.max(10, Math.min(width, height) * 0.02))
+              .attr("x", (d) => mapProjection(d.geometry.coordinates)[0])
+              .attr("y", (d) => mapProjection(d.geometry.coordinates)[1])
+              .attr("viewBox", "0 0 16 16")
+              .each(function(d) {
+                fetch("/hospital/"+fixHospitalName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
+                    .then((response) => {
+                        if (!response.ok) {
+                            throw new Error("HTTP error " + res.status)
+                        }
+                        return response.text()
+                    }).then((data) => {
+                        console.log(data)
+                        this.innerHTML = data
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                    });
+              })
+    }))
 }
 
 function resizeMap() {
@@ -51,8 +68,9 @@ function resizeMap() {
 
     d3.selectAll(".hospital").each(function(item) {
         d3.select(this)
-            .attr("cx", (d) => mapProjection(d.geometry.coordinates)[0])
-            .attr("cy", (d) => mapProjection(d.geometry.coordinates)[1])
-            .attr("r", Math.min(width, height) * 0.005)
+            .attr("width", Math.max(10, Math.min(width, height) * 0.02))
+            .attr("height", Math.max(10, Math.min(width, height) * 0.02))
+            .attr("x", (d) => mapProjection(d.geometry.coordinates)[0])
+            .attr("y", (d) => mapProjection(d.geometry.coordinates)[1])
     })
 }

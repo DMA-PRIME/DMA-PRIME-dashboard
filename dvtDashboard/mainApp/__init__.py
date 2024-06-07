@@ -45,6 +45,10 @@ def create_app(test_config=None):
     def index():
         return render_template("index.html")
     
+    @app.route('/hospital/<id>')
+    def getHospitalHTML(id):
+        return render_template("hospital.html", id=id)
+    
     @app.route('/get-prediction/<mapType>/<region>', methods=['POST', 'GET'])
     def getPrediction(mapType="county", region="all"):
         # if we're showing all, get max day
