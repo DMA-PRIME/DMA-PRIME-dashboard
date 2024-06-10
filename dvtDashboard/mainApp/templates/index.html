@@ -35,14 +35,19 @@
         <sl-button pill id="reset-button">Reset Map</sl-button>
       </div>
       <sl-divider class="options-divider"></sl-divider>
-      <div class="options-div">
-        <sl-switch id="show-hospitals">Show Hospitals</sl-switch>
-      </div>
+      <sl-tree class="options-div">
+        <sl-tree-item>
+          <sl-switch id="show-diseases" checked><p class="options-header">Diseases</p></sl-switch>
+          <sl-tree-item>
+            <sl-checkbox checked>COVID-19</sl-checkbox>
+          </sl-tree-item>
+        </sl-tree-item>
       <sl-divider class="options-divider"></sl-divider>
-      <div class="options-div">
-        <p id="disease-header">Diseases</p>
-        <sl-checkbox>COVID-19</sl-checkbox>
-      </div>
+      <sl-tree-item>
+        <sl-switch id="show-hospitals" checked><p class="options-header">Hospitals</p></sl-switch>
+        <sl-tree-item>Some Hospital Options here...</sl-tree-item>
+      </sl-tree-item>        
+      </sl-tree>
     </div>
     <!-- This is where the visualizations will sit -->
     <sl-split-panel slot="end" position="100" class="fill-height fill-width hide-overflow">

@@ -25,6 +25,13 @@ overflow-y: scroll;
     padding: var(--sl-spacing-x-small)
 }
 
+.options-header {
+    font-family: var(--sl-font-sans);
+    font-size: var(--sl-font-size-large);
+    margin-top: 0;
+    margin-bottom: .5rem;
+}
+
 .options-divider {
     --spacing: 0;
     }
@@ -43,13 +50,6 @@ height: 100%;
 overflow: hidden; 
 overflow-wrap: normal;
 /* padding: var(--sl-spacing-2x-small); */
-}
-
-#disease-header {
-font-family: var(--sl-font-sans);
-font-size: var(--sl-font-size-large);
-margin-top: 0;
-margin-bottom: .5rem;
 }
 
 #map-svg {

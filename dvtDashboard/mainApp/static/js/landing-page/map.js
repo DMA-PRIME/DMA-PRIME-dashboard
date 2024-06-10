@@ -30,8 +30,8 @@ function displayMap() {
               .append("svg")
               .attr("class", "hospital")
               .attr("id", d => fixHospitalName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
-              .attr("width", Math.max(10, Math.min(width, height) * 0.02))
-              .attr("height", Math.max(10, Math.min(width, height) * 0.02))
+              .attr("width", Math.max(25, Math.min(width, height) * 0.02))
+              .attr("height", Math.max(25, Math.min(width, height) * 0.02))
               .attr("x", (d) => mapProjection(d.geometry.coordinates)[0])
               .attr("y", (d) => mapProjection(d.geometry.coordinates)[1])
               .attr("viewBox", "0 0 16 16")
@@ -43,7 +43,6 @@ function displayMap() {
                         }
                         return response.text()
                     }).then((data) => {
-                        console.log(data)
                         this.innerHTML = data
                     })
                     .catch((err) => {
@@ -67,10 +66,11 @@ function resizeMap() {
     })
 
     d3.selectAll(".hospital").each(function(item) {
+        size = Math.max(25, Math.min(width, height) * 0.035)
         d3.select(this)
-            .attr("width", Math.max(10, Math.min(width, height) * 0.02))
-            .attr("height", Math.max(10, Math.min(width, height) * 0.02))
-            .attr("x", (d) => mapProjection(d.geometry.coordinates)[0])
-            .attr("y", (d) => mapProjection(d.geometry.coordinates)[1])
+            .attr("width", size)
+            .attr("height", size)
+            .attr("x", (d) => mapProjection(d.geometry.coordinates)[0] - size/2)
+            .attr("y", (d) => mapProjection(d.geometry.coordinates)[1] - size/2)
     })
 }
