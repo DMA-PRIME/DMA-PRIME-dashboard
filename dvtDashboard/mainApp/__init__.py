@@ -47,7 +47,11 @@ def create_app(test_config=None):
     
     @app.route('/hospital/<id>')
     def getHospitalHTML(id):
-        return render_template("hospital.html", id=id)
+        return render_template("subtemplates/hospital.html", id=id)
+    
+    @app.route('/tooltip/<type>')
+    def getTooltipHTML(type=None):
+        return render_template("subtemplates/tooltip.html", type=type)
     
     @app.route('/get-prediction/<mapType>/<region>', methods=['POST', 'GET'])
     def getPrediction(mapType="county", region="all"):

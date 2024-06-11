@@ -51,7 +51,7 @@
     </div>
     <!-- This is where the visualizations will sit -->
     <sl-split-panel slot="end" position="100" class="fill-height fill-width hide-overflow">
-      <div slot="start" class="fill-width ">
+      <div slot="start" class="fill-width " id="map-div">
           <sl-resize-observer id="map-resizer" class="">
           <svg id="map-svg" class="scroll"></svg>
           </sl-resize-observer>
@@ -70,7 +70,6 @@
   <!-- Contains helper functions/data/constants -->
   <script src="{{ url_for('static', filename='js/landing-page/script.js') }}"></script>
   <!-- Functions to get the main (left) vis working -->
-  <!-- <script src="{{ url_for('static', filename='js/main-vis/minor-vis.js') }}"></script> -->
   <script src="{{ url_for('static', filename='js/landing-page/map.js') }}"></script>
   <!-- All the magic for panel resizing/vis options -->
   <script src="{{ url_for('static', filename='js/landing-page/interactions.js') }}"></script>

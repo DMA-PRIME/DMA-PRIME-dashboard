@@ -20,8 +20,11 @@ function displayMap() {
               .attr("id", d => d.properties.NAME.toLowerCase())
               .attr("d", d => pathGenerator(d))
               .style("fill", "var(--sl-color-gray-400)")
+                .on("mouseenter", function(e) {
+                    toolTipCreator(this, e)
+                })
 
-              hospitals = mapSVG.append("g")
+        hospitals = mapSVG.append("g")
               .attr("id", "hospitals")
     }).then(() => d3.json("../../static/data/Hospitals.geojson").then(function(hospdata){
               hospitals.selectAll("svg")
@@ -39,7 +42,7 @@ function displayMap() {
                 fetch("/hospital/"+fixHospitalName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
                     .then((response) => {
                         if (!response.ok) {
-                            throw new Error("HTTP error " + res.status)
+                            throw new Error("HTTP error " + response.status)
                         }
                         return response.text()
                     }).then((data) => {
