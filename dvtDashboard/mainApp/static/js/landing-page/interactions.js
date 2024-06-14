@@ -27,6 +27,25 @@ resetButton.addEventListener("click", () => {
     mapSVG.call(mapZoom.transform, d3.zoomIdentity.translate(0, 0).scale(1))
 })
 
+diseaseToggle.addEventListener("sl-change", () => {
+    if(diseaseToggle.checked) {
+        d3.select("#disease-data").raise().style("opacity", 1)
+    } else {
+        d3.select("#disease-data").lower().style("opacity", 0)
+    }
+})
+
+for(var i = 0; i < diseaseChecks.length; i++) {
+    diseaseChecks[i].addEventListener("sl-change", (e) => {
+        checker = e.target
+        if(checker.checked) {
+            d3.select("#"+checker.id+"-data").raise().style("opacity", 1)
+        } else {
+            d3.select("#"+checker.id+"-data").lower().style("opacity", 0)
+        }
+    })
+}
+
 hospitalToggle.addEventListener("sl-change", () => {
     if(hospitalToggle.checked) {
         d3.select("#hospitals").raise().style("opacity", 1)

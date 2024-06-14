@@ -6,6 +6,7 @@ var mapResizer = document.getElementById("map-resizer")
     // options
 var resetButton = document.getElementById("reset-button")
 var diseaseToggle = document.getElementById("show-diseases")
+var diseaseChecks = document.getElementsByClassName("disease-check")
 var hospitalToggle = document.getElementById("show-hospitals")
     // map
 var jsmapSVG = document.getElementById("map-svg")

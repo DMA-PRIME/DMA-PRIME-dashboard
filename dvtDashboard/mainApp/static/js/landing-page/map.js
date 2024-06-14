@@ -54,6 +54,9 @@ function displayMap() {
                     });
               })
         })
+
+        diseaseData = mapSVG.append("g")
+            .attr("id", "disease-data")
         
         d3.json("/get-real-disease-data", { // covid county data
             "method": "POST",
@@ -79,8 +82,8 @@ function displayMap() {
                 radius_map = d3.scaleLinear([stats.min, stats.max], [0, maxRadius])
                 disease_color_map = d3.scaleOrdinal().domain(metadata.disease).range(d3.schemeSet1)
 
-                covidData = mapSVG.append("g")
-                .attr("id", "covid-data")
+                covidData = diseaseData.append("g")
+                .attr("id", "covid-19-data")
 
                 covidData.selectAll("circle")
                     .data(data)
