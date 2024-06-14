@@ -17,7 +17,7 @@ function displayMap() {
               .enter()
               .append("path")
               .attr("class", "county")
-              .attr("id", d => d.properties.NAME.toLowerCase())
+              .attr("id", d => fixName(d.properties.NAME))
               .attr("d", d => pathGenerator(d))
               .style("fill", "var(--sl-color-gray-400)")
                 .on("mouseenter", function(e) {
@@ -33,14 +33,14 @@ function displayMap() {
               .enter()
               .append("svg")
               .attr("class", "hospital")
-              .attr("id", d => fixHospitalName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
+              .attr("id", d => fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
               .attr("width", Math.max(25, Math.min(width, height) * 0.02))
               .attr("height", Math.max(25, Math.min(width, height) * 0.02))
               .attr("x", (d) => mapProjection(d.geometry.coordinates)[0])
               .attr("y", (d) => mapProjection(d.geometry.coordinates)[1])
               .attr("viewBox", "0 0 16 16")
               .each(function(d) {
-                fetch("/hospital/"+fixHospitalName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
+                fetch("/hospital/"+fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
                     .then((response) => {
                         if (!response.ok) {
                             throw new Error("HTTP error " + response.status)
@@ -55,7 +55,7 @@ function displayMap() {
               })
         })
         
-        d3.json("/get-real-disease-data", {
+        d3.json("/get-real-disease-data", { // covid county data
             "method": "POST",
             "headers": {"Content-Type": "application/json"},
             "body": JSON.stringify({
@@ -64,11 +64,39 @@ function displayMap() {
                 'disease': 'all',
                 'date': 'max',
                 'data-type': 'cases 7-day averange',
-            })}).then((data) => {
-                console.log(data)
+            })}).then((result) => {
+                data = JSON.parse(result.data)
+                data = Object.keys(data).map((key) => [key, data[key]])
+                data = data.map(function(item) {
+                    attributes = formatTuple(item[0])
+                    attributes[0] = fixName(attributes[0])
+                    return [attributes, item[1]]
+                })
+                stats = JSON.parse(result.stats)
+                metadata = JSON.parse(result.metadata)
+
+                maxRadius = Math.min(height, width) * 0.05
+                radius_map = d3.scaleLinear([stats.min, stats.max], [0, maxRadius])
+                disease_color_map = d3.scaleOrdinal().domain(metadata.disease).range(d3.schemeSet1)
+
+                covidData = mapSVG.append("g")
+                .attr("id", "covid-data")
+
+                covidData.selectAll("circle")
+                    .data(data)
+                    .enter()
+                    .append("circle")
+                    .attr("class", (d) => "disease-bubble " + d[0].join(" "))
+                    .attr("cx", (d) => getCenterPos(d[0][0]).x - radius_map(d[1])/2)
+                    .attr("cy", (d) => getCenterPos(d[0][0]).y - radius_map(d[1])/2)
+                    .attr("r", (d) => radius_map(d[1]))
+                    .style("fill", d => disease_color_map(d[0][1]))
+                    .style("fill-opacity", .25)
+                    .style("stroke", d => disease_color_map(d[0][1]))
+                    .style("stroke-width", 3)
+                    .style("stroke-opacity", .3)
+
             }).catch((err) => {console.log(err)})
-        covidData = mapSVG.append("g")
-              .attr("id", "covid-data")
         
     })
 }
@@ -93,5 +121,15 @@ function resizeMap() {
             .attr("height", size)
             .attr("x", (d) => mapProjection(d.geometry.coordinates)[0] - size/2)
             .attr("y", (d) => mapProjection(d.geometry.coordinates)[1] - size/2)
+    })
+
+    d3.selectAll(".disease-bubble").each(function(d) {
+        maxRadius = Math.min(height, width) * 0.03
+        radius_map = d3.scaleLinear([stats.min, stats.max], [0, maxRadius])
+        d3.select(this)
+            .attr("cx", (d) => getCenterPos(d[0][0]).x - radius_map(d[1])/2)
+            .attr("cy", (d) => getCenterPos(d[0][0]).y - radius_map(d[1])/2)
+            .attr("r", (d) => radius_map(d[1]))
+            
     })
 }

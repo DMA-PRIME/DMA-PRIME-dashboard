@@ -27,11 +27,22 @@ var mapProjection = null
 var mapData = null
 
 // other functions
-function fixHospitalName(name) {
+function fixName(name) {
     newName = name.toLowerCase().split(" ").join('-')
-    newName = newName.replace(/\//g, '')
-    newName = newName.replace(/'/g, '')
+    newName = newName.replace(/[\/']/g, '')
     return newName
+}
+
+function getCenterPos(id) {
+    temp = document.getElementById(id)
+    if (temp) {
+        tempbbox = temp.getBBox()
+        x = tempbbox.x + (tempbbox.height)/2
+        y = tempbbox.y + (tempbbox.height)/2
+        return {'x': x, 'y': y}
+    } else {
+        return {'x': 0, 'y': 0}
+    }
 }
 
 function toolTipCreator(element, event) {
@@ -59,9 +70,13 @@ function toolTipCreator(element, event) {
             for(i = 0; i < trash.length; i++) {
                 trash[i].remove()
             }
-            // console.log("leave")
         })
     }).catch((err) => {
         console.log(err)
     })
+}
+
+function formatTuple(string) {
+    return string.replace(/[(' )]/g, "").split(",")
+
 }

@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import pandas as pd
 import glob
+import json
 
 from .definitions import counties
 
@@ -93,10 +94,11 @@ def create_app(test_config=None):
         region = slice(None) if variables['region-name'] == 'all' else variables['region-name'] 
         disease = slice(None) if variables['disease'] == 'all' else variables['disease'] 
         date = max(base_data.index.levels[2]) if variables['date'] == 'max' else variables['date']
-        return_data = base_data.loc[(region, disease, date), variables['data-type']].to_json()
-        return_stats = base_stats.loc[(date, variables['data-type'])].to_json()
-        print({'data': return_data, 'stats': return_stats})
-        return jsonify({'data': return_data, 'stats': return_stats})
+        return_data = base_data.loc[(region, disease, date), variables['data-type']]
+        return_stats = base_stats.loc[(date, variables['data-type'])]
+        returned_index = return_data.index.remove_unused_levels()
+        metadata = {name: vals.to_list() for (name, vals) in zip(returned_index.names, returned_index.levels)}
+        return jsonify({'data': return_data.to_json(), 'stats': return_stats.to_json(), 'metadata': json.dumps(metadata)})
     
     loadData()
 
