@@ -106,12 +106,21 @@ def create_app(test_config=None):
 
 def loadData():
     # county
-    index = ['county', 'disease', 'date']
+    index_names = ['county', 'disease', 'date']
 
-    df = pd.read_csv("C:/Users/***REMOVED***/Box/BoxPHI-PHMR Projects/Toolkit/Cleaned_Data/SC/Covid19/Case_Death_Counts.csv")
-    df['disease'] = 'covid-19'
-    value_columns = df.columns.difference(index)
-    df_multi = pd.pivot_table(df, values=value_columns, index=index)
+    df_multi = pd.DataFrame()
+
+    files = [
+    # "C:/Users/***REMOVED***/Box/BoxPHI-PHMR Projects/Toolkit/Cleaned_Data/SC/Covid19/Case_Death_Counts.csv",
+    "dvtDashboard/mainApp/static/data/covid_case_death_counts.csv",
+    "dvtDashboard/mainApp/static/data/dummy_flu.csv",
+    ]
+
+    for f_path in files:
+        df = pd.read_csv(f_path)
+        value_columns = df.columns.difference(index_names)
+        temp_df = pd.pivot_table(df, values=value_columns, index=index_names)
+        df_multi = pd.concat([df_multi, temp_df])
 
     # county stats
     columns=['min', 'q20', 'q25', 'q40', 'q50', 'q60', 'q75', 'q80', 'max']
