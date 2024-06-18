@@ -73,6 +73,7 @@ function displayMap() {
                 data = data.map(function(item) {
                     attributes = formatTuple(item[0])
                     attributes[0] = fixName(attributes[0])
+                    attributes[2] = '_'+attributes[2]
                     return [attributes, item[1]]
                 })
                 stats = JSON.parse(result.stats)
@@ -82,22 +83,49 @@ function displayMap() {
                 radius_map = d3.scaleLinear([stats.min, stats.max], [0, maxRadius])
                 disease_color_map = d3.scaleOrdinal().domain(metadata.disease).range(d3.schemeSet1)
 
-                covidData = diseaseData.append("g")
-                .attr("id", "covid-19-data")
 
-                covidData.selectAll("circle")
-                    .data(data)
-                    .enter()
-                    .append("circle")
-                    .attr("class", (d) => "disease-bubble " + d[0].join(" "))
-                    .attr("cx", (d) => getCenterPos(d[0][0]).x - radius_map(d[1])/2)
-                    .attr("cy", (d) => getCenterPos(d[0][0]).y - radius_map(d[1])/2)
-                    .attr("r", (d) => radius_map(d[1]))
-                    .style("fill", d => disease_color_map(d[0][1]))
-                    .style("fill-opacity", .25)
-                    .style("stroke", d => disease_color_map(d[0][1]))
-                    .style("stroke-width", 3)
-                    .style("stroke-opacity", .3)
+                disease_groups = {}
+                metadata.disease.forEach(disease => {
+                    disease_groups[disease] = diseaseData.append("g").attr("id", disease + "-data")
+                })
+                data.forEach(element => {
+                    temp = disease_groups[element[0][1]].selectAll(".disease-bubble." + element[0].join("."))
+                    temp
+                        .data([element])
+                        .enter()
+                        .append("circle")
+                        .attr("class", (d) => {
+                            console.log(d)
+                            return "disease-bubble " + d[0].join(" ")})
+                        .attr("cx", (d) => getCenterPos(d[0][0]).x - radius_map(d[1])/2)
+                        .attr("cy", (d) => getCenterPos(d[0][0]).y - radius_map(d[1])/2)
+                        .attr("r", (d) => radius_map(d[1]))
+                        .style("fill", d => disease_color_map(d[0][1]))
+                        .style("fill-opacity", .25)
+                        .style("stroke", d => disease_color_map(d[0][1]))
+                        .style("stroke-width", 3)
+                        .style("stroke-opacity", .3)
+                });
+
+
+                // covidData = diseaseData.append("g")
+                // .attr("id", "covid-19-data")
+
+                // fluData = diseaseData.append("g")
+                // .attr("id", "flu-data")
+                // covidData.selectAll("circle")
+                //     .data(data)
+                //     .enter()
+                //     .append("circle")
+                //     .attr("class", (d) => "disease-bubble " + d[0].join(" "))
+                //     .attr("cx", (d) => getCenterPos(d[0][0]).x - radius_map(d[1])/2)
+                //     .attr("cy", (d) => getCenterPos(d[0][0]).y - radius_map(d[1])/2)
+                //     .attr("r", (d) => radius_map(d[1]))
+                //     .style("fill", d => disease_color_map(d[0][1]))
+                //     .style("fill-opacity", .25)
+                //     .style("stroke", d => disease_color_map(d[0][1]))
+                //     .style("stroke-width", 3)
+                //     .style("stroke-opacity", .3)
 
             }).catch((err) => {console.log(err)})
         
