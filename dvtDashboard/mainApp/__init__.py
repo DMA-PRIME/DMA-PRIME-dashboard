@@ -87,7 +87,6 @@ def create_app(test_config=None):
     @app.route('/get-real-disease-data', methods=['POST'])
     def getRealDiseaseData():
         variables = request.get_json()
-        print(variables)
         base_data = real_dict[variables['region-size']]['data']
         base_stats = real_dict[variables['region-size']]['stats']
         # cases 7-day averange,deaths 7-day averange
@@ -97,7 +96,6 @@ def create_app(test_config=None):
         return_data = base_data.loc[(region, disease, date), variables['data-type']]
         return_stats = base_stats.loc[(date, variables['data-type'])]
         returned_index = return_data.index.remove_unused_levels()
-        print(return_data)
         metadata = {name: vals.to_list() for (name, vals) in zip(returned_index.names, returned_index.levels)}
         return jsonify({'data': return_data.to_json(), 'stats': return_stats.to_json(), 'metadata': json.dumps(metadata)})
     
@@ -115,6 +113,7 @@ def loadData():
     # "C:/Users/***REMOVED***/Box/BoxPHI-PHMR Projects/Toolkit/Cleaned_Data/SC/Covid19/Case_Death_Counts.csv",
     "mainApp/static/data/covid_case_death_counts.csv",
     "mainApp/static/data/dummy_flu.csv",
+    "mainApp/static/data/dummy_opioid.csv",
     ]
 
     for f_path in files:

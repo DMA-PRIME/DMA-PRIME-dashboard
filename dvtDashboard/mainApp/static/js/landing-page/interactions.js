@@ -1,21 +1,26 @@
 
-mapZoom = d3.zoom().on("zoom", function(e) {
-    
+mapZoom = d3.zoom().scaleExtent([1, 10]).on("zoom", function(e) {
+
     zoom = e.transform.k
     xSkew = e.transform.x
     ySkew = e.transform.y
 
     d3.select("#counties").attr('transform', e.transform)
-    d3.select("#covid-19-data").attr('transform', e.transform)
+    d3.select("#disease-data").attr('transform', e.transform)
+    // d3.select("#hospitals").attr('transform', e.transform)
+    // d3.selectAll(".hospital")
+    //     .attr("transform", function(d) {
+    //         console.log(xSkew)
+    //         console.log(ySkew)
+    //         return d3.zoomIdentity.translate((zoom-1) * (this.x.baseVal.value - this.width.baseVal.value), (zoom-1) * this.y.baseVal.value).scale(1/zoom)
+    //     })
 
     d3.selectAll(".hospital").attr('transform', function(d){
         function blerp(zoom, dimension, location, skew) {
             // if you don't want to scale after translation and only move via translation, use the formula:
             // (scale - 1) * ({x or y} position + {width or height}*.5) + {x or y translation}
-
-            // return dimension.baseVal.value + (skew * zoom)
-
-            return ((zoom-1) * (location.baseVal.value + (dimension.baseVal.value * .5))) + skew
+            // return location.baseVal.value * zoom + skew
+            return ((zoom-1) * 2 * (location.baseVal.value + (dimension.baseVal.value * .5))) + skew
         }
         return d3.zoomIdentity.translate(blerp(zoom, this.width, this.x, xSkew), blerp(zoom, this.height, this.y, ySkew))
     })

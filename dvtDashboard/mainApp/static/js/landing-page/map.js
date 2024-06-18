@@ -1,14 +1,14 @@
 
 function displayMap() {
-    var width = jsmapSVG.width.baseVal.value
-    var height = jsmapSVG.height.baseVal.value
+    width = jsmapSVG.width.baseVal.value
+    height = jsmapSVG.height.baseVal.value
     
     d3.json("../../static/data/tl_2023_sc_county.json").then(function(mapdata) {
         mapData = mapdata
         mapProjection = d3.geoAlbers().fitExtent(
             [[margins.left, margins.top], [width-margins.right,height-margins.bottom]],
             mapdata)
-        var pathGenerator = d3.geoPath(mapProjection)
+        pathGenerator = d3.geoPath(mapProjection)
 
         counties = mapSVG.append("g")
               .attr("id", "counties")
@@ -27,6 +27,7 @@ function displayMap() {
         hospitals = mapSVG.append("g")
               .attr("id", "hospitals")
     }).then(() => {
+        hosp_size = Math.max(16, Math.min(width, height) * 0.015)
         d3.json("../../static/data/Hospitals.geojson").then(function(hospdata){
               hospitals.selectAll("svg")
               .data(hospdata.features)
@@ -34,24 +35,13 @@ function displayMap() {
               .append("svg")
               .attr("class", "hospital")
               .attr("id", d => fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
-              .attr("width", Math.max(25, Math.min(width, height) * 0.02))
-              .attr("height", Math.max(25, Math.min(width, height) * 0.02))
-              .attr("x", (d) => mapProjection(d.geometry.coordinates)[0])
-              .attr("y", (d) => mapProjection(d.geometry.coordinates)[1])
+              .attr("width", hosp_size)
+              .attr("height", hosp_size)
+              .attr("x", (d) => mapProjection(d.geometry.coordinates)[0] - hosp_size)
+              .attr("y", (d) => mapProjection(d.geometry.coordinates)[1] - hosp_size)
               .attr("viewBox", "0 0 16 16")
               .each(function(d) {
-                fetch("/hospital/"+fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
-                    .then((response) => {
-                        if (!response.ok) {
-                            throw new Error("HTTP error " + response.status)
-                        }
-                        return response.text()
-                    }).then((data) => {
-                        this.innerHTML = data
-                    })
-                    .catch((err) => {
-                        console.log(err);
-                    });
+                this.innerHTML = makeHospital(fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
               })
         })
 
@@ -83,10 +73,28 @@ function displayMap() {
                 radius_map = d3.scaleLinear([stats.min, stats.max], [0, maxRadius])
                 disease_color_map = d3.scaleOrdinal().domain(metadata.disease).range(d3.schemeSet1)
 
-
                 disease_groups = {}
                 metadata.disease.forEach(disease => {
-                    disease_groups[disease] = diseaseData.append("g").attr("id", disease + "-data")
+                    disease_groups[disease] = diseaseData.append("g").attr("id", disease + "-data").attr("class", "disease-data-group")
+
+                    // create checkbox
+                    checkbranch = document.createElement("sl-tree-item")
+                    check = document.createElement("sl-checkbox")
+                    check.id = disease
+                    check.classList.add("disease-check")
+                    check.setAttribute("checked", "")
+                    check.innerHTML = disease
+                    check.addEventListener("sl-change", (e) => {
+                        checker = e.target
+                        if(checker.checked) {
+                            d3.select("#"+checker.id+"-data").raise().style("opacity", 1)
+                        } else {
+                            d3.select("#"+checker.id+"-data").lower().style("opacity", 0)
+                        }
+                    })
+                    checkbranch.append(check)
+                    diseaseSwitchBranch.append(checkbranch)
+
                 })
                 data.forEach(element => {
                     temp = disease_groups[element[0][1]].selectAll(".disease-bubble." + element[0].join("."))
@@ -95,10 +103,9 @@ function displayMap() {
                         .enter()
                         .append("circle")
                         .attr("class", (d) => {
-                            console.log(d)
                             return "disease-bubble " + d[0].join(" ")})
-                        .attr("cx", (d) => getCenterPos(d[0][0]).x - radius_map(d[1])/2)
-                        .attr("cy", (d) => getCenterPos(d[0][0]).y - radius_map(d[1])/2)
+                        .attr("cx", (d) => getCenterPos(d[0][0]).x)
+                        .attr("cy", (d) => getCenterPos(d[0][0]).y)
                         .attr("r", (d) => radius_map(d[1]))
                         .style("fill", d => disease_color_map(d[0][1]))
                         .style("fill-opacity", .25)
@@ -107,38 +114,20 @@ function displayMap() {
                         .style("stroke-opacity", .3)
                 });
 
-
-                // covidData = diseaseData.append("g")
-                // .attr("id", "covid-19-data")
-
-                // fluData = diseaseData.append("g")
-                // .attr("id", "flu-data")
-                // covidData.selectAll("circle")
-                //     .data(data)
-                //     .enter()
-                //     .append("circle")
-                //     .attr("class", (d) => "disease-bubble " + d[0].join(" "))
-                //     .attr("cx", (d) => getCenterPos(d[0][0]).x - radius_map(d[1])/2)
-                //     .attr("cy", (d) => getCenterPos(d[0][0]).y - radius_map(d[1])/2)
-                //     .attr("r", (d) => radius_map(d[1]))
-                //     .style("fill", d => disease_color_map(d[0][1]))
-                //     .style("fill-opacity", .25)
-                //     .style("stroke", d => disease_color_map(d[0][1]))
-                //     .style("stroke-width", 3)
-                //     .style("stroke-opacity", .3)
-
             }).catch((err) => {console.log(err)})
         
-    })
+    }).then(() => {
+        console.log('resizepls')
+        resizeMap()})
 }
 
 function resizeMap() {
-    var width = jsmapSVG.width.baseVal.value
-    var height = jsmapSVG.height.baseVal.value
+    width = jsmapSVG.width.baseVal.value
+    height = jsmapSVG.height.baseVal.value
     mapProjection = d3.geoAlbers().fitExtent(
         [[margins.left, margins.top], [width-margins.right,height-margins.bottom]],
         mapData)
-    var pathGenerator = d3.geoPath(mapProjection)
+    pathGenerator = d3.geoPath(mapProjection)
 
     d3.selectAll(".county").each(function(item) {
         d3.select(this)
@@ -146,20 +135,20 @@ function resizeMap() {
     })
 
     d3.selectAll(".hospital").each(function(item) {
-        size = Math.max(25, Math.min(width, height) * 0.035)
+        hosp_size = Math.max(16, Math.min(width, height) * 0.015)
         d3.select(this)
-            .attr("width", size)
-            .attr("height", size)
-            .attr("x", (d) => mapProjection(d.geometry.coordinates)[0] - size/2)
-            .attr("y", (d) => mapProjection(d.geometry.coordinates)[1] - size/2)
+            .attr("width", hosp_size)
+            .attr("height", hosp_size)
+            .attr("x", (d) => mapProjection(d.geometry.coordinates)[0] - hosp_size/2)
+            .attr("y", (d) => mapProjection(d.geometry.coordinates)[1] - hosp_size/2)
     })
 
     d3.selectAll(".disease-bubble").each(function(d) {
-        maxRadius = Math.min(height, width) * 0.03
+        maxRadius = Math.min(height, width) * 0.05
         radius_map = d3.scaleLinear([stats.min, stats.max], [0, maxRadius])
         d3.select(this)
-            .attr("cx", (d) => getCenterPos(d[0][0]).x - radius_map(d[1])/2)
-            .attr("cy", (d) => getCenterPos(d[0][0]).y - radius_map(d[1])/2)
+            .attr("cx", (d) => getCenterPos(d[0][0]).x)
+            .attr("cy", (d) => getCenterPos(d[0][0]).y)
             .attr("r", (d) => radius_map(d[1]))
             
     })
