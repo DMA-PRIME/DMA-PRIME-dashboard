@@ -6,15 +6,14 @@ var mapResizer = document.getElementById("map-resizer")
     // options
 var resetButton = document.getElementById("reset-button")
 var diseaseToggle = document.getElementById("show-diseases")
-var diseaseChecks = document.getElementsByClassName("disease-check")
 var hospitalToggle = document.getElementById("show-hospitals")
+var stack = document.getElementById("stack")
 var diseaseSwitchBranch = document.getElementById("disease-switch-branch")
     // map
 var jsmapSVG = document.getElementById("map-svg")
 var mapSVG = d3.select("#map-svg")
 var countiesGroup = d3.select("#counties")
 
-var parser = new DOMParser()
 var tooltip = null
 
 // visualization variabls
@@ -29,12 +28,18 @@ var height = jsmapSVG.height.baseVal.value
 
 var mapProjection = null
 var mapData = null
+var numDiseases = 0
+var diseaseIndexing = {}
 
-// other functions
+// helper functions
 function fixName(name) {
     newName = name.toLowerCase().split(" ").join('-')
     newName = newName.replace(/[\/']/g, '')
     return newName
+}
+
+function formatTuple(string) {
+    return string.replace(/[(' )]/g, "").split(",")
 }
 
 function getCenterPos(id) {
@@ -48,6 +53,47 @@ function getCenterPos(id) {
         return {'x': 0, 'y': 0}
     }
 }
+
+function fakeSin(angle) {
+    angle = angle % 360
+    neg = angle < 0
+    angle *= neg ? -1 : 1
+    val = 0
+    if (angle < 180) {
+        val = 1 - (0.5 * ((angle-90)*Math.PI/200)^2)
+    } else {
+        val = -1 + (0.5 * ((angle-270)*Math.PI/200)^2)
+    }
+    val *= neg ? -1 : 1
+    return val
+}
+
+function fakeCos(angle) {
+    angle = angle % 360
+    neg = angle < 0
+    angle *= neg ? -1 : 1
+    val = 0
+    if (angle < 90) {
+        val = 1 - (0.5 * ((angle)*Math.PI/200)^2)
+    } else if(angle < 270){
+        val = -1 + (0.5 * ((angle-180)*Math.PI/200)^2)
+    } else {
+        val = 1 - (0.5 * ((angle-360)*Math.PI/200)^2)
+    }
+    return val
+}
+
+function skew(orig, radius, idx, total) {
+    if(total == 1)
+        return orig
+
+    angle = (idx/total) * 360
+    orig.x += radius * fakeSin(angle)
+    orig.y += radius * fakeCos(angle)
+    return orig
+}
+
+// make items
 
 function toolTipCreator(element, event) {
     fetch("/tooltip/duck").then((response) => {
@@ -79,21 +125,6 @@ function toolTipCreator(element, event) {
         console.log(err)
     })
 }
-
-function formatTuple(string) {
-    return string.replace(/[(' )]/g, "").split(",")
-
-}
-
-
-function transform(t) {
-    console.log("t",t)
-    return function(d) {
-        console.log("d",d)
-        return "translate(" + t.apply(d) + ")"
-    }
-}
-
 
 function makeHospital(id) {
     stringy =  `<clipPath id='clipper-${id}'> \n

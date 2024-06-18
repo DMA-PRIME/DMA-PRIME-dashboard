@@ -69,6 +69,8 @@ function displayMap() {
                 stats = JSON.parse(result.stats)
                 metadata = JSON.parse(result.metadata)
 
+                numDiseases = metadata.disease.length
+
                 maxRadius = Math.min(height, width) * 0.05
                 radius_map = d3.scaleLinear([stats.min, stats.max], [0, maxRadius])
                 disease_color_map = d3.scaleOrdinal().domain(metadata.disease).range(d3.schemeSet1)
@@ -76,7 +78,7 @@ function displayMap() {
                 disease_groups = {}
                 metadata.disease.forEach(disease => {
                     disease_groups[disease] = diseaseData.append("g").attr("id", disease + "-data").attr("class", "disease-data-group")
-
+                    diseaseIndexing[disease] = Object.keys(disease_groups).length
                     // create checkbox
                     checkbranch = document.createElement("sl-tree-item")
                     check = document.createElement("sl-checkbox")
@@ -146,10 +148,11 @@ function resizeMap() {
     d3.selectAll(".disease-bubble").each(function(d) {
         maxRadius = Math.min(height, width) * 0.05
         radius_map = d3.scaleLinear([stats.min, stats.max], [0, maxRadius])
+        ogPos = getCenterPos(d[0][0])
+        newPos = stack.checked ? ogPos : skew(ogPos, maxRadius/5, diseaseIndexing[d[0][1]], numDiseases)
         d3.select(this)
-            .attr("cx", (d) => getCenterPos(d[0][0]).x)
-            .attr("cy", (d) => getCenterPos(d[0][0]).y)
+            .attr("cx", newPos.x)
+            .attr("cy", (d) => newPos.y)
             .attr("r", (d) => radius_map(d[1]))
-            
     })
 }

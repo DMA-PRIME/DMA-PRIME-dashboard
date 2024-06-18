@@ -20,7 +20,7 @@ mapZoom = d3.zoom().scaleExtent([1, 10]).on("zoom", function(e) {
             // if you don't want to scale after translation and only move via translation, use the formula:
             // (scale - 1) * ({x or y} position + {width or height}*.5) + {x or y translation}
             // return location.baseVal.value * zoom + skew
-            return ((zoom-1) * 2 * (location.baseVal.value + (dimension.baseVal.value * .5))) + skew
+            return ((zoom-1) * (location.baseVal.value + (dimension.baseVal.value * .5))) + skew
         }
         return d3.zoomIdentity.translate(blerp(zoom, this.width, this.x, xSkew), blerp(zoom, this.height, this.y, ySkew))
     })
@@ -35,6 +35,10 @@ resetButton.addEventListener("click", () => {
     mapSVG.call(mapZoom.transform, d3.zoomIdentity.translate(0, 0).scale(1))
 })
 
+stack.addEventListener("sl-change", () => {
+    resizeMap()
+})
+
 diseaseToggle.addEventListener("sl-change", () => {
     if(diseaseToggle.checked) {
         d3.select("#disease-data").raise().style("opacity", 1)
@@ -42,17 +46,6 @@ diseaseToggle.addEventListener("sl-change", () => {
         d3.select("#disease-data").lower().style("opacity", 0)
     }
 })
-
-for(var i = 0; i < diseaseChecks.length; i++) {
-    diseaseChecks[i].addEventListener("sl-change", (e) => {
-        checker = e.target
-        if(checker.checked) {
-            d3.select("#"+checker.id+"-data").raise().style("opacity", 1)
-        } else {
-            d3.select("#"+checker.id+"-data").lower().style("opacity", 0)
-        }
-    })
-}
 
 hospitalToggle.addEventListener("sl-change", () => {
     if(hospitalToggle.checked) {
