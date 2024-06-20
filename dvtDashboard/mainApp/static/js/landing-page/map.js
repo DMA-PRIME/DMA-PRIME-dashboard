@@ -66,21 +66,21 @@ function displayMap() {
                     attributes[2] = '_'+attributes[2]
                     return [attributes, item[1]]
                 })
-                stats = JSON.parse(result.stats)
-                metadata = JSON.parse(result.metadata)
+                diseaseStats = JSON.parse(result.stats)
+                diseaseMetadata = JSON.parse(result.metadata)
 
-                numDiseases = metadata.disease.length
+                numDiseases = diseaseMetadata.disease.length
 
                 maxRadius = Math.min(height, width) * 0.05
-                radiusMap = d3.scaleLinear([stats.min, stats.max], [0, maxRadius])
-                diseaseColorMap = d3.scaleOrdinal().domain(metadata.disease).range(d3.schemeSet1)
+                radiusMap = d3.scaleLinear([diseaseStats.min, diseaseStats.max], [0, maxRadius])
+                diseaseColorMap = d3.scaleOrdinal().domain(diseaseMetadata.disease).range(d3.schemeSet1)
 
                 diseaseGroups = {}
-                metadata.disease.forEach(disease => {
+                diseaseMetadata.disease.forEach(disease => {
                     diseaseGroups[disease] = diseaseData.append("g").attr("id", disease + "-data").attr("class", "disease-data-group")
                     diseaseIndexing[disease] = Object.keys(diseaseGroups).length
                     // create checkbox
-                    createDiseaseCheck(disease)
+                    createDiseaseCheck(disease, diseaseSwitchBranch)
                 })
                 data.forEach(element => {
                     temp = diseaseGroups[element[0][1]].selectAll(".disease-bubble." + element[0].join("."))
@@ -101,7 +101,60 @@ function displayMap() {
                 });
 
             }).catch((err) => {console.log(err)})
-        
+
+            d3.json("/get-hospital-zcta-data", { // covid county data
+                "method": "POST",
+                "headers": {"Content-Type": "application/json"},
+                "body": JSON.stringify({
+                    'region-name': 'all',
+                    'disease': 'all',
+                    'date': 'max',
+                })}).then((result) => { 
+                    hospitalData = mapSVG.append("g")
+                    .attr("id", "hospital-data")
+
+                    data = JSON.parse(result.data)
+                    data = Object.keys(data).map((key) => [key, data[key]])
+                    data = data.map(function(item) {
+                            attributes = formatTuple(item[0])
+                            attributes[0] = '_'+attributes[0]
+                            attributes[2] = '_'+attributes[2]
+                            return [attributes, item[1]]
+                    })
+                    hospitalStats = JSON.parse(result.stats)
+                    hospitalMetadata = JSON.parse(result.metadata)
+
+                    maxRadius = Math.min(height, width) * 0.05
+                    console.log(hospitalStats.min, hospitalStats.max)
+                    radiusMap = d3.scaleLinear([hospitalStats.min, hospitalStats.max], [0, maxRadius])
+                    diseaseColorMap = d3.scaleOrdinal().domain(hospitalMetadata.disease).range(d3.schemeSet1)
+
+                    diseaseGroups = {}
+                    hospitalMetadata.disease.forEach(disease => {
+                        diseaseGroups[disease] = hospitalData.append("g").attr("id", disease + "-hospital-data").attr("class", "hospital-data-group")
+                        diseaseIndexing[disease] = Object.keys(diseaseGroups).length
+                        // create checkbox
+                        createHospitalCheck(disease, hospitalSwitchBranch)
+                    })
+                    
+                    data.forEach(element => {
+                        temp = diseaseGroups[element[0][1]].selectAll(".hospital-bubble." + element[0].join("."))
+                        temp
+                            .data([element])
+                            .enter()
+                            .append("circle")
+                            .attr("class", (d) => {
+                                return "hospital-bubble " + d[0].join(" ")})
+                            .attr("cx", (d) => mapProjection([d[1].INTPTLON20, d[1].INTPTLAT20])[0])
+                            .attr("cy", (d) => mapProjection([d[1].INTPTLON20, d[1].INTPTLAT20])[1])
+                            .attr("r", (d) => radiusMap(d[1].count))
+                            .style("fill", d => diseaseColorMap(d[0][1]))
+                            .style("fill-opacity", .25)
+                            .style("stroke", d => diseaseColorMap(d[0][1]))
+                            .style("stroke-width", 3)
+                            .style("stroke-opacity", .3)
+                    });
+                })
     }).then(() => {
         console.log('resizepls')
         resizeMap()})
@@ -131,12 +184,25 @@ function resizeMap() {
 
     d3.selectAll(".disease-bubble").each(function(d) {
         maxRadius = Math.min(height, width) * 0.05
-        radiusMap = d3.scaleLinear([stats.min, stats.max], [0, maxRadius])
+        radiusMap = d3.scaleLinear([diseaseStats.min, diseaseStats.max], [0, maxRadius])
         ogPos = getGeoCenterPos(d[0][0])
         newPos = stack.checked ? ogPos : skew(ogPos, maxRadius/5, diseaseIndexing[d[0][1]], numDiseases)
         d3.select(this)
             .attr("cx", newPos.x)
             .attr("cy", (d) => newPos.y)
             .attr("r", (d) => radiusMap(d[1]))
+    })
+
+    d3.selectAll(".hospital-bubble").each(function(d) {
+        maxRadius = Math.min(height, width) * 0.025
+        radiusMap = d3.scaleLinear([hospitalStats.min, hospitalStats.max], [0, maxRadius])
+        mapCoords = mapProjection([d[1].INTPTLON20, d[1].INTPTLAT20])
+        ogPos = {'x': mapCoords[0], 'y': mapCoords[1]}
+        newPos = stack.checked ? ogPos : skew(ogPos, maxRadius/5, diseaseIndexing[d[0][1]], numDiseases)
+        console.log(maxRadius, [hospitalStats.min, hospitalStats.max], d[1].count)
+        d3.select(this)
+            .attr("cx", newPos.x)
+            .attr("cy", newPos.y)
+            .attr("r", (d) => radiusMap(d[1].count))
     })
 }

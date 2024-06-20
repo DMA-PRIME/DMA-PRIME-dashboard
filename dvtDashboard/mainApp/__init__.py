@@ -23,6 +23,7 @@ real_dict = {
     'zcta': {'shape': {}, 'stats': None, 'data': None}, # zip code level data
     'county': {'shape': {}, 'stats': None, 'data': None}, # county level data
     'hospital': {'coordinates':{}, 'stats': None, 'usage': None}, # from individual hospitals
+    'hospital-zcta': {'stats': None, 'data': None}, # from individual hospitals
 }
 
 def create_app(test_config=None):
@@ -99,11 +100,39 @@ def create_app(test_config=None):
         metadata = {name: vals.to_list() for (name, vals) in zip(returned_index.names, returned_index.levels)}
         return jsonify({'data': return_data.to_json(), 'stats': return_stats.to_json(), 'metadata': json.dumps(metadata)})
     
+    @app.route('/get-hospital-zcta-data', methods=['POST'])
+    def getZCTAHospitalData():
+        variables = request.get_json()
+        base_data = real_dict['hospital-zcta']['data']
+        base_stats = real_dict['hospital-zcta']['stats']
+        # cases 7-day averange,deaths 7-day averange
+        region = slice(None) if variables['region-name'] == 'all' else variables['region-name'] 
+        disease = slice(None) if variables['disease'] == 'all' else variables['disease'] 
+        date = max(base_data.index.levels[2]) if variables['date'] == 'max' else variables['date']
+        return_data = base_data.loc[(region, disease, date), ('count', 'INTPTLON20', 'INTPTLAT20')]
+        # return_data.loc[(region, disease, date), ('count')] /= base_data.loc[(region, disease, date), 'days']
+        return_stats = base_stats.loc[date]
+        returned_index = return_data.index.remove_unused_levels()
+        metadata = {name: vals.to_list() for (name, vals) in zip(returned_index.names, returned_index.levels)}
+        return jsonify({'data': return_data.to_json(orient="index"), 'stats': return_stats.to_json(), 'metadata': json.dumps(metadata)})
+    
+
+
     loadData()
 
     return app
 
 def loadData():
+    loadCountyData()
+    loadZCTAData()
+
+def getQuantiles(num_quantiles, data):
+    quantiles = []
+    for q in range(num_quantiles+1):
+        quantiles.append(np.quantile(data, q/num_quantiles))
+    return quantiles
+
+def loadCountyData():
     # county
     index_names = ['county', 'disease', 'date']
 
@@ -138,8 +167,35 @@ def loadData():
     real_dict['county']['data'] = df_multi
     real_dict['county']['stats'] = stats_df
 
-def getQuantiles(num_quantiles, data):
-    quantiles = []
-    for q in range(num_quantiles+1):
-        quantiles.append(np.quantile(data, q/num_quantiles))
-    return quantiles
+def loadZCTAData():
+    # zcta
+    index_names = ['zcta', 'disease', 'year-month']
+
+    df_multi = pd.DataFrame()
+
+    files = [
+    "mainApp/static/data/covid_hospital_zcta.csv",
+    "mainApp/static/data/flu_hospital_zcta.csv",
+    ]
+
+    for f_path in files:
+        df = pd.read_csv(f_path)
+        value_columns = df.columns.difference(index_names)
+        temp_df = pd.pivot_table(df, values=value_columns, index=index_names)
+        df_multi = pd.concat([df_multi, temp_df])
+
+    df_multi['count'] /= df_multi['days']
+
+    # zcta stats
+    columns=['min', 'q20', 'q25', 'q40', 'q50', 'q60', 'q75', 'q80', 'max']
+    quantiles = [0, .2, .25, .4, .5, .6, .75, .8, 1]
+    dates = df_multi.index.levels[2]
+
+    stats_df = pd.DataFrame(columns=columns, index=dates)
+    stats_df.sort_index(inplace=True)
+    for idx in dates:    
+        stats_df.loc[idx] = np.nanquantile(df_multi.loc[(slice(None), slice(None), idx), 'count'], quantiles)
+
+    # saving to dict
+    real_dict['hospital-zcta']['data'] = df_multi
+    real_dict['hospital-zcta']['stats'] = stats_df

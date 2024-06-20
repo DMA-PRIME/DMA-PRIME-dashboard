@@ -49,9 +49,16 @@ diseaseToggle.addEventListener("sl-change", () => {
 
 hospitalToggle.addEventListener("sl-change", () => {
     if(hospitalToggle.checked) {
-        d3.select("#hospitals").raise().style("opacity", 1)
+        d3.selectAll("#hospitals,#hospital-data").raise().style("opacity", 1)
     } else {
-        d3.select("#hospitals").lower().style("opacity", 0)
+        d3.selectAll("#hospitals, #hospital-data").lower().style("opacity", 0)
     }
 })
 
+showHospitalIcons.addEventListener("sl-change", () => {
+    if(showHospitalIcons.checked) {
+        d3.select("#hospitals").raise().style("opacity", 1)
+    } else {
+        d3.select("#hospitals").lower().style("opacity", -10)
+    }
+})

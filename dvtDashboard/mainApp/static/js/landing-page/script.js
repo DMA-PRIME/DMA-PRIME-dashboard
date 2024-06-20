@@ -8,7 +8,9 @@ var resetButton = document.getElementById("reset-button")
 var diseaseToggle = document.getElementById("show-diseases")
 var hospitalToggle = document.getElementById("show-hospitals")
 var stack = document.getElementById("stack")
+var showHospitalIcons = document.getElementById("show-hospital-icons")
 var diseaseSwitchBranch = document.getElementById("disease-switch-branch")
+var hospitalSwitchBranch = document.getElementById("hospital-switch-branch")
     // map
 var jsmapSVG = document.getElementById("map-svg")
 var mapSVG = d3.select("#map-svg")
@@ -30,6 +32,10 @@ var mapProjection = null
 var mapData = null
 var numDiseases = 0
 var diseaseIndexing = {}
+var diseaseStats = null
+var diseaseMetadata = null
+var hospitalStats = null
+var hospitalMetadata = null
 
 // helper functions
 function fixName(name) {
@@ -94,7 +100,7 @@ function skew(orig, radius, idx, total) {
 
 // make items
 
-function createDiseaseCheck(disease) {
+function createDiseaseCheck(disease, branch) {
     checkbranch = document.createElement("sl-tree-item")
     check = document.createElement("sl-checkbox")
     check.id = disease
@@ -107,7 +113,23 @@ function createDiseaseCheck(disease) {
         else { d3.select("#"+checker.id+"-data").lower().style("opacity", 0) }
     })
     checkbranch.append(check)
-    diseaseSwitchBranch.append(checkbranch)
+    branch.append(checkbranch)
+}
+
+function createHospitalCheck(disease, branch) {
+    checkbranch = document.createElement("sl-tree-item")
+    check = document.createElement("sl-checkbox")
+    check.id = disease
+    check.classList.add("disease-check")
+    check.setAttribute("checked", "")
+    check.innerHTML = disease
+    check.addEventListener("sl-change", (e) => {
+        checker = e.target
+        if(checker.checked) { d3.select("#"+checker.id+"-hospital-data").raise().style("opacity", 1) } 
+        else { d3.select("#"+checker.id+"-hospital-data").lower().style("opacity", 0) }
+    })
+    checkbranch.append(check)
+    branch.append(checkbranch)
 }
 
 function toolTipCreator(element, event) {
