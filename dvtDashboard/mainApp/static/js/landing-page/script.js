@@ -3,6 +3,7 @@
 // dom objects
     // containing divs
 var mapResizer = document.getElementById("map-resizer")
+var tooltip = document.getElementById("tooltip")
     // options
 var resetButton = document.getElementById("reset-button")
 var diseaseToggle = document.getElementById("show-diseases")
@@ -132,34 +133,19 @@ function createHospitalCheck(disease, branch) {
     branch.append(checkbranch)
 }
 
-function toolTipCreator(element, event) {
-    fetch("/tooltip/duck").then((response) => {
-        if(!response.ok) {
-            throw new Error("HTTP error" + response.status)
-        }
-        return response.text()
-    }).then((data) => {
-        tooltip = document.createElement("div")
-        tooltip.id = "tooltip"
-        tooltip.classList.add("tooltip")
-        tooltip.style.position = "absolute"
-        tooltip.style.top = (event.pageY + 10) + "px"
-        tooltip.style.left = (event.pageX + 15) + "px"
-        tooltip.innerHTML = element.id
-   
-        mapResizer.parentNode.append(tooltip)
-        element.addEventListener("mousemove", function(e) {
-            tooltip.style.top = (e.pageY + 10) + "px"
-            tooltip.style.left = (e.pageX + 15) +"px"
-        })
-        element.addEventListener("mouseleave", function(e) {
-            trash = document.getElementsByClassName("tooltip")
-            for(i = 0; i < trash.length; i++) {
-                trash[i].remove()
-            }
-        })
-    }).catch((err) => {
-        console.log(err)
+function toolTipCreator(element) {
+    tooltip = document.getElementById("tooltip")
+    tooltip.innerHTML = element.id
+    element.addEventListener("mouseenter", function(e) {
+        d3.select("#tooltip")
+            .style("opacity", 1)})
+    element.addEventListener("mousemove", function(e) {
+        tooltip.style.top = (e.pageY + 10) + "px"
+        tooltip.style.left = (e.pageX + 15) +"px"
+    })
+    element.addEventListener("mouseleave", function(e) {
+        d3.select("#tooltip")
+            .style("opacity", 0)
     })
 }
 
@@ -174,8 +160,4 @@ function makeHospital(id) {
         <path d='M5 1a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v1a1 1 0 0 1 1 1v4h3a1 1 0 0 1 1 1v7a1 1 0 0 1-1 1H1a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1h3V3a1 1 0 0 1 1-1zm2 14h2v-3H7zm3 0h1V3H5v12h1v-3a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1zm0-14H6v1h4zm2 7v7h3V8zm-8 7V8H1v7z'/>
     </g>`
     return stringy
-}
-
-function makeDiseaseBubble(disease) {
-
 }
