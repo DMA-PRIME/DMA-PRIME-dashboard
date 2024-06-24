@@ -39,9 +39,12 @@
         <sl-tree-item id="disease-switch-branch">
           <sl-switch id="show-diseases" checked><p class="options-header">Diseases</p></sl-switch>
           <sl-tree-item>
-            <sl-switch id="case-death-switch">Deaths</sl-switch>
+            <sl-radio-group id="case-death-switch" value="cases">
+              <sl-radio-button value="cases">Cases</sl-radio-button>
+              <sl-radio-button value="deaths">Deaths</sl-radio-button>
+            </sl-radio-group>
+            <!-- <sl-switch id="">Deaths</sl-switch> -->
           </sl-tree-item>
-          <sl-divider class="options-divider"></sl-divider>
           <!-- Tree items with check boxes here -->
         </sl-tree-item>
       <sl-divider class="options-divider"></sl-divider>

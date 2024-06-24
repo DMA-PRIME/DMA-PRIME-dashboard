@@ -42,6 +42,10 @@ function displayMap() {
               })
         })
 
+        mapSVG.append("g")
+                .attr("id", "legends")
+                .attr("transform", `translate(0 ${height}) scale(1 -1)`)
+                
         diseaseData = mapSVG.append("g")
             .attr("id", "disease-data")
         
@@ -78,125 +82,71 @@ function displayMap() {
                 })
 
                 // draw legend
-                mapSVG.append("g")
-                .attr("id", "legends")
-                .attr("transform", `translate(0 ${height}) scale(1 -1)`)
-                .selectAll(".legend.disease")
-                .data([[diseaseStats.max / 3, 0], [diseaseStats.max * 2/3, 1], [diseaseStats.max, 2]])
-                .enter()
-                .append("g")
-                .attr("class", "legend disease")
-                .each(function(d) {
-                    f = d3.format(".2f")
-                    em = parseFloat(getComputedStyle(this).fontSize)
-                    d3.select(this).append("circle")
-                    .attr("cx", (radiusMap(diseaseStats.max) * 2 + 10) * d[1] + radiusMap(d[0]) + width/50)
-                    .attr("cy", (d) => radiusMap(d[0]) + 2.5*em)
-                    .attr("r", radiusMap(d[0]))
-                    .style("fill", "var(--sl-color-neutral-500)")
-                    .style("stroke", "var(--sl-color-neutral-600)")
-                    
-                    d3.select(this).append("text")
-                    .attr("x", (radiusMap(diseaseStats.max) * 2 + 10) * d[1] + radiusMap(d[0]) + width/50)
-                    .attr("y", - em)
-                    .attr("text-anchor", "middle")
-                    .style("transform", "scaleY(-1)")
-                    .text(f(d[0]))
-                })
+                drawLegend(diseaseStats, radiusMap, "disease", true)
 
-                // draw bubbles
+                // setup bubbles
                 data.forEach(element => {
                     position = skew(getGeoCenterPos(element.county), maxRadius/5, diseaseIndexing[element.disease], numDiseases)
-                    console.log(element)
                     temp = diseaseGroups[element.disease].selectAll(`.disease-bubble .${element.disease} .${element["date"]} .${element.county}`)
                     temp
                         .data([element])
                         .enter()
                         .append("circle")
                         .attr("class", `disease-bubble ${element.disease} ${element["date"]} ${element.county}`)
-                        .attr("cx", position[0])
-                        .attr("cy", position[1])
-                        .attr("r", radiusMap(element.count))
                         .style("fill", diseaseColorMap(element.disease))
                         .style("stroke", diseaseColorMap(element.disease))
                 });
 
-            }).catch((err) => {console.log(err)})
+        }).catch((err) => {console.log(err)})
 
-            d3.json("/get-hospital-zcta-data", { // covid county data
-                "method": "POST",
-                "headers": {"Content-Type": "application/json"},
-                "body": JSON.stringify({
-                    'region-name': 'all',
-                    'disease': 'all',
-                    'date': 'max',
-                })}).then((result) => { 
-                    hospitalData = mapSVG.append("g")
-                    .attr("id", "hospital-data")
-                    .style("opacity", 0)
+        d3.json("/get-hospital-zcta-data", { // covid county data
+            "method": "POST",
+            "headers": {"Content-Type": "application/json"},
+            "body": JSON.stringify({
+                'region-name': 'all',
+                'disease': 'all',
+                'date': 'max',
+            })}).then((result) => { 
+                hospitalData = mapSVG.append("g")
+                .attr("id", "hospital-data")
+                .style("opacity", 0)
 
-                    data = result.data.map(function(item) {
-                        item['zcta'] = '_'+item['zcta']
-                        item['year-month'] = '_'+item['year-month']
-                        return item
-                    })
-                    hospitalStats = JSON.parse(result.stats)
-                    hospitalMetadata = JSON.parse(result.metadata)
+                data = result.data.map(function(item) {
+                    item['zcta'] = '_'+item['zcta']
+                    item['year-month'] = '_'+item['year-month']
+                    return item
+                })
+                hospitalStats = JSON.parse(result.stats)
+                hospitalMetadata = JSON.parse(result.metadata)
 
-                    maxRadius = Math.min(height, width) * 0.05
-                    radiusMap = d3.scaleLinear([0, hospitalStats.max], [0, maxRadius])
-                    diseaseColorMap = d3.scaleOrdinal().domain(hospitalMetadata.disease).range(d3.schemeSet1)
+                maxRadius = Math.min(height, width) * 0.05
+                radiusMap = d3.scaleLinear([0, hospitalStats.max], [0, maxRadius])
+                diseaseColorMap = d3.scaleOrdinal().domain(hospitalMetadata.disease).range(d3.schemeSet1)
 
-                    diseaseGroups = {}
-                    hospitalMetadata.disease.forEach(disease => {
-                        diseaseGroups[disease] = hospitalData.append("g").attr("id", disease + "-hospital-data").attr("class", "hospital-data-group").raise()
-                        diseaseIndexing[disease] = Object.keys(diseaseGroups).length
-                        // create checkbox
-                        createHospitalCheck(disease, diseaseColorMap(disease))
-                    })
-                    
-                    // draw legend
-                    d3.select("#legends")
-                    .selectAll(".legend.hospital")
-                    .data([[hospitalStats.max / 3, 0], [hospitalStats.max * 2/3, 1], [hospitalStats.max, 2]])
-                    .enter()
-                    .append("g")
-                    .attr("class", "legend hospital")
-                    .style("opacity", 0)
-                    .each(function(d) {
-                        f = d3.format(".2f")
-                        em = parseFloat(getComputedStyle(this).fontSize)
-                        d3.select(this).append("circle")
-                        .attr("cx", (radiusMap(hospitalStats.max) * 2 + 10) * d[1] + radiusMap(d[0]) + width/50)
-                        .attr("cy", (d) => radiusMap(d[0]) + 2.5*em)
-                        .attr("r", radiusMap(d[0]))
-                        .style("fill", "var(--sl-color-neutral-500)")
-                        .style("stroke", "var(--sl-color-neutral-600)")
-                        
-                        d3.select(this).append("text")
-                        .attr("x", (radiusMap(hospitalStats.max) * 2 + 10) * d[1] + radiusMap(d[0]) + width/50)
-                        .attr("y", - em)
-                        .attr("text-anchor", "middle")
-                        .style("transform", "scaleY(-1)")
-                        .text(f(d[0]))
-                    })
+                diseaseGroups = {}
+                hospitalMetadata.disease.forEach(disease => {
+                    diseaseGroups[disease] = hospitalData.append("g").attr("id", disease + "-hospital-data").attr("class", "hospital-data-group").raise()
+                    diseaseIndexing[disease] = Object.keys(diseaseGroups).length
+                    // create checkbox
+                    createHospitalCheck(disease, diseaseColorMap(disease))
+                })
+                
+                // draw legend
+                drawLegend(hospitalStats, radiusMap, "hospital", false)
 
-                    // draw bubbles
-                    data.forEach(element => {
-                        position = skew(mapProjection([element.INTPTLON20, element.INTPTLAT20]), maxRadius/5, diseaseIndexing[element.disease], numDiseases)
-                        temp = diseaseGroups[element.disease].selectAll(`.hospital-bubble .${element.disease} .${element["year-month"]} .${element.zcta}`)
-                        temp
-                            .data([element])
-                            .enter()
-                            .append("circle")
-                            .attr("class", `hospital-bubble ${element.disease} ${element["year-month"]} ${element.zcta}`)
-                            .attr("cx", position[0])
-                            .attr("cy", position[1])
-                            .attr("r", radiusMap(element.count))
-                            .style("fill", diseaseColorMap(element.disease))
-                            .style("stroke", diseaseColorMap(element.disease))
-                        });
-            })
+                // draw bubbles
+                data.forEach(element => {
+                    // position = skew(mapProjection([element.INTPTLON20, element.INTPTLAT20]), maxRadius/5, diseaseIndexing[element.disease], numDiseases)
+                    temp = diseaseGroups[element.disease].selectAll(`.hospital-bubble .${element.disease} .${element["year-month"]} .${element.zcta}`)
+                    temp
+                        .data([element])
+                        .enter()
+                        .append("circle")
+                        .attr("class", `hospital-bubble ${element.disease} ${element["year-month"]} ${element.zcta}`)
+                        .style("fill", diseaseColorMap(element.disease))
+                        .style("stroke", diseaseColorMap(element.disease))
+                    });
+        })
     }).then(() => {
         console.log('resizepls')
         resizeMap()
@@ -290,4 +240,69 @@ function resizeMap() {
     setup().then(updateMap, (error) => {
         console.log("something bad happened during map resizing")
     })    
+}
+
+
+function drawLegend(stats, radiusMap, type, show) {
+    d3.select("#legends")
+    .selectAll(`.legend.${type}`)
+    .data([[stats.max / 3, 0], [stats.max * 2/3, 1], [stats.max, 2]])
+    .enter()
+    .append("g")
+    .attr("class", `legend ${type}`)
+    .style("opacity", +show)
+    .each(function(d) {
+        f = d3.format(".2f")
+        em = parseFloat(getComputedStyle(this).fontSize)
+        d3.select(this).append("circle")
+        .attr("cx", (radiusMap(stats.max) * 2 + 10) * d[1] + radiusMap(d[0]) + width/50)
+        .attr("cy", (d) => radiusMap(d[0]) + 2.5*em)
+        .attr("r", radiusMap(d[0]))
+        .style("fill", "var(--sl-color-neutral-500)")
+        .style("stroke", "var(--sl-color-neutral-600)")
+        
+        d3.select(this).append("text")
+        .attr("x", (radiusMap(stats.max) * 2 + 10) * d[1] + radiusMap(d[0]) + width/50)
+        .attr("y", - em)
+        .attr("text-anchor", "middle")
+        .style("transform", "scaleY(-1)")
+        .text(f(d[0]))
+    })
+    resizeMap()
+}
+
+
+function drawDiseaseBubbles(dataType) {
+    d3.json("/get-real-disease-data", { // covid county data
+        "method": "POST",
+        "headers": {"Content-Type": "application/json"},
+        "body": JSON.stringify({
+            'region-size': 'county',
+            'region-name': 'all',
+            'disease': 'all',
+            'date': 'max',
+            'data-type': `${dataType} 7-day average`,
+        })}).then((result) => {
+            data = result.data.map(function(item) {
+                item.county = fixName(item.county)
+                item.date = '_'+item.date
+                return item
+            })
+            diseaseStats = JSON.parse(result.stats)
+            diseaseMetadata = JSON.parse(result.metadata)
+
+            maxRadius = Math.min(height, width) * 0.05
+            radiusMap = d3.scaleLinear([0, diseaseStats.max], [0, maxRadius])
+            diseaseColorMap = d3.scaleOrdinal().domain(diseaseMetadata.disease).range(d3.schemeSet1)
+            
+            d3.selectAll(".disease-bubble").data(data)
+            d3.select("#legends")
+                .selectAll(`.legend.disease`)
+                .data([[diseaseStats.max / 3, 0], [diseaseStats.max * 2/3, 1], [diseaseStats.max, 2]])
+                .each(function(d) {
+                    d3.select(this).select("text").text(f(d[0]))
+                })
+
+            resizeMap()
+    }).catch((err) => {console.log(err)})
 }

@@ -11,7 +11,7 @@ mapZoom = d3.zoom().scaleExtent([1, 10]).on("zoom", function(e) {
     d3.select("#hospitals").attr('transform', e.transform)
     d3.selectAll(".legend").attr('transform', d3.zoomIdentity.scale(zoom))
 
-// trying to get the hospitals to semantically zoom... works on firefox
+// trying to get the hospitals to semantically zoom... works on firefox (the bottom function)
     // d3.select("#hospitals").attr('transform', e.transform)
     // d3.selectAll(".hospital")
     //     .attr("transform", function(d) {
@@ -33,8 +33,12 @@ mapZoom = d3.zoom().scaleExtent([1, 10]).on("zoom", function(e) {
 mapSVG.call(mapZoom)
 
 mapResizer.addEventListener("sl-resize", () => {
-    console.log("ss")
     resizeMap()
+    if (document.body.clientWidth * 20 / 100 < 220) {
+        mainContent.setAttribute("position", 220 * 100 / document.body.clientWidth)
+    } else {
+        mainContent.setAttribute("position", 20)
+    }
 })
 
 resetButton.addEventListener("click", () => {
@@ -76,3 +80,8 @@ showHospitalIcons.addEventListener("sl-change", () => {
         d3.select("#hospitals").lower().style("opacity", 0)
     }
 })
+
+caseDeathSwitch.addEventListener("sl-change", () => {
+    drawDiseaseBubbles(caseDeathSwitch.value)
+})
+

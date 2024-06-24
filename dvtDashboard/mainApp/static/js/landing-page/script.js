@@ -2,12 +2,14 @@
 
 // dom objects
     // containing divs
+var mainContent = document.getElementById("main-content")
 var mapResizer = document.getElementById("map-resizer")
 var tooltip = document.getElementById("tooltip")
     // options
 var resetButton = document.getElementById("reset-button")
 var diseaseToggle = document.getElementById("show-diseases")
 var hospitalToggle = document.getElementById("show-hospitals")
+var caseDeathSwitch = document.getElementById("case-death-switch")
 var showHospitalIcons = document.getElementById("show-hospital-icons")
 var diseaseSwitchBranch = document.getElementById("disease-switch-branch")
 var hospitalSwitchBranch = document.getElementById("hospital-switch-branch")
@@ -147,22 +149,6 @@ function createHospitalCheck(disease, color) {
             background-color: `+color+`;
         }
       `)
-}
-
-function toolTipCreator(element) {
-    tooltip = document.getElementById("tooltip")
-    element.addEventListener("mouseenter", function(e) {
-        tooltip.innerHTML = element.id
-        d3.select("#tooltip")
-            .style("opacity", 1)})
-    element.addEventListener("mousemove", function(e) {
-        tooltip.style.top = (e.pageY + 10) + "px"
-        tooltip.style.left = (e.pageX + 15) +"px"
-    })
-    element.addEventListener("mouseleave", function(e) {
-        d3.select("#tooltip")
-            .style("opacity", 0)
-    })
 }
 
 function makeHospital(id) {
