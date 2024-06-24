@@ -87,14 +87,16 @@ function displayMap() {
                 // setup bubbles
                 data.forEach(element => {
                     position = skew(getGeoCenterPos(element.county), maxRadius/5, diseaseIndexing[element.disease], numDiseases)
-                    temp = diseaseGroups[element.disease].selectAll(`.disease-bubble .${element.disease} .${element["date"]} .${element.county}`)
+                    temp = diseaseGroups[element.disease].selectAll(`.disease-bubble .${element.disease} .${element.date} .${element.county}`)
                     temp
                         .data([element])
                         .enter()
                         .append("circle")
-                        .attr("class", `disease-bubble ${element.disease} ${element["date"]} ${element.county}`)
+                        .attr("class", `disease-bubble ${element.disease} ${element.date} ${element.county}`)
+                        .attr("bubble-type", "disease")
                         .style("fill", diseaseColorMap(element.disease))
                         .style("stroke", diseaseColorMap(element.disease))
+                        .each(function(d) {bubbleToolTip(d3.select(this))})
                 });
 
         }).catch((err) => {console.log(err)})
@@ -143,6 +145,7 @@ function displayMap() {
                         .enter()
                         .append("circle")
                         .attr("class", `hospital-bubble ${element.disease} ${element["year-month"]} ${element.zcta}`)
+                        .attr("bubble-type", "hospital")
                         .style("fill", diseaseColorMap(element.disease))
                         .style("stroke", diseaseColorMap(element.disease))
                     });

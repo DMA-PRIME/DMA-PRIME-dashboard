@@ -68,6 +68,17 @@ overflow-wrap: normal;
     stroke-opacity: .3;
 }
 
+/* #tooltip {
+    background-color: var(--sl-color-neutral-400);
+    opacity: .1;
+} */
+
+.tooltip.text {
+    margin: 0;
+    font-family: var(--sl-font-sans);
+    font-size: var(--sl-font-size-x-small);
+}
+
 /* The following is from  https://dev.to/lennythedev/css-gotcha-how-to-fill-page-with-a-div-270j*/
 /* override browser default */
 html,

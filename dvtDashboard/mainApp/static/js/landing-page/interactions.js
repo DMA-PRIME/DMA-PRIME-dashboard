@@ -85,3 +85,44 @@ caseDeathSwitch.addEventListener("sl-change", () => {
     drawDiseaseBubbles(caseDeathSwitch.value)
 })
 
+function toolTipCreator(element) {
+    tooltip = document.getElementById("tooltip")
+    element.addEventListener("mouseenter", function(e) {
+        tooltip.innerHTML = element.id
+        d3.select("#tooltip")
+            .style("opacity", 1)})
+    element.addEventListener("mousemove", function(e) {
+        tooltip.style.top = (e.pageY + 10) + "px"
+        tooltip.style.left = (e.pageX + 15) +"px"
+    })
+    element.addEventListener("mouseleave", function(e) {
+        d3.select("#tooltip")
+            .style("opacity", 0)
+    })
+}
+
+function bubbleToolTip(element) {
+    tooltip = document.getElementById("tooltip")
+    element.on("mouseenter", function(e) {
+        tooltip.innerHTML = ''
+        data = element.data()[0]
+        ttp = d3.select("#tooltip")
+        ttp.style("opacity", 1)
+        d3.selectAll(`.${element.attr("bubble-type")}-bubble.${data.county}.${data.date}`)
+            .each(function(d) {
+                console.log(d)
+                ttp.append("p")
+                .attr("class", "tooltip text")
+                .text(`${d.disease}: ${d.count}`)
+            })
+    })
+        
+    element.on("mousemove", function(e) {
+        tooltip.style.top = (e.pageY + 10) + "px"
+        tooltip.style.left = (e.pageX + 15) +"px"
+    })
+    element.on("mouseleave", function(e) {
+        d3.select("#tooltip")
+            .style("opacity", 0)
+    })
+}
