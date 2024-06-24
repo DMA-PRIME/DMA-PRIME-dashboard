@@ -90,32 +90,30 @@ def create_app(test_config=None):
         variables = request.get_json()
         base_data = real_dict[variables['region-size']]['data']
         base_stats = real_dict[variables['region-size']]['stats']
-        # cases 7-day averange,deaths 7-day averange
+        # cases 7-day average,deaths 7-day average
         region = slice(None) if variables['region-name'] == 'all' else variables['region-name'] 
         disease = slice(None) if variables['disease'] == 'all' else variables['disease'] 
         date = max(base_data.index.levels[2]) if variables['date'] == 'max' else variables['date']
-        return_data = base_data.loc[(region, disease, date), variables['data-type']]
+        return_data = base_data.rename({variables['data-type']: 'count'}, axis=1).loc[(region, disease, date), 'count'] 
         return_stats = base_stats.loc[(date, variables['data-type'])]
         returned_index = return_data.index.remove_unused_levels()
         metadata = {name: vals.to_list() for (name, vals) in zip(returned_index.names, returned_index.levels)}
-        return jsonify({'data': return_data.to_json(), 'stats': return_stats.to_json(), 'metadata': json.dumps(metadata)})
+        return jsonify({'data': json.loads(return_data.to_json(orient="table", index=True))['data'], 'stats': return_stats.to_json(), 'metadata': json.dumps(metadata)})
     
     @app.route('/get-hospital-zcta-data', methods=['POST'])
     def getZCTAHospitalData():
         variables = request.get_json()
         base_data = real_dict['hospital-zcta']['data']
         base_stats = real_dict['hospital-zcta']['stats']
-        # cases 7-day averange,deaths 7-day averange
+        # cases 7-day average,deaths 7-day average
         region = slice(None) if variables['region-name'] == 'all' else variables['region-name'] 
         disease = slice(None) if variables['disease'] == 'all' else variables['disease'] 
         date = max(base_data.index.levels[2]) if variables['date'] == 'max' else variables['date']
         return_data = base_data.loc[(region, disease, date), ('count', 'INTPTLON20', 'INTPTLAT20')]
-        # return_data.loc[(region, disease, date), ('count')] /= base_data.loc[(region, disease, date), 'days']
         return_stats = base_stats.loc[date]
         returned_index = return_data.index.remove_unused_levels()
         metadata = {name: vals.to_list() for (name, vals) in zip(returned_index.names, returned_index.levels)}
-        return jsonify({'data': return_data.to_json(orient="index"), 'stats': return_stats.to_json(), 'metadata': json.dumps(metadata)})
-    
+        return jsonify({'data': json.loads(return_data.to_json(orient="table", index=True))['data'], 'stats': return_stats.to_json(), 'metadata': json.dumps(metadata)})
 
 
     loadData()

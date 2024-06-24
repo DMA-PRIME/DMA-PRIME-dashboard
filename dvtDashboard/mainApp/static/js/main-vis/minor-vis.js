@@ -39,7 +39,7 @@ function lineVis(tab, signifier) {
                 return maxInRow;
             });
 
-            const chosenColumn = "cases 7-day averange"; // Change this to the column you want to display on the y-axis
+            const chosenColumn = "cases 7-day average"; // Change this to the column you want to display on the y-axis
 
             // Parse the date
             var parseDate = d3.timeParse("%Y-%m-%d");
