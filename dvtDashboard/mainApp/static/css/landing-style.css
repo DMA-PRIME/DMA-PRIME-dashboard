@@ -56,15 +56,25 @@ overflow-wrap: normal;
     position: relative;
 }
 
+path.county {
+    fill: var(--sl-color-gray-400);
+
+}
+
+.legend>circle {
+    fill: var(--sl-color-neutral-500);
+    stroke: var(--sl-color-neutral-600);
+}
+
+.legend>text {
+    text-anchor: middle;
+    transform: scaleY(-1);
+}
+
 .disease-bubble, .hospital-bubble, .legend>circle {
     fill-opacity: .25;
     stroke-width: 3;
     stroke-opacity: .3;
-}
-
-path.county {
-    fill: var(--sl-color-gray-400);
-
 }
 
 #tooltip {

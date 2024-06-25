@@ -31,11 +31,11 @@ function displayMap() {
               .append("svg")
               .attr("class", "hospital")
               .attr("id", d => fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
-              .attr("width", hospSize)
-              .attr("height", hospSize)
+              .attr("viewBox", "0 0 16 16")
               .attr("x", (d) => mapProjection(d.geometry.coordinates)[0] - hospSize)
               .attr("y", (d) => mapProjection(d.geometry.coordinates)[1] - hospSize)
-              .attr("viewBox", "0 0 16 16")
+              .attr("width", hospSize)
+              .attr("height", hospSize)
               .each(function(d) {
                 this.innerHTML = makeHospital(fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
               })
@@ -59,7 +59,7 @@ function displayMap() {
                 'data-type': 'cases 7-day average',
             })}).then((result) => {
                 data = result.data.map(function(item) {
-                    item.county = fixName(item.county)
+                    item.region = fixName(item.region)
                     item.date = '_'+item.date
                     return item
                 })
@@ -85,13 +85,13 @@ function displayMap() {
 
                 // setup bubbles
                 data.forEach(element => {
-                    position = skew(getGeoCenterPos(element.county), maxRadius/5, diseaseIndexing[element.disease], numDiseases)
-                    temp = diseaseGroups[element.disease].selectAll(`.disease-bubble .${element.disease} .${element.date} .${element.county}`)
+                    position = skew(getGeoCenterPos(element.region), maxRadius/5, diseaseIndexing[element.disease], numDiseases)
+                    temp = diseaseGroups[element.disease].selectAll(`.disease-bubble .${element.disease} .${element.date} .${element.region}`)
                     temp
                         .data([element])
                         .enter()
                         .append("circle")
-                        .attr("class", `disease-bubble ${element.disease} ${element.date} ${element.county}`)
+                        .attr("class", `disease-bubble ${element.disease} ${element.date} ${element.region}`)
                         .attr("bubble-type", "disease")
                         .style("fill", diseaseColorMap(element.disease))
                         .style("stroke", diseaseColorMap(element.disease))
@@ -114,8 +114,8 @@ function displayMap() {
                 .lower()
 
                 data = result.data.map(function(item) {
-                    item['zcta'] = '_'+item['zcta']
-                    item['year-month'] = '_'+item['year-month']
+                    item['region'] = '_'+item['region']
+                    item['date'] = '_'+item['date']
                     return item
                 })
                 hospitalStats = JSON.parse(result.stats)
@@ -139,15 +139,16 @@ function displayMap() {
                 // draw bubbles
                 data.forEach(element => {
                     // position = skew(mapProjection([element.INTPTLON20, element.INTPTLAT20]), maxRadius/5, diseaseIndexing[element.disease], numDiseases)
-                    temp = diseaseGroups[element.disease].selectAll(`.hospital-bubble .${element.disease} .${element["year-month"]} .${element.zcta}`)
+                    temp = diseaseGroups[element.disease].selectAll(`.hospital-bubble .${element.disease} .${element["date"]} .${element.region}`)
                     temp
                         .data([element])
                         .enter()
                         .append("circle")
-                        .attr("class", `hospital-bubble ${element.disease} ${element["year-month"]} ${element.zcta}`)
+                        .attr("class", `hospital-bubble ${element.disease} ${element["date"]} ${element.region}`)
                         .attr("bubble-type", "hospital")
                         .style("fill", diseaseColorMap(element.disease))
                         .style("stroke", diseaseColorMap(element.disease))
+                        .each(function(d) {bubbleToolTip(d3.select(this))})
                     });
         })
     }).then(() => {
@@ -181,16 +182,16 @@ function resizeMap() {
         d3.select("#hospitals").selectAll(".hospital").each(function(item) {
             hospSize = Math.max(16, Math.min(width, height) * 0.015)
             d3.select(this)
-                .attr("width", hospSize)
-                .attr("height", hospSize)
                 .attr("x", (d) => mapProjection(d.geometry.coordinates)[0] - hospSize/2)
                 .attr("y", (d) => mapProjection(d.geometry.coordinates)[1] - hospSize/2)
+                .attr("width", hospSize)
+                .attr("height", hospSize)
         })
     
         d3.selectAll(".disease-bubble").each(function(d) {
             maxRadius = Math.min(height, width) * 0.05
             radiusMap = d3.scaleLinear([0, diseaseStats.max], [0, maxRadius])
-            mapCoords = getGeoCenterPos(d.county)
+            mapCoords = getGeoCenterPos(d.region)
             newPos = skew(mapCoords, maxRadius/5, diseaseIndexing[d.disease], numDiseases)
             d3.select(this)
                 .attr("cx", newPos[0])
@@ -255,17 +256,8 @@ function drawLegend(stats, radiusMap, type, show) {
     .each(function(d) {
         em = parseFloat(getComputedStyle(this).fontSize)
         d3.select(this).append("circle")
-        .attr("cx", (radiusMap(stats.max) * 2 + 10) * d[1] + radiusMap(d[0]) + width/50)
-        .attr("cy", (d) => radiusMap(d[0]) + 2.5*em)
-        .attr("r", radiusMap(d[0]))
-        .style("fill", "var(--sl-color-neutral-500)")
-        .style("stroke", "var(--sl-color-neutral-600)")
         
         d3.select(this).append("text")
-        .attr("x", (radiusMap(stats.max) * 2 + 10) * d[1] + radiusMap(d[0]) + width/50)
-        .attr("y", - em)
-        .attr("text-anchor", "middle")
-        .style("transform", "scaleY(-1)")
         .text(f(d[0]))
     })
     resizeMap()
@@ -284,7 +276,7 @@ function drawDiseaseBubbles(dataType) {
             'data-type': `${dataType} 7-day average`,
         })}).then((result) => {
             data = result.data.map(function(item) {
-                item.county = fixName(item.county)
+                item.region = fixName(item.region)
                 item.date = '_'+item.date
                 return item
             })

@@ -93,7 +93,7 @@ function bubbleToolTip(element) {
         data = element.data()[0]
         ttp = d3.select(tooltip)
         ttp.style("opacity", 1).style("z-index", 1).style("background")
-        d3.selectAll(`.${element.attr("bubble-type")}-bubble.${data.county}.${data.date}`)
+        d3.selectAll(`.${element.attr("bubble-type")}-bubble.${data.region}.${data.date}`)
             .each(function(d) {
                 p = ttp.append("p")
                 .attr("class", "tooltip text")

@@ -96,7 +96,8 @@ def create_app(test_config=None):
         date = max(base_data.index.levels[2]) if variables['date'] == 'max' else variables['date']
         return_data = base_data.rename({variables['data-type']: 'count'}, axis=1).loc[(region, disease, date), 'count'] 
         return_stats = base_stats.loc[(date, variables['data-type'])]
-        returned_index = return_data.index.remove_unused_levels()
+        returned_index = return_data.index.remove_unused_levels().set_names('region', level=0)
+        return_data.index = returned_index
         metadata = {name: vals.to_list() for (name, vals) in zip(returned_index.names, returned_index.levels)}
         return jsonify({'data': json.loads(return_data.to_json(orient="table", index=True))['data'], 'stats': return_stats.to_json(), 'metadata': json.dumps(metadata)})
     
@@ -111,7 +112,8 @@ def create_app(test_config=None):
         date = max(base_data.index.levels[2]) if variables['date'] == 'max' else variables['date']
         return_data = base_data.loc[(region, disease, date), ('count', 'INTPTLON20', 'INTPTLAT20')]
         return_stats = base_stats.loc[date]
-        returned_index = return_data.index.remove_unused_levels()
+        returned_index = return_data.index.remove_unused_levels().set_names('date', level=2).set_names('region', level=0)
+        return_data.index = returned_index
         metadata = {name: vals.to_list() for (name, vals) in zip(returned_index.names, returned_index.levels)}
         return jsonify({'data': json.loads(return_data.to_json(orient="table", index=True))['data'], 'stats': return_stats.to_json(), 'metadata': json.dumps(metadata)})
 
