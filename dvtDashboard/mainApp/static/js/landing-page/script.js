@@ -4,6 +4,7 @@
     // containing divs
 var mainContent = document.getElementById("main-content")
 var mapResizer = document.getElementById("map-resizer")
+var mapDiv = document.getElementById("map-div")
 var tooltip = document.getElementById("tooltip")
     // options
 var resetButton = document.getElementById("reset-button")
@@ -18,8 +19,6 @@ var jsmapSVG = document.getElementById("map-svg")
 var mapSVG = d3.select("#map-svg")
 var countiesGroup = d3.select("#counties")
 
-var tooltip = null
-
 // visualization variabls
 margins = {
     top: 10,
@@ -27,6 +26,8 @@ margins = {
     bottom: 10,
     left: 10
 }
+var f = d3.format(".2f")
+
 var width = jsmapSVG.width.baseVal.value
 var height = jsmapSVG.height.baseVal.value
 
@@ -42,6 +43,9 @@ var hospitalMetadata = null
 var styleSheet = new CSSStyleSheet()
 document.adoptedStyleSheets = [styleSheet]
 
+tooltip.style.backgroundColor = opacify(d3.select(tooltip).style('--sl-color-neutral-300').replace(/ /g, ','), 0.5)
+tooltip.style.borderColor = opacify(d3.select(tooltip).style('--sl-color-neutral-700').replace(/ /g, ','), 0.5)
+
 // helper functions
 function fixName(name) {
     newName = name.toLowerCase().split(" ").join('-')
@@ -51,6 +55,12 @@ function fixName(name) {
 
 function formatTuple(string) {
     return string.replace(/[(' )]/g, "").split(",")
+}
+
+function opacify(color, opacity) {
+    d3color = d3.color(color)
+    d3color.opacity = opacity
+    return d3color.rgb().toString()
 }
 
 function getGeoCenterPos(id) {

@@ -59,10 +59,10 @@
     <sl-split-panel slot="end" position="100" class="fill-height fill-width hide-overflow">
       <div slot="start" class="fill-width " id="map-div">
           <sl-resize-observer id="map-resizer" class="">
-          <svg id="map-svg" class="scroll"></svg>
+          <svg id="map-svg" class="scroll fill-height fill-width"></svg>
           </sl-resize-observer>
-          <div id="tooltip" style="position:absolute;">
-
+          <div id="tooltip" >
+            <!-- set via interactions -->
           </div>          
       </div>
       <div slot="end" id="details-div">

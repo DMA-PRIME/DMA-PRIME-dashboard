@@ -19,7 +19,6 @@ function displayMap() {
               .attr("class", "county")
               .attr("id", d => fixName(d.properties.NAME))
               .attr("d", d => pathGenerator(d))
-              .style("fill", "var(--sl-color-gray-400)")
 
         hospitals = mapSVG.append("g")
               .attr("id", "hospitals")
@@ -112,6 +111,7 @@ function displayMap() {
                 hospitalData = mapSVG.append("g")
                 .attr("id", "hospital-data")
                 .style("opacity", 0)
+                .lower()
 
                 data = result.data.map(function(item) {
                     item['zcta'] = '_'+item['zcta']
@@ -198,7 +198,6 @@ function resizeMap() {
                 .attr("r", (d) => radiusMap(d.count))
 
             // updating legend stuff
-            f = d3.format(".2f")
             em = parseFloat(getComputedStyle(this).fontSize)
             d3.select("#legends")
             .attr("transform", `translate(0 ${height}) scale(1 -1)`)
@@ -224,7 +223,6 @@ function resizeMap() {
                 .attr("r", radiusMap(d.count))
 
             // updating legend stuff
-            f = d3.format(".2f")
             em = parseFloat(getComputedStyle(this).fontSize)
             d3.select("#legends")
             .attr("transform", `translate(0 ${height}) scale(1 -1)`)
@@ -255,7 +253,6 @@ function drawLegend(stats, radiusMap, type, show) {
     .attr("class", `legend ${type}`)
     .style("opacity", +show)
     .each(function(d) {
-        f = d3.format(".2f")
         em = parseFloat(getComputedStyle(this).fontSize)
         d3.select(this).append("circle")
         .attr("cx", (radiusMap(stats.max) * 2 + 10) * d[1] + radiusMap(d[0]) + width/50)
