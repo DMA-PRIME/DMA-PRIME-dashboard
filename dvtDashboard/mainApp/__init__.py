@@ -110,7 +110,7 @@ def create_app(test_config=None):
         region = slice(None) if variables['region-name'] == 'all' else variables['region-name'] 
         disease = slice(None) if variables['disease'] == 'all' else variables['disease'] 
         date = max(base_data.index.levels[2]) if variables['date'] == 'max' else variables['date']
-        return_data = base_data.loc[(region, disease, date), ('count', 'INTPTLON20', 'INTPTLAT20')]
+        return_data = base_data.loc[(region, disease, date), ('count', 'INTPTLON', 'INTPTLAT')]
         return_stats = base_stats.loc[date]
         returned_index = return_data.index.remove_unused_levels().set_names('date', level=2).set_names('region', level=0)
         return_data.index = returned_index

@@ -3,7 +3,7 @@ function displayMap() {
     width = jsmapSVG.width.baseVal.value
     height = jsmapSVG.height.baseVal.value
     
-    d3.json("../../static/data/tl_2023_sc_county.json").then(function(mapdata) {
+    d3.json("../../static/data/tl_2023_sc_county_trimmed.json").then(function(mapdata) {
         mapData = mapdata
         mapProjection = d3.geoAlbers().fitExtent(
             [[margins.left, margins.top], [width-margins.right,height-margins.bottom]],
@@ -138,7 +138,6 @@ function displayMap() {
 
                 // draw bubbles
                 data.forEach(element => {
-                    // position = skew(mapProjection([element.INTPTLON20, element.INTPTLAT20]), maxRadius/5, diseaseIndexing[element.disease], numDiseases)
                     temp = diseaseGroups[element.disease].selectAll(`.hospital-bubble .${element.disease} .${element["date"]} .${element.region}`)
                     temp
                         .data([element])
@@ -216,7 +215,7 @@ function resizeMap() {
         d3.selectAll(".hospital-bubble").each(function(d) {
             maxRadius = Math.min(height, width) * 0.025
             radiusMap = d3.scaleLinear([0, hospitalStats.max], [0, maxRadius])
-            mapCoords = mapProjection([d.INTPTLON20, d.INTPTLAT20])
+            mapCoords = mapProjection([d.INTPTLON, d.INTPTLAT])
             newPos = skew(mapCoords, maxRadius/5, diseaseIndexing[d.disease], numDiseases)
             d3.select(this)
                 .attr("cx", newPos[0])

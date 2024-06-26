@@ -10,6 +10,7 @@ Note: To automatically reload flask applications on changes, run it with the --d
 - SC county map and SC zip code map
     - data: https://www.census.gov/cgi-bin/geo/shapefiles/index.php (2023 counties and equivalent and 2023 zip code tabulation areas) - national data as shape files
     - processing: download data, unzip the folder, enter folder. Use gdal to transform the shape files to geojson files using the command `ogr2ogr -f GeoJSON [path to dest] [path to .shp file]. Use -where to filter to state level. Use -where STATEFP='45' for county and -where "CAST(ZCTA5CE20 AS SMALLINT) BETWEEN 29000 AND 29999" for zip code.
+        - Using the generated JSON files, select only the necessary fields using `ogr2ogr -f GeoJSON -select "[field1],[field2],[field_n]" [path to dest] [path to input]`. For county, select NAME, INTPTLAT, and INTPTLON. For ZCTA, select ZCTA5CE20, INTPTLAT20, and INTPTLON20. 
     - notes: It is important to be in the unzipped directory as the files accompanying the .shp file contain attribute data that is useful for visualization purposes.
 - State-zip code correlation for filtration: https://www.irs.gov/pub/irs-utl/zip_code_and_state_abbreviations.pdf
 - Hospital information https://sc-department-of-health-and-environmental-control-gis-sc-dhec.hub.arcgis.com/datasets/c6ffe3d1ca2947d3a935f797d2f0d6ec (you can download the GeoJSON directly)
@@ -17,6 +18,7 @@ Note: To automatically reload flask applications on changes, run it with the --d
 - Hospital icons: https://icons.getbootstrap.com/icons/ (hospital, hospital-fill)
 
 # References
+- GDAL: https://gdal.org/index.html
 - To fill page with content: https://dev.to/lennythedev/css-gotcha-how-to-fill-page-with-a-div-270j
 - D3: https://d3js.org/api
 - HTML/CSS/JS: https://developer.mozilla.org/en-US/docs/Web
