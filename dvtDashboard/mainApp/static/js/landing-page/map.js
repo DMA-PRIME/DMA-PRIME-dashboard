@@ -63,8 +63,8 @@ function displayMap() {
                     item.date = '_'+item.date
                     return item
                 })
-                diseaseStats = JSON.parse(result.stats)
-                diseaseMetadata = JSON.parse(result.metadata)
+                diseaseStats = result.stats
+                diseaseMetadata = result.metadata
 
                 maxRadius = Math.min(height, width) * 0.05
                 radiusMap = d3.scaleLinear([0, diseaseStats.max], [0, maxRadius])
@@ -113,8 +113,8 @@ function displayMap() {
                     item['date'] = '_'+item['date']
                     return item
                 })
-                hospitalStats = JSON.parse(result.stats)
-                hospitalMetadata = JSON.parse(result.metadata)
+                hospitalStats = result.stats
+                hospitalMetadata = result.metadata
 
                 maxRadius = Math.min(height, width) * 0.05
                 radiusMap = d3.scaleLinear([0, hospitalStats.max], [0, maxRadius])
@@ -140,7 +140,7 @@ function displayMap() {
                         .attr("bubble-type", "hospital")
                         .style("fill", diseaseColorMap(element.disease))
                         .style("stroke", diseaseColorMap(element.disease))
-                        .each(function(d) {bubbleToolTip(d3.select(this))})
+                        .each(function(d) {generalTooltip(d3.select(this))})
                     });
         })
     }).then(() => {
@@ -272,13 +272,16 @@ function drawDiseaseBubbles(dataType) {
                 item.date = '_'+item.date
                 return item
             })
-            diseaseStats = JSON.parse(result.stats)
-            diseaseMetadata = JSON.parse(result.metadata)
+            diseaseStats = result.stats
+            diseaseMetadata = result.metadata
 
             maxRadius = Math.min(height, width) * 0.05
             radiusMap = d3.scaleLinear([0, diseaseStats.max], [0, maxRadius])
             
-            d3.selectAll(".disease-bubble").data(data)
+            d3.selectAll(".disease-bubble")
+                .data(data)
+                .style("fill", (d) => diseaseColorMap(d.disease))
+                .style("stroke", (d) => diseaseColorMap(d.disease))
             d3.select("#legends")
                 .selectAll(`.legend.disease`)
                 .data([[diseaseStats.max / 3, 0], [diseaseStats.max * 2/3, 1], [diseaseStats.max, 2]])

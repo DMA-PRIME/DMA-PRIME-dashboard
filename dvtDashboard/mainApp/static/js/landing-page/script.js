@@ -27,6 +27,7 @@ margins = {
     left: 10
 }
 var f = d3.format(".2f")
+var em = parseFloat(getComputedStyle(mainContent).fontSize)
 
 var width = jsmapSVG.width.baseVal.value
 var height = jsmapSVG.height.baseVal.value

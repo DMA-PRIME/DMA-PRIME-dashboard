@@ -79,7 +79,7 @@ path.county {
 
 #tooltip {
     position:absolute;
-    padding: .375em;
+    /* padding: .25em; */
     border-width: .0625em;
     border-style: solid;
     border-radius: .25em;

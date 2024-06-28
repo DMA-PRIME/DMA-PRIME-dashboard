@@ -15,6 +15,14 @@
   <script src="https://d3js.org/d3.v7.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script>
 
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
+  <script>dayjs().format()</script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/timezone.js"></script>
+  <script>
+    dayjs.extend(window.dayjs_plugin_utc)
+    dayjs.extend(window.dayjs_plugin_timezone)
+  </script>
 </head>
 
 <body>
@@ -36,7 +44,7 @@
       </div>
       <sl-divider class="options-divider"></sl-divider>
       <sl-tree class="options-div">
-        <sl-tree-item id="disease-switch-branch">
+        <sl-tree-item id="disease-switch-branch" expanded>
           <sl-switch id="show-diseases" checked><p class="options-header">Diseases</p></sl-switch>
           <sl-tree-item>
             <sl-radio-group id="case-death-switch" value="cases">
@@ -61,8 +69,11 @@
           <sl-resize-observer id="map-resizer" class="">
           <svg id="map-svg" class="scroll fill-height fill-width"></svg>
           </sl-resize-observer>
-          <div id="tooltip" >
+          <div id="tooltip">
             <!-- set via interactions -->
+             <svg id="tooltip-svg">
+
+             </svg>
           </div>          
       </div>
       <div slot="end" id="details-div">
