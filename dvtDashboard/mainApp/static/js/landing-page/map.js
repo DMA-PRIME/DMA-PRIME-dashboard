@@ -48,7 +48,7 @@ function displayMap() {
         diseaseData = mapSVG.append("g")
             .attr("id", "disease-data")
         
-        d3.json("/get-real-disease-data", { // covid county data
+        d3.json("/get-county-disease-data", { // covid county data
             "method": "POST",
             "headers": {"Content-Type": "application/json"},
             "body": JSON.stringify({
@@ -257,7 +257,7 @@ function drawLegend(stats, radiusMap, type, show) {
 
 
 function drawDiseaseBubbles(dataType) {
-    d3.json("/get-real-disease-data", { // covid county data
+    d3.json("/get-county-disease-data", { // covid county data
         "method": "POST",
         "headers": {"Content-Type": "application/json"},
         "body": JSON.stringify({

@@ -88,37 +88,25 @@ def create_app(test_config=None):
     @app.route('/get-real-disease-data', methods=['POST'])
     def getRealDiseaseData():
         variables = request.get_json()
-        data_type = variables['data-type']
-        base_data = real_dict[variables['region-size']]['data']
-        base_stats = real_dict[variables['region-size']]['stats']
-        # cases 7-day average,deaths 7-day average
         region = slice(None) if variables['region-name'] == 'all' else variables['region-name'].split(',')
         disease = slice(None) if variables['disease'] == 'all' else variables['disease'].split(',')
-        date = slice(None) if variables['date'] == 'all' else max(base_data.index.levels[2]) if variables['date'] == 'max' else variables['date'].split(',')
-        return_data = base_data.rename({data_type: 'count'}, axis=1).loc[(region, disease, date), ['count', 'INTPTLON', 'INTPTLAT']] 
-        return_stats = base_stats.loc[(date, data_type), :]
-        returned_index = return_data.index.remove_unused_levels().set_names('region', level=0)
-        return_data.index = returned_index
-        metadata = {name: vals.to_list() for (name, vals) in zip(returned_index.names, returned_index.levels)}
+        date = slice(None) if variables['date'] == 'all' else max(real_dict['county']['data'].index.levels[2]) if variables['date'] == 'max' else variables['date'].split(',')
 
+        result =  getCountyDiseaseData(region, disease, date, variables['data-type'])
 
-# .rename({data_type: 'count'}, axis=1)
-# 
-
+        return_data = result['data'].rename({variables['data-type']: 'count'}, axis=1)
         return_data_dict = json.loads(return_data.to_json(orient="table", index=True))['data']
-        return_stats_dict = json.loads(return_stats.to_json(orient="table", index=True))['data'] if isinstance(return_stats, pd.DataFrame) else return_stats.to_dict()
-        return jsonify({'data': return_data_dict, 'stats': return_stats_dict, 'metadata': metadata})
-    
+        return_stats_dict = json.loads(result['stats'].to_json(orient="table", index=True))['data'] if isinstance(result['stats'], pd.DataFrame) else result['stats'].to_dict()
+        return jsonify({'data': return_data_dict, 'stats': return_stats_dict, 'metadata': result['metadata']})
+
     @app.route('/get-county-disease-tooltip', methods=['POST'])
     def getCountyDiseaseTooltip():
         variables = request.get_json()
 
         date = max(real_dict['county']['data'].index.levels[2]) if variables['date'] == 'max' else variables['date'].split(',')[0]
-
-
         dates = pd.date_range(end=date, periods=8, freq='7D').strftime("%Y-%m-%d").to_list()
-        # county, date, data_type
-        result =  getCountyDiseaseData(variables['county'].split(','), 'all', dates, variables['data-type'])
+
+        result =  getCountyDiseaseData(variables['county'].split(','), slice(None), dates, variables['data-type'])
 
         return_data = result['data'].rename({variables['data-type']: 'count'}, axis=1)['count']
         return_data.index = return_data.index.droplevel(0)
@@ -132,9 +120,6 @@ def create_app(test_config=None):
         # return_stats_dict = return_stats
         # return_stats_dict = json.loads(return_stats.to_json(orient="table", index=True))['data'] if isinstance(return_stats, pd.DataFrame) else return_stats.to_dict()
         return jsonify({'data': return_data_dict, 'stats': return_stats_dict, 'metadata': result['metadata']})
-    
-
-
 
     @app.route('/get-hospital-zcta-data', methods=['POST'])
     def getZCTAHospitalData():
@@ -159,9 +144,6 @@ def create_app(test_config=None):
 
 # data fetching
 def getCountyDiseaseData(region, disease, date, data_type):
-    region = slice(None) if region == 'all' else region
-    disease = slice(None) if disease == 'all' else disease
-    date = slice(None) if date == 'all' else max(base_data.index.levels[2]) if date == 'max' else date
 
     base_data = real_dict['county']['data']
     base_stats = real_dict['county']['stats']

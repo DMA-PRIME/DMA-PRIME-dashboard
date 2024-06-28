@@ -5,7 +5,6 @@ dvtDashboard contains the code for the DMA-PRIME dashboard. The flask app is fou
 
 If you don't have Flask downloaded, you can use an anaconda environment: conda create --name test pandas numpy flask. Activate the environment before running the app as specified above.
 
-
 Web components courtesy of [Shoelace](https://shoelace.style/) 
 
 Note: To automatically reload flask applications on changes, run it with the --debug flag :) (p.s. don't put it at the end, I put it before --app - `flask --debug --app mainApp run`)
