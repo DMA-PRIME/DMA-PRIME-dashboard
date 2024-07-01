@@ -6,6 +6,10 @@ var mainContent = document.getElementById("main-content")
 var mapResizer = document.getElementById("map-resizer")
 var mapDiv = document.getElementById("map-div")
 var tooltip = document.getElementById("tooltip")
+var gridContainer = document.getElementById("grid-container")
+    // nav bar
+var navBar = document.getElementById("nav-bar")
+var mapTab = document.getElementById("map-tab")
     // options
 var resetButton = document.getElementById("reset-button")
 var diseaseToggle = document.getElementById("show-diseases")
@@ -26,7 +30,7 @@ margins = {
     bottom: 10,
     left: 10
 }
-var f = d3.format(".2f")
+var f = d3.format(".0f")
 var em = parseFloat(getComputedStyle(mainContent).fontSize)
 
 var width = jsmapSVG.width.baseVal.value

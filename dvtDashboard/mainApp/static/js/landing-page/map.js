@@ -19,6 +19,8 @@ function displayMap() {
               .attr("class", "county")
               .attr("id", d => fixName(d.properties.NAME))
               .attr("d", d => pathGenerator(d))
+              .attr("stroke-width", 2)
+              .attr("stroke", "white")
 
         hospitals = mapSVG.append("g")
               .attr("id", "hospitals")

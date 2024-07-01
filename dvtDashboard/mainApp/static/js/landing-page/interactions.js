@@ -1,4 +1,11 @@
 
+navBar.addEventListener("sl-tab-show", (event) => {
+    if (event.detail.name == "main") {
+        navBar.show("map")
+    }
+})
+
+
 mapZoom = d3.zoom().scaleExtent([1, 10]).on("zoom", function(e) {
 
     zoom = e.transform.k
