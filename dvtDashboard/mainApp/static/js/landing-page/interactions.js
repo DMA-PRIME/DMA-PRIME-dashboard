@@ -16,7 +16,7 @@ mapZoom = d3.zoom().scaleExtent([1, 10]).on("zoom", function(e) {
     mapSVG.select("#disease-data").attr("transform", e.transform)
     mapSVG.select("#hospital-data").attr("transform", e.transform)
     mapSVG.select("#hospitals").attr("transform", e.transform)
-    mapSVG.selectAll(".legend").attr("transform", d3.zoomIdentity.scale(zoom))
+    mapSVG.selectAll(".legend-group").attr("transform", d3.zoomIdentity.scale(zoom))
 
 // trying to get the hospitals to semantically zoom... works on firefox (the bottom function)
     // mapSVG.select("#hospitals").attr("transform", e.transform)
@@ -54,26 +54,26 @@ resetButton.addEventListener("click", () => {
 
 diseaseToggle.addEventListener("sl-change", () => {
     if(diseaseToggle.checked) {
-        mapSVG.selectAll(".legend.disease").raise().style("opacity", 1)
         mapSVG.select("#disease-data").raise().style("opacity", 1)
         if(hospitalToggle.checked) {
             hospitalToggle.click()
         }
+        mapSVG.selectAll(".legend.disease").style("opacity", 1)
     } else {
-        mapSVG.selectAll(".legend.disease").lower().style("opacity", 0)
+        mapSVG.selectAll(".legend.disease").style("opacity", 0)
         mapSVG.select("#disease-data").lower().style("opacity", 0)
     }
 })
 
 hospitalToggle.addEventListener("sl-change", () => {
     if(hospitalToggle.checked) {
-        mapSVG.selectAll(".legend.hospital").raise().style("opacity", 1)
         mapSVG.selectAll("#hospital-data").raise().style("opacity", 1)
         if(diseaseToggle.checked) {
             diseaseToggle.click()
         }
+        mapSVG.selectAll(".legend.hospital").style("opacity", 1)
     } else {
-        mapSVG.selectAll(".legend.hospital").lower().style("opacity", 0)
+        mapSVG.selectAll(".legend.hospital").style("opacity", 0)
         mapSVG.selectAll("#hospital-data").lower().style("opacity", 0)
     }
 })
@@ -92,15 +92,21 @@ caseDeathSwitch.addEventListener("sl-change", () => {
     drawDiseaseBubbles(caseDeathSwitch.value)
 })
 
-function bubbleToolTip(element) {
+function removeTooltip(element) {
+    element.on("pointermove", null)
+    element.on("pointerleave", null)
+    element.on("pointerenter", null)
+}
+
+function bubbleTooltip(element) {
     var tooltipWidth = 200
     var tooltipHeight = 130
 
     element.on("pointermove", function(e) {
-        if((e.layerY + tooltipHeight + 25) < mapDiv.clientHeight) {
-            tooltip.style.top = (e.layerY + 25) + "px"
+        if((e.layerY + tooltipHeight + 1.5*em) < mapDiv.clientHeight) {
+            tooltip.style.top = (e.layerY + 1.5*em) + "px"
         } else {
-            tooltip.style.top = (e.layerY - tooltipHeight - 20) + "px"
+            tooltip.style.top = (e.layerY - tooltipHeight - 2.5*em) + "px"
         }
         if ((e.layerX + tooltipWidth) < mapDiv.clientWidth) {
             tooltip.style.left = e.layerX +"px"
@@ -135,7 +141,8 @@ function bubbleToolTip(element) {
             "headers": {"Content-Type": "application/json"},
             "body": JSON.stringify({
                 "county": data.region,
-                "date": data.date.substring(1),
+                "disease": getVisibleDiseases().join(","),
+                "date": data.date,
                 "data-type": `${caseDeathSwitch.value} 7-day average`,
             })}).then((result) => { 
                 
@@ -193,7 +200,6 @@ function bubbleToolTip(element) {
                 .call(d3.axisBottom(xScale).tickValues(timeDomain).tickSize(4).tickFormat(d3.timeFormat("%b %d")))
                 .selectAll("text")  
                 .style("text-anchor", "end")
-                // .attr("dx", "-.5em")
                 .attr("transform", "rotate(-30)");
     
                 ttpSVG.append("g")
@@ -204,15 +210,15 @@ function bubbleToolTip(element) {
 }
 
 
-function hospitalToolTip(element) {
+function hospitalTooltip(element) {
     var tooltipWidth = 200
     var tooltipHeight = 130
 
     element.on("pointermove", function(e) {
-        if((e.layerY + tooltipHeight + 25) < mapDiv.clientHeight) {
-            tooltip.style.top = (e.layerY + 25) + "px"
+        if((e.layerY + tooltipHeight + 1.5*em) < mapDiv.clientHeight) {
+            tooltip.style.top = (e.layerY + 1.5*em) + "px"
         } else {
-            tooltip.style.top = (e.layerY - tooltipHeight - 20) + "px"
+            tooltip.style.top = (e.layerY - tooltipHeight - 2.5*em) + "px"
         }
         if ((e.layerX + tooltipWidth) < mapDiv.clientWidth) {
             tooltip.style.left = e.layerX +"px"
@@ -242,12 +248,13 @@ function hospitalToolTip(element) {
         ttp.select("p.tooltip").text(data.region.substring(1))
         ttpSVG.node().innerHTML = ""
 
-        d3.json("/get-hospital-zcta-tooltip", { // covid county data
+        d3.json("/get-hospital-zcta-tooltip", { // hospital zcta data
             "method": "POST",
             "headers": {"Content-Type": "application/json"},
             "body": JSON.stringify({
                 "region-name": data.region.substring(1),
-                "date": data.date.substring(1),
+                "disease": getVisibleHospitalDiseases().join(","),
+                "date": data.date,
             })}).then((result) => { 
                 
                 timeDomain = []

@@ -36,21 +36,34 @@ overflow-wrap: normal;
 
 path.county {
     fill: var(--sl-color-gray-400);
-
+    stroke-width: 2px;
+    stroke: var(--sl-color-gray-700);
 }
 
 .legend>circle {
     fill: var(--sl-color-neutral-500);
     stroke: var(--sl-color-neutral-600);
+    stroke-width: 3;
+}
+
+.legend>line {
+    stroke-width: 1.5;
+    stroke: var(--sl-color-neutral-800);
 }
 
 .legend>text {
+    text-anchor: start;
+    transform: scaleY(-1);
+    fill: currentColor;
+}
+
+.legend.title {
     text-anchor: middle;
     transform: scaleY(-1);
     fill: currentColor;
 }
 
-.disease-bubble, .hospital-bubble, .legend>circle {
+.disease-bubble, .hospital-bubble {
     fill-opacity: .25;
     stroke-width: 3;
     stroke-opacity: .3;

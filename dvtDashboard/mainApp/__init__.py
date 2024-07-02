@@ -106,7 +106,7 @@ def create_app(test_config=None):
         date = max(real_dict['county']['data'].index.levels[2]) if variables['date'] == 'max' else variables['date'].split(',')[0]
         dates = pd.date_range(end=date, periods=8, freq='7D').strftime('%Y-%m-%d').to_list()
 
-        result =  getCountyDiseaseData(variables['county'].split(','), slice(None), dates, variables['data-type'])
+        result =  getCountyDiseaseData(variables['county'].split(','), variables['disease'].split(','), dates, variables['data-type'])
 
         return_data = result['data'].rename({variables['data-type']: 'count'}, axis=1)['count']
         return_data.index = return_data.index.droplevel(0)
@@ -136,7 +136,7 @@ def create_app(test_config=None):
         date = max(real_dict['hospital-zcta']['data'].index.levels[2]) if variables['date'] == 'max' else variables['date'].split(',')[0]
         dates = pd.date_range(end=date, periods=8, freq='7D').strftime('%Y-%m').to_list()
 
-        result =  getZCTAHospitalData(variables['region-name'].split(','), slice(None), dates)
+        result =  getZCTAHospitalData(variables['region-name'].split(','), variables['disease'].split(','), dates)
 
         return_data = result['data']['count']
         return_data.index = return_data.index.droplevel(0)

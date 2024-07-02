@@ -91,19 +91,25 @@
 
   </sl-split-panel>
 
-  <!-- Contains helper functions/data/constants -->
-  <script src="{{ url_for('static', filename='js/landing-page/script.js') }}"></script>
-  <!-- Functions to get the main (left) vis working -->
-  <script src="{{ url_for('static', filename='js/landing-page/map.js') }}"></script>
-  <!-- All the magic for panel resizing/vis options -->
-  <script src="{{ url_for('static', filename='js/landing-page/interactions.js') }}"></script>
-  <script>
-    displayMap();
-    addEventListener("load", () => {
-      resizeMap();
-    });
-  </script>
-    </sl-tab-panel>
+    <!-- Contains helper functions/data/constants -->
+    <script src="{{ url_for('static', filename='js/landing-page/script.js') }}"></script>
+    <!-- Functions to get the main (left) vis working -->
+    <script src="{{ url_for('static', filename='js/landing-page/map.js') }}"></script>
+    <!-- All the magic for panel resizing/vis options -->
+    <script src="{{ url_for('static', filename='js/landing-page/interactions.js') }}"></script>
+    <script>
+      displayMap();
+      addEventListener("load", () => {
+        resizeMap();
+
+        styleSheet.insertRule(`
+          #counties>path {
+            stroke: ${getComputedStyle(document.getElementsByClassName("options-header")[0]).getPropertyValue("color")}      
+          } 
+        `)
+      });
+    </script>
+  </sl-tab-panel>
 
     <sl-tab-panel name="county-grid">
       <!-- <div id="grid-container" >

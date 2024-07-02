@@ -51,7 +51,7 @@ var hospitalMetadata = null
 var styleSheet = new CSSStyleSheet()
 document.adoptedStyleSheets = [styleSheet]
 
-tooltip.style.backgroundColor = opacify(d3.select(tooltip).style("--sl-color-neutral-300").replace(/ /g, ","), 0.5)
+tooltip.style.backgroundColor = opacify(d3.select(tooltip).style("--sl-color-neutral-300").replace(/ /g, ","), 0.75)
 tooltip.style.borderColor = opacify(d3.select(tooltip).style("--sl-color-neutral-700").replace(/ /g, ","), 0.5)
 
 // helper functions
@@ -110,6 +110,27 @@ function skew(orig, radius, idx, total) {
     return orig
 }
 
+// checker of things
+function getVisibleDiseases() {
+    diseases = []
+    d3.selectAll(".disease-check").each(function(d){
+        if (this.checked) {
+            diseases.push(this.getAttribute("disease"))
+        }
+    })
+    return diseases
+}
+
+function getVisibleHospitalDiseases() {
+    diseases = []
+    d3.selectAll(".hospital-check").each(function(d){
+        if (this.checked) {
+            diseases.push(this.getAttribute("disease"))
+        }
+    })
+    return diseases
+}
+
 // make items
 
 function createDiseaseCheck(disease, color) {
@@ -117,15 +138,25 @@ function createDiseaseCheck(disease, color) {
     .append("sl-tree-item")
     .append("sl-checkbox")
     .attr("id", disease + "-check")
-    .attr("class", "disease-check ")
+    .attr("class", "disease-check")
     .attr("disease", disease)
     .attr("checked", "")
     .html(disease)
 
     check.node().addEventListener("sl-change", (e) => {
         checker = e.target
-        if(checker.checked) { d3.select("#"+checker.getAttribute("disease")+"-data").raise().style("opacity", 1) } 
-        else { d3.select("#"+checker.getAttribute("disease")+"-data").lower().style("opacity", 0) }
+        bubbleGroup = d3.select("#"+checker.getAttribute("disease")+"-data")
+        if(checker.checked) { 
+            bubbleGroup.style("opacity", 1).raise()
+            bubbleGroup.selectAll("*").each(function(d) {
+                bubbleTooltip(d3.select(this))
+            })
+        } else { 
+            bubbleGroup.style("opacity", 0).lower()
+            bubbleGroup.selectAll("*").each(function(d) {
+                removeTooltip(d3.select(this))
+            })
+        }
     })
     styleSheet.insertRule(
         "#" + disease + `-check::part(control--checked)  {
@@ -147,8 +178,18 @@ function createHospitalCheck(disease, color) {
 
     check.node().addEventListener("sl-change", (e) => {
         checker = e.target
-        if(checker.checked) { d3.select("#"+checker.getAttribute("disease")+"-hospital-data").raise().style("opacity", 1) } 
-        else { d3.select("#"+checker.getAttribute("disease")+"-hospital-data").lower().style("opacity", 0) }
+        bubbleGroup = d3.select("#"+checker.getAttribute("disease")+"-hospital-data")
+        if(checker.checked) { 
+            bubbleGroup.raise().style("opacity", 1) 
+            bubbleGroup.selectAll("*").each(function(d) {
+                hospitalTooltip(d3.select(this))
+            })
+        } else { 
+            bubbleGroup.lower().style("opacity", 0)
+            bubbleGroup.selectAll("*").each(function(d) {
+                removeTooltip(d3.select(this))
+            })
+         }
     })
     styleSheet.insertRule(
         "#hospital-" + disease + `-check::part(control--checked)  {
