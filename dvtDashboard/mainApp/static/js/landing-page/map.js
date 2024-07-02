@@ -72,6 +72,7 @@ function displayMap() {
                     diseaseGroups[disease] = diseaseData.append("g")
                         .attr("id", disease + "-data")
                         .attr("class", "disease-data-group")
+                        .attr("disease", disease)
                         .raise()
                     // create checkbox
                     createDiseaseCheck(disease, diseaseColorMap(disease))
@@ -304,12 +305,16 @@ function drawDiseaseBubbles(dataType) {
 
             // console.log(`.disease-bubble.${getVisibleDiseases().join(",.disease-bubble.")}`, mapSVG.selectAll(`.disease-bubble.${getVisibleDiseases().join(",.disease-bubble.")}`))
 
+            mapSVG.selectAll(".disease-data-group").each(function() {
+                d3.select(this)
+                    .style("opacity", +getVisibleDiseases().includes(this.getAttribute("disease")))
+            })
+
             data.forEach(function(d) {
                 mapSVG.select(`.disease-bubble.${d.disease}.${d.region}`)
                 .data([d])
                 .style("fill", (d) => diseaseColorMap(d.disease))
                 .style("stroke", (d) => diseaseColorMap(d.disease))
-                .style("opacity", (d) => +getVisibleDiseases().includes(d.disease))
             })
 
             mapSVG.select("#legends")
