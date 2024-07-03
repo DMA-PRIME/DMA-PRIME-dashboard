@@ -91,10 +91,12 @@
         resizeMap();
 
         styleSheet.insertRule(`
-          #counties>path {
+          #counties>path, #zctas>path {
             stroke: ${getComputedStyle(document.getElementsByClassName("options-header")[0]).getPropertyValue("color")}      
           } 
         `)
+
+        console.log(d3.selectAll("._29821").empty())
       });
     </script>
   </sl-tab-panel>

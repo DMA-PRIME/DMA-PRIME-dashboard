@@ -19,11 +19,14 @@ function displayMap() {
               .attr("class", "county")
               .attr("id", d => fixName(d.properties.NAME))
               .attr("d", d => pathGenerator(d))
-              .each(function(county) {temp(this, county)})
+
+        zctas = mapSVG.append("g")
+            .attr("id", "zctas")
 
         hospitals = mapSVG.append("g")
-              .attr("id", "hospitals")
+                .attr("id", "hospitals")
     }).then(() => {
+        
         hospSize = Math.max(16, Math.min(width, height) * 0.015)
         d3.json("../../static/data/Hospitals.geojson").then(function(hospdata){
               hospitals.selectAll("svg")
@@ -55,8 +58,7 @@ function displayMap() {
                 "date": "max",
             })}).then((result) => { 
                 hospitalData = mapSVG.append("g")
-                .attr("id", "hospital-data")
-                .style("opacity", +hospitalToggle.checked)
+                .attr("id", "hospital-bubbles")
 
                 data = result.data.map(function(item) {
                     item["region"] = "_"+item["region"]
@@ -89,8 +91,46 @@ function displayMap() {
                         .attr("bubble-type", "hospital")
                         .style("fill", diseaseColorMap(element.disease))
                         .style("stroke", diseaseColorMap(element.disease))
-                        .each(function(d) {hospitalTooltip(d3.select(this))})
+                        .style("opacity", 0)
+                // .each(function(d) {hospitalTooltip(d3.select(this))})
                     });
+        }).then(() => {
+            d3.json("../../static/data/tl_2023_sc_zcta_trimmed.json").then(function(mapdata) {
+                d3.json("../../static/data/zcta_county_crosswalk.json").then(function(crosswalk) {
+                    zcta = mapdata
+                    pathGenerator = d3.geoPath(mapProjection)
+        
+                    zctas.selectAll("path")
+                        .data(mapdata.features)
+                        .enter()
+                        .append("path")
+                        .attr("class", "zcta")
+                        .attr("id", d => "_"+fixName(d.properties.ZCTA5CE20))
+                        .attr("county", (d) => crosswalk[d.properties.ZCTA5CE20])
+                        .attr("d", d => pathGenerator(d))
+                        .attr("fill", "var(--sl-color-gray-500)")
+                    aggregated = []
+                    zctas.selectAll("path").each(function(data) {
+                        bubbles = mapSVG.selectAll(`._${data.properties.ZCTA5CE20}`)
+                        if (!bubbles.empty())
+                        {                    
+                            value = null ? bubbles.empty() : 0
+                            bubbles.each((d) => {
+                                value += d.count
+                            })
+                            d3.select(this).attr('count', value)
+                            aggregated.push(value)
+                        }
+                    })
+                    
+                    heatmapColorMap = d3.scaleLinear([d3.min(aggregated), d3.max(aggregated)], ['white', 'brown']).unknown("var(--sl-color-gray-600)")
+                    zctas.selectAll("path")
+                        .attr('fill', function(d) { return heatmapColorMap(d3.select(this).attr('count')) })
+                        .attr('fill-opacity', .5)
+                        .attr('stroke-opacity', .5)
+                        .each(function(data) {zoomToCounty(this, data)})
+                })
+            })
         })
     }).then(() => {
         console.log("resizepls")
@@ -130,7 +170,7 @@ function resizeMap() {
         })
 
         mapSVG.selectAll(".hospital-bubble").each(function(d) {
-            maxRadius = Math.min(height, width) * 0.025
+            maxRadius = Math.min(height, width) * 0.01
             radiusMap = d3.scaleLinear([0, hospitalStats.max], [0, maxRadius])
             mapCoords = mapProjection([d.INTPTLON, d.INTPTLAT])
             newPos = skew(mapCoords, maxRadius/5, diseaseIndexing[d.disease], numDiseases)

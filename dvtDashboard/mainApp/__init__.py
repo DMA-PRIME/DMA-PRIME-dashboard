@@ -127,6 +127,8 @@ def create_app(test_config=None):
         
         result =  getZCTAHospitalData(region, disease, date)
 
+        print(result['data'].index.levels[0])
+
         return jsonify({'data': json.loads(result['data'].to_json(orient='table', index=True))['data'], 'stats': result['stats'].to_dict(), 'metadata': result['metadata']})
 
     @app.route('/get-hospital-zcta-tooltip', methods=['POST'])
@@ -171,7 +173,7 @@ def getZCTAHospitalData(region, disease, date):
     if not isinstance(region, slice):
         for i in range(len(region)):
             region[i] = int(region[i])
-    return_data = base_data.loc[(region, disease, date), ['count', 'INTPTLON', 'INTPTLAT']] 
+    return_data = base_data.loc[(region, disease, date), ['count', 'INTPTLON', 'INTPTLAT', 'county']] 
     return_stats = base_stats.loc[date, :]
     returned_index = return_data.index.remove_unused_levels().set_names('date', level=2).set_names('region', level=0)
     return_data.index = returned_index
@@ -181,7 +183,7 @@ def getZCTAHospitalData(region, disease, date):
 # data loading
 
 def loadData():
-    loadCountyData()
+    # loadCountyData()
     loadZCTAData()
 
 def getQuantiles(num_quantiles, data):
@@ -242,8 +244,18 @@ def loadZCTAData():
         value_columns = df.columns.difference(index_names)
         temp_df = pd.pivot_table(df, values=value_columns, index=index_names)
         df_multi = pd.concat([df_multi, temp_df])
+    df_multi.sort_index(inplace=True)
 
-    df_multi['count'] /= df_multi['days']
+    print(df_multi.index.levels[0])
+    
+    df_multi["county"] = ""
+    zcta_county_crosswalk = pd.read_csv("mainApp/static/data/zcta_county_weights.csv").fillna(0)
+    one_to_one_crosswalk = zcta_county_crosswalk.groupby('GEOID_ZCTA5_20').apply(lambda zcta: zcta.loc[zcta['WEIGHT'].idxmax()])
+    for zcta in temp_df.index.levels[0]:
+        county = one_to_one_crosswalk.loc[zcta, 'County'].split(' County')[0].lower()
+        df_multi.loc[zcta, 'county'] = county
+
+    df_multi['count'] #/= df_multi['days']
 
     # zcta stats
     columns=['min', 'q20', 'q25', 'q40', 'q50', 'q60', 'q75', 'q80', 'max']

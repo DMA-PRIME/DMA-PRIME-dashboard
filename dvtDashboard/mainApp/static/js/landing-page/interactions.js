@@ -13,6 +13,7 @@ mapZoom = zoomer.on("zoom", function(e) {
     ySkew = e.transform.y
 
     mapSVG.select("#counties").attr("transform", e.transform)
+    mapSVG.select("#zctas").attr("transform", e.transform)
     mapSVG.select("#hospital-data").attr("transform", e.transform)
     mapSVG.select("#hospitals").attr("transform", e.transform)
     mapSVG.selectAll(".legend-group").attr("transform", d3.zoomIdentity.scale(zoom))
@@ -75,6 +76,26 @@ function removeTooltip(element) {
     element.on("pointermove", null)
     element.on("pointerleave", null)
     element.on("pointerenter", null)
+}
+
+function zoomToCounty(dom, data) {
+    d3.select(dom).on('click', function(event) {
+        zcta = d3.select(this)
+        county = d3.select("#"+zcta.attr("county"))
+        countyData = county.data()[0]
+
+        center = mapProjection([countyData.properties.INTPTLON, countyData.properties.INTPTLAT])        
+        dims = county.node().getBBox()
+
+        countyWidth = dims.width
+        countyHeight = dims.height
+        scale = Math.min(5, Math.min(width/countyWidth, height/countyHeight)-1.25)
+
+        selection = mapSVG.selectAll("#counties, #hospital-data, #hospitals, .legend-group")
+        mapSVG.transition().duration(750).call(zoomer.transform, new d3.ZoomTransform(scale, width/2 - center[0]*scale, height/2 - center[1]*scale))
+
+    })
+    mapSVG.call(mapZoom)
 }
 
 function hospitalTooltip(element) {

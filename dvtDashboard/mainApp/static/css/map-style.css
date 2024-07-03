@@ -35,9 +35,12 @@ overflow-wrap: normal;
 }
 
 path.county {
-    fill: var(--sl-color-gray-400);
+    fill: var(--sl-color-gray-300);
     stroke-width: 2px;
-    stroke: var(--sl-color-gray-700);
+}
+
+path.zcta {
+    stroke-width: 1px;
 }
 
 .legend>circle {
