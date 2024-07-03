@@ -175,3 +175,24 @@ function makeHospital(id) {
     </g>`
     return stringy
 }
+
+
+
+
+function temp(dom, data) {
+    d3.select(dom).on('click', function(event) {
+        console.log("click")
+        center = mapProjection([data.properties.INTPTLON, data.properties.INTPTLAT])
+        
+        dims = dom.getBBox()
+
+        countyWidth = dims.width
+        countyHeight = dims.height
+        scale = Math.min(width/countyWidth, height/countyHeight) - 1
+        
+        selection = mapSVG.selectAll("#counties, #hospital-data, #hospitals, .legend-group")
+        mapSVG.transition().duration(750).call(zoomer.transform, new d3.ZoomTransform(scale, width/2 - center[0]*scale, height/2 - center[1]*scale))
+    })
+mapSVG.call(mapZoom)
+
+}

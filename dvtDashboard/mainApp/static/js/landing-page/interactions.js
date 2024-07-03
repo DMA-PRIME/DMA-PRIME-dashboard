@@ -5,15 +5,14 @@ navBar.addEventListener("sl-tab-show", (event) => {
     }
 })
 
-
-mapZoom = d3.zoom().scaleExtent([1, 10]).on("zoom", function(e) {
+zoomer = d3.zoom().scaleExtent([1, 10])
+mapZoom = zoomer.on("zoom", function(e) {
 
     zoom = e.transform.k
     xSkew = e.transform.x
     ySkew = e.transform.y
 
     mapSVG.select("#counties").attr("transform", e.transform)
-    mapSVG.select("#disease-data").attr("transform", e.transform)
     mapSVG.select("#hospital-data").attr("transform", e.transform)
     mapSVG.select("#hospitals").attr("transform", e.transform)
     mapSVG.selectAll(".legend-group").attr("transform", d3.zoomIdentity.scale(zoom))

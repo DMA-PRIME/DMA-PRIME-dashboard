@@ -19,6 +19,7 @@ function displayMap() {
               .attr("class", "county")
               .attr("id", d => fixName(d.properties.NAME))
               .attr("d", d => pathGenerator(d))
+              .each(function(county) {temp(this, county)})
 
         hospitals = mapSVG.append("g")
               .attr("id", "hospitals")
