@@ -9,10 +9,12 @@ mapAggregationSwitch.addEventListener("sl-change", (event) => {
     if(mapAggregationSwitch.value == "aggregated") {
         reset()
         mapSVG.selectAll(".zcta").transition().duration(750).style('fill', function(d) { return heatmapColorMap(d3.select(this).attr('count')) })
+        mapSVG.selectAll("#color-legend").style("opacity", 1)
         highlightCounty(focusCounty)
     } else {
         reset()
         mapSVG.selectAll(".zcta").transition().duration(750).style("fill", "var(--sl-color-gray-800)")
+        mapSVG.selectAll("#color-legend").style("opacity", 0)
         highlightCounty(focusCounty)
     }
 })
@@ -28,8 +30,8 @@ mapZoom = zoomer.on("zoom", function(e) {
     mapSVG.select("#zctas").attr("transform", e.transform)
     mapSVG.select("#hospital-bubbles").attr("transform", e.transform)
     mapSVG.select("#hospitals").attr("transform", e.transform)
-    mapSVG.selectAll(".legend-group").attr("transform", d3.zoomIdentity.scale(zoom))
-
+    mapSVG.selectAll("#hospital-legend-innards").attr("transform", d3.zoomIdentity.scale(zoom))
+    mapSVG.select("#color-legend").attr("transform", d3.zoomIdentity)
 // trying to get the hospitals to semantically zoom... works on firefox (the bottom function)
     // mapSVG.select("#hospitals").attr("transform", e.transform)
     // mapSVG.selectAll(".hospital")
@@ -67,9 +69,9 @@ resetButton.addEventListener("click", () => {
 hospitalToggle.addEventListener("sl-change", () => {
     if(hospitalToggle.checked) {
         mapSVG.selectAll("#hospital-data").raise().style("opacity", 1)
-        mapSVG.selectAll(".legend.hospital").style("opacity", 1)
+        mapSVG.selectAll("#hospital-legend").style("opacity", 1)
     } else {
-        mapSVG.selectAll(".legend.hospital").style("opacity", 0)
+        mapSVG.selectAll("#hospital-legend").style("opacity", 0)
         mapSVG.selectAll("#hospital-data").lower().style("opacity", 0)
     }
 })
@@ -107,7 +109,7 @@ function zoomToCounty(dom, data) {
     
             selection = mapSVG.selectAll("#counties, #hospital-data, #hospitals, .legend-group")
             mapSVG.transition().duration(750).call(zoomer.transform, new d3.ZoomTransform(scale, width/2 - center[0]*scale, height/2 - center[1]*scale))
-            mapSVG.select("#legends").style("opacity", 1)
+            mapSVG.select("#hospital-legend").style("opacity", 1)
     
             highlightCounty(focusCounty)
         }
@@ -141,7 +143,7 @@ function reset() {
         .style("opacity", +(mapAggregationSwitch.value != "aggregated"))
         .style("fill", (d) => diseaseColorMap(d.disease))
         .style("stroke", (d) => diseaseColorMap(d.disease))
-    mapSVG.select("#legends").style("opacity", +(mapAggregationSwitch.value != "aggregated" || focusCounty != null))
+    mapSVG.select("#hospital-legend").style("opacity", +(mapAggregationSwitch.value != "aggregated" || focusCounty != null))
 }
 
 function removeTooltip(element) {

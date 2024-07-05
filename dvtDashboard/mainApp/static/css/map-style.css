@@ -60,7 +60,7 @@ path.zcta {
     stroke-width: 1px;
 }
 
-#legend-background {
+.legend-background {
     fill: var(--sl-color-neutral-50);
     fill-opacity: .5;
 }
