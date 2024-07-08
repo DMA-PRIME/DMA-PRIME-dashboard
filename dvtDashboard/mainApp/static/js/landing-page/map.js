@@ -20,7 +20,8 @@ function displayMap() {
               .attr("class", "county")
               .attr("id", d => fixName(d.properties.NAME))
               .attr("d", d => pathGenerator(d))
-              .attr("fill", "none")
+              .attr("fill", "var(--sl-color-gray-300)")
+              .attr("fill-opacity", 0)
 
         zctas = mapSVG.append("g")
             .attr("id", "zctas")
@@ -132,7 +133,7 @@ function displayMap() {
                         .attr("id", d => "_"+fixName(d.properties.ZCTA5CE20))
                         .attr("county", (d) => crosswalk[d.properties.ZCTA5CE20])
                         .attr("d", d => pathGenerator(d))
-                        .attr("fill", "var(--sl-color-gray-500)")
+
                     aggregated = []
                     zctas.selectAll("path").each(function(data) {
                         bubbles = mapSVG.selectAll(`._${data.properties.ZCTA5CE20}`)
@@ -151,6 +152,7 @@ function displayMap() {
                     zctas.selectAll("path")
                         .style('fill', function(d) { return heatmapColorMap(d3.select(this).attr("count")) })
                         .each(function(data) {zoomToCounty(this, data)})
+
 
 
                     legendWidth = Math.max(width/3, 300)
@@ -183,7 +185,7 @@ function displayMap() {
                         .call(d3.axisBottom(d3.scaleLinear(heatmapColorMap.domain(), [0, legendWidth])))
 
                     colorLegendContent.append("text")
-                        .text("Monthly Hospitalization for All Diseases")
+                        .text("Aggregated Monthly Hospitalizations")
       
                     resizeMap()
                 })

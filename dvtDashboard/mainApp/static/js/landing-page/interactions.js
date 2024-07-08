@@ -118,8 +118,9 @@ function highlightCounty(county) {
     if (focusCounty == null) {
         reset()
     } else {
-        mapSVG.select("#counties").transition().duration(750).style("fill-opacity", .5)
-        mapSVG.select("#"+county).transition().duration(750).style("fill", "none")
+        console.log("I am here")
+        mapSVG.selectAll(".county").transition().duration(750).style("fill-opacity", .5)
+        mapSVG.select("#"+county).transition().duration(750).style("fill-opacity", .0)
         mapSVG.select("#legends").raise()
         if (mapAggregationSwitch.value != "aggregated") {
             mapSVG.selectAll(".hospital-bubble").transition().duration(750)
@@ -134,8 +135,7 @@ function highlightCounty(county) {
 }
 
 function reset() {
-    mapSVG.select("#counties").transition().duration(750).style("fill-opacity", 0)
-    mapSVG.selectAll(".county").transition().duration(750).style("fill", "var(--sl-color-gray-300)")
+    mapSVG.selectAll(".county").transition().duration(750).style("fill-opacity", 0)
     mapSVG.selectAll(".hospital-bubble")
         .style("opacity", +(mapAggregationSwitch.value != "aggregated"))
         .style("fill", (d) => diseaseColorMap(d.disease))

@@ -49,8 +49,8 @@
       <sl-divider class="options-divider"></sl-divider>
       <sl-tree class="options-div">
       <sl-tree-item id="hospital-switch-branch" expanded>
-        <sl-switch id="show-hospitals" checked><p class="options-header">Hospitals</p></sl-switch>
-        <sl-tree-item>Hospitals shows the monthly count of the current month's hospitalizations due to the below diseases.</sl-tree-item>
+        <sl-switch id="show-hospitals" checked><p class="options-header">Hospitalizations</p></sl-switch>
+        <sl-tree-item>Monthly count of hospitalizations due to the below diseases.</sl-tree-item>
       </sl-tree-item>
       <sl-tree-item><sl-checkbox id="show-hospital-icons" checked>Hospital Icons</sl-checkbox></sl-tree-item>
       </sl-tree>
@@ -90,11 +90,11 @@
       addEventListener("load", () => {
         resizeMap();
 
-        styleSheet.insertRule(`
-          #counties>path, #zctas>path {
-            stroke: ${getComputedStyle(document.getElementsByClassName("options-header")[0]).getPropertyValue("color")}      
-          } 
-        `)
+        // styleSheet.insertRule(`
+        //   #counties>path, #zctas>path {
+        //     stroke: ${getComputedStyle(document.getElementsByClassName("options-header")[0]).getPropertyValue("color")}      
+        //   } 
+        // `)
         mapSVG.call(mapZoom)
 
       });

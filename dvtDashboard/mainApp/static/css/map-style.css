@@ -52,11 +52,16 @@ overflow-wrap: normal;
 }
 
 path.county {
-    stroke-width: 2px;
+    stroke-width: 1;
+    stroke: black;
+
 }
 
 path.zcta {
-    stroke-width: 1px;
+    stroke-width: 0.2;
+    stroke: black;
+    stroke-linejoin: round;
+
 }
 
 .legend-background {
