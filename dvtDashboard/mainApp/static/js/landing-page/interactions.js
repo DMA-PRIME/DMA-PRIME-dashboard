@@ -6,16 +6,17 @@ navBar.addEventListener("sl-tab-show", (event) => {
 })
 
 mapAggregationSwitch.addEventListener("sl-change", (event) => {
+    reset()
+    mapSVG.select("#color-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value == "aggregated" && hospitalToggle.checked))
+    mapSVG.select("#hospital-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value != "aggregated" && hospitalToggle.checked))
+    highlightCounty(focusCounty)
+    
     if(mapAggregationSwitch.value == "aggregated") {
         reset()
-        mapSVG.selectAll(".zcta").transition().duration(750).style('fill', function(d) { return heatmapColorMap(d3.select(this).attr('count')) })
-        mapSVG.selectAll("#color-legend").style("opacity", 1)
-        highlightCounty(focusCounty)
+        mapSVG.selectAll(".zcta").style('fill', function(d) { return heatmapColorMap(d3.select(this).attr('count')) })
     } else {
         reset()
-        mapSVG.selectAll(".zcta").transition().duration(750).style("fill", "var(--sl-color-gray-800)")
-        mapSVG.selectAll("#color-legend").style("opacity", 0)
-        highlightCounty(focusCounty)
+        mapSVG.selectAll(".zcta").style("fill", "var(--sl-color-gray-800)")
     }
 })
 
@@ -62,11 +63,16 @@ resetButton.addEventListener("click", () => {
 
 hospitalToggle.addEventListener("sl-change", () => {
     if(hospitalToggle.checked) {
-        mapSVG.selectAll("#hospital-data").raise().style("opacity", 1)
-        mapSVG.selectAll("#hospital-legend").style("opacity", 1)
-    } else {
-        mapSVG.selectAll("#hospital-legend").style("opacity", 0)
-        mapSVG.selectAll("#hospital-data").lower().style("opacity", 0)
+        mapSVG.selectAll("#hospital-bubbles, #zctas").transition().duration(500).style("opacity", 1)
+        mapSVG.selectAll("#color-legend").transition().duration(500).style("opacity", +(mapAggregationSwitch.value == "aggregated"))
+        mapSVG.selectAll("#hospital-legend").transition().duration(500).style("opacity", +(mapAggregationSwitch.value != "aggregated"))
+        mapSVG.selectAll("#hospital-bubbles, #hospital-legend, #color-legend, #zctas")
+            .style("pointer-events", "auto")
+    } else { 
+        mapSVG.selectAll("#hospital-bubbles, #hospital-legend, #color-legend, #zctas")
+            .transition().duration(500)
+            .style("opacity", 0)
+            .style("pointer-events", "none")
     }
 })
 
@@ -129,11 +135,10 @@ function highlightCounty(county) {
 
 function reset() {
     mapSVG.selectAll(".county").transition().duration(750).style("fill-opacity", 0)
-    mapSVG.selectAll(".hospital-bubble")
+    mapSVG.selectAll(".hospital-bubble").transition().duration(750)
         .style("opacity", +(mapAggregationSwitch.value != "aggregated"))
         .style("fill", (d) => diseaseColorMap(d.disease))
         .style("stroke", (d) => diseaseColorMap(d.disease))
-    mapSVG.select("#hospital-legend").style("opacity", +(mapAggregationSwitch.value != "aggregated"))
 }
 
 function removeTooltip(element) {
