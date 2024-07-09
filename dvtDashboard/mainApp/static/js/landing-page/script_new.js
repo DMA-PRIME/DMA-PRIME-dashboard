@@ -100,7 +100,7 @@ const colors = ["#2E1E30", "#331427", "#A20D32", "#FF073A"];
 const quartiles = [0, 4000, 40000, 180000];
 var colorMap = d3.scaleLinear().domain(quartiles).range(colors)
 
-var margin = { top: 25, right: 0, bottom: 1, left: 0 },
+var margin = { top: em, right: 0, bottom: 0.5*em, left: 0 },
     gridItemWidth = 205 - margin.left - margin.right,
     gridItemHeight = 120 - margin.top - margin.bottom;
 
@@ -151,11 +151,14 @@ function createBaseObjects() {
         // link to county-vis w/ text
         svg
             .append("text")
-            .attr("x", gridItemWidth / 2 - 55)
-            .attr("y", 18)
-            .attr("text-anchor", "middle")
+            .attr("class", "county-label")
+            .attr("x", 0.5*em)
+            .attr("y", em)
+            // .attr("text-anchor", "middle")
             .text(countyName)
             .style("fill", "white")
+            .style("font-size", "var(--sl-font-size-small)")
+
 
         // max value blue circle signifier
         svg
@@ -170,15 +173,20 @@ function createBaseObjects() {
             .attr("class", "pointlabel")
             .attr("text-anchor", "middle")
             .style("fill", "white")
+            .style("font-size", "var(--sl-font-size-2x-small)")
             .style("opacity", 0);
 
         // adding total number of cases for county for that day
         svg
             .append("text")
             .attr("class", "totnumb")
-            .attr("x", gridItemWidth / 2 - 60)
-            .attr("y", 35) // Adjust the y-coordinate to position it below the existing text
+            .attr("x", function(d) {
+                bbox = svg.select(".county-label").node().getBBox()
+                return bbox.x + bbox.width/2
+            })
+            .attr("y", 2*em) // Adjust the y-coordinate to position it below the existing text
             .attr("text-anchor", "middle")
+            .style("font-size", "var(--sl-font-size-x-small)")
             .style("fill", "white")
     });
 
@@ -268,7 +276,7 @@ function updateCountyGraphs(type) {
                 .scaleLinear()
                 .domain([0, fixedMaxYValue])
                 .nice()
-                .range([gridItemHeight, 0]);
+                .range([gridItemHeight + margin.top - margin.bottom, margin.top]);
 
             const line = d3.line()
                 .defined((d) => !isNaN(d[chosenColumn]))
