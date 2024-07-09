@@ -244,6 +244,7 @@ function hospitalTooltip(element) {
                 line = d3.line()
                     .x((d) => xScale(d.date))
                     .y((d) => yScale(d.count))
+                    .curve(d3.curveMonotoneX)
 
                 ttpSVG.append("line").attr("id", "tooltip-prediction-separator")
                 
@@ -265,6 +266,7 @@ function hospitalTooltip(element) {
                         .attr("d", line(data))
                         .attr("stroke", diseaseColorMap(disease))
                         .attr("fill", "none")
+                        .attr("stroke-width", 2)
     
                     historicalGroup.selectAll("circle").data(data)
                     .enter()
@@ -288,6 +290,7 @@ function hospitalTooltip(element) {
                         .attr("stroke", diseaseColorMap(disease))
                         .attr("stroke-dasharray", "5,5")
                         .attr("fill", "none")
+                        .attr("stroke-width", 2)
     
                     predictiveGroup.selectAll("circle").data(predictiveData.slice(1))
                     .enter()
