@@ -121,13 +121,11 @@ def create_app(test_config=None):
     @app.route('/get-hospital-zcta-data', methods=['POST'])
     def returnZCTAHospitalData():
         variables = request.get_json()
-        region = slice(None) if variables['region-name'] == 'all' else variables['region-name'].split('-')
-        disease = slice(None) if variables['disease'] == 'all' else variables['disease'].split('-') 
-        date = max(real_dict['hospital-zcta']['data'].index.levels[2]) if variables['date'] == 'max' else variables['date'].split('-')
+        region = slice(None) if variables['region-name'] == 'all' else variables['region-name'].split(',')
+        disease = slice(None) if variables['disease'] == 'all' else variables['disease'].split(',') 
+        date = [max(real_dict['hospital-zcta']['data'].index.levels[2])] if variables['date'] == 'max' else variables['date'].split(',')
         
         result =  getZCTAHospitalData(region, disease, date)
-
-        print(result['data'].index.levels[0])
 
         return jsonify({'data': json.loads(result['data'].to_json(orient='table', index=True))['data'], 'stats': result['stats'].to_dict(), 'metadata': result['metadata']})
 
@@ -136,19 +134,31 @@ def create_app(test_config=None):
         variables = request.get_json()
 
         date = max(real_dict['hospital-zcta']['data'].index.levels[2]) if variables['date'] == 'max' else variables['date'].split(',')[0]
-        dates = pd.date_range(end=date, periods=8, freq='7D').strftime('%Y-%m').to_list()
+        dates = pd.date_range(end=date, periods=12, freq='MS').strftime('%Y-%m').to_list()
 
-        result =  getZCTAHospitalData(variables['region-name'].split(','), variables['disease'].split(','), dates)
+        pred_dates = (pd.Timestamp(date) + pd.DateOffset(months=1)).strftime('%Y-%m')
 
-        return_data = result['data']['count']
-        return_data.index = return_data.index.droplevel(0)
-        return_data_dict = {}
-        for disease in return_data.index.levels[0]:
-            return_data_dict[disease] = return_data.xs(disease).to_dict()
+        historical_result = getZCTAHospitalData(variables['region-name'].split(','), variables['disease'].split(','), dates)
 
-        return_stats_dict = {'min': return_data.min(axis=None), 'max': return_data.max(axis=None)}
+        historical_return_data = historical_result['data']['count']
+        historical_return_data.index = historical_return_data.index.droplevel(0)
+        historical_return_data_dict = {}
+        for disease in historical_return_data.index.levels[0]:
+            historical_return_data_dict[disease] = historical_return_data.xs(disease).to_dict()
 
-        return jsonify({'data': return_data_dict, 'stats': return_stats_dict, 'metadata': result['metadata']})
+        predictive_result = getZCTAHospitalData(variables['region-name'].split(','), variables['disease'].split(','), pred_dates)
+        predictive_return_data = predictive_result['data']['count']
+        predictive_return_data.index = predictive_return_data.index.droplevel(0)
+        predictive_return_data_dict = {}
+        for disease in predictive_return_data.index.levels[0]:
+            predictive_return_data_dict[disease] = predictive_return_data.xs(disease).to_dict()
+
+        return_stats_dict = {'min': min(historical_return_data.min(axis=None), predictive_return_data.min(axis=None)), 'max': max(historical_return_data.max(axis=None), predictive_return_data.max(axis=None))}
+        metadata = historical_result['metadata']
+        metadata['date'] = {'historical': historical_result['metadata']['date'], 'predictive': predictive_result['metadata']['date']}
+        return_data = {'data': {'historical': historical_return_data_dict, 'predictive': predictive_return_data_dict}, 'stats': return_stats_dict, 'metadata': metadata}
+
+        return jsonify(return_data)
 
 
     loadData()
@@ -245,8 +255,6 @@ def loadZCTAData():
         temp_df = pd.pivot_table(df, values=value_columns, index=index_names)
         df_multi = pd.concat([df_multi, temp_df])
     df_multi.sort_index(inplace=True)
-
-    print(df_multi.index.levels[0])
     
     df_multi["county"] = ""
     zcta_county_crosswalk = pd.read_csv("mainApp/static/data/zcta_county_weights.csv").fillna(0)

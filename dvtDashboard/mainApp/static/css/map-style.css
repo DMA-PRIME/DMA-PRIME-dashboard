@@ -125,3 +125,13 @@ p.tooltip {
     font-size: var(--sl-font-size-x-small);
     white-space: nowrap;
 }
+
+#tooltip-prediction-separator {
+    stroke-width: 1;
+    stroke: black;
+}
+
+#tooltip-prediction-highlighter {
+    opacity: .25;
+    fill: var(--sl-color-gray-600);
+}

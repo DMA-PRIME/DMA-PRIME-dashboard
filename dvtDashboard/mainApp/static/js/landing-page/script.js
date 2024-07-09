@@ -52,7 +52,7 @@ var focusCounty = null
 var styleSheet = new CSSStyleSheet()
 document.adoptedStyleSheets = [styleSheet]
 
-tooltip.style.backgroundColor = opacify(d3.select(tooltip).style("--sl-color-neutral-300").replace(/ /g, ","), 0.75)
+tooltip.style.backgroundColor = opacify(d3.select(tooltip).style("--sl-color-neutral-500").replace(/ /g, ","), 0.75)
 tooltip.style.borderColor = opacify(d3.select(tooltip).style("--sl-color-neutral-700").replace(/ /g, ","), 0.5)
 
 // helper functions
