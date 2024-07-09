@@ -83,6 +83,10 @@ path.zcta {
 .legend>text {
     text-anchor: end;
     transform: scaleY(-1);
+}
+
+.legend>text, .tick>text {
+    font-size: var(--sl-font-size-x-small);
     fill: currentColor;
 }
 
@@ -121,7 +125,6 @@ p.tooltip {
 .tooltip.text {
     margin: 0;
     padding: 0;
-    /* font-family: var(--sl-font-sans); */
     font-size: var(--sl-font-size-x-small);
     white-space: nowrap;
 }
