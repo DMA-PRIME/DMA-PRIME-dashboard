@@ -220,8 +220,22 @@ function hospitalTooltip(element) {
                 }
                 temp.remove()
 
-                yScale.range([tooltipHeight - margins.bottom, margins.top])
                 xScale = d3.scaleUtc([fullTimeDomain[0], fullTimeDomain[fullTimeDomain.length - 1]], [margins.left, tooltipWidth - margins.right]) 
+                yScale.range([tooltipHeight - margins.bottom, margins.top])
+                pointCoords = function(datum, yType="count") {
+                    // this is temporary to generate max and min
+                    // to use real data, take out y = datum... and the two if statements, and use yScale(datum[yType])
+                    y = datum["count"]
+                    if (yType == "max") {
+                        y *= 1.25
+                    }
+                    if (yType == "min") {
+                        y /= 1.25
+                    }
+                    coords = [xScale(datum.date), yScale(y)] // yScale(datum[yType])]
+
+                    return coords
+                }
                 line = d3.line()
                     .x((d) => xScale(d.date))
                     .y((d) => yScale(d.count))
@@ -274,12 +288,26 @@ function hospitalTooltip(element) {
                         .attr("stroke-width", 2)
     
                     predictiveGroup.selectAll("circle").data(predictiveData.slice(1))
-                    .enter()
-                    .append("circle")
-                    .attr("r", 3)
-                    .attr("cx", (d) => xScale(d.date))
-                    .attr("cy", (d) => yScale(d.count))
-                    .attr("fill", diseaseColorMap(disease))
+                        .enter()
+                        .append("circle")
+                        .attr("r", 3)
+                        .attr("cx", (d) => xScale(d.date))
+                        .attr("cy", (d) => yScale(d.count))
+                        .attr("fill", diseaseColorMap(disease))
+
+                    predictiveAreaBackground = [pointCoords(predictiveData[0])]
+                    predictiveData.slice(1).forEach(function(point) {
+                        predictiveAreaBackground.push(pointCoords(point, "max"))
+                        predictiveAreaBackground = [pointCoords(point, "min")].concat(predictiveAreaBackground)
+                    })
+
+                    predictiveGroup 
+                        .append("polygon")
+                        .attr("class", "prediction-background")
+                        .attr("points", predictiveAreaBackground.join(' '))
+                        .style("fill", diseaseColorMap(disease))
+                        .style("opacity", 0.25)
+
 
                 })
 
