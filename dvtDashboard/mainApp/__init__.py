@@ -50,11 +50,15 @@ def create_app(test_config=None):
         pass
 
 
-    # a simple page that says hello
+    # landing page
     @app.route('/')
     def index():
         return render_template('index.html')
     
+    @app.route('/model-exploration')
+    def modelExploration():
+        return render_template('main-vis.html')
+
     @app.route('/hospital/<id>')
     def getHospitalHTML(id):
         return render_template('subtemplates/hospital.html', id=id)

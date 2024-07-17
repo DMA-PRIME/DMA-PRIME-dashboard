@@ -38,6 +38,10 @@ sl-tab-panel::part(base) {
   padding:0;
 }
 
+#prediction-modelling-button-link {
+  margin: auto var(--sl-spacing-small) auto auto;
+  display: block;
+}
 
 /* The following is from  https://dev.to/lennythedev/css-gotcha-how-to-fill-page-with-a-div-270j*/
 /* override browser default */
