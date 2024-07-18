@@ -58,6 +58,10 @@ def create_app(test_config=None):
     @app.route('/model-exploration')
     def modelExploration():
         return render_template('main-vis.html')
+    
+    @app.route('/testing')
+    def testing():
+        return render_template('testing-vis.html')
 
     @app.route('/hospital/<id>')
     def getHospitalHTML(id):
@@ -197,7 +201,7 @@ def getZCTAHospitalData(region, disease, date):
 # data loading
 
 def loadData():
-    # loadCountyData()
+    loadCountyData()
     loadZCTAData()
 
 def getQuantiles(num_quantiles, data):
@@ -215,8 +219,8 @@ def loadCountyData():
     files = [
     # 'C:/Users/***REMOVED***/Box/BoxPHI-PHMR Projects/Toolkit/Cleaned_Data/SC/Covid19/Case_Death_Counts.csv',
     'mainApp/static/data/covid_case_death_counts.csv',
-    'mainApp/static/data/dummy_flu.csv',
-    'mainApp/static/data/dummy_opioid.csv',
+    # 'mainApp/static/data/dummy_flu.csv',
+    # 'mainApp/static/data/dummy_opioid.csv',
     ]
 
     for f_path in files:
