@@ -9,13 +9,13 @@
       </div>
       <sl-divider class="options-divider"></sl-divider>
       <sl-tree class="options-div">
-        <sl-tree-item id="hospital-switch-branch" expanded>
-          <sl-switch id="show-hospitals" checked>
+        <sl-tree-item id="map-options-hospitalizations-branch" expanded>
+          <sl-switch id="map-options-hospitalizations-toggle" checked>
             <p class="options-header">Hospitalizations</p>
           </sl-switch>
           <sl-tree-item>Monthly count of hospitalizations due to the below diseases.</sl-tree-item>
         </sl-tree-item>
-        <sl-tree-item><sl-checkbox id="show-hospital-icons" checked>Hospital Icons</sl-checkbox></sl-tree-item>
+        <sl-tree-item><sl-checkbox id="map-options-hospital-icons-toggle" checked>Hospital Icons</sl-checkbox></sl-tree-item>
       </sl-tree>
     </div>
     <div slot="end" id="{{panel.name}}-content" class="fill-height fill-width hide-overflow">
@@ -27,9 +27,9 @@
           </sl-radio-group>
           <svg id="map-svg" class="scroll fill-height fill-width"></svg>
         </sl-resize-observer>
-        <div id="tooltip">
+        <div id="map-tooltip">
           <p class="tooltip"></p>
-          <svg id="tooltip-svg">
+          <svg id="map-tooltip-svg">
             <!-- set via interactions -->
           </svg>
         </div>
@@ -40,16 +40,16 @@
 <script>
   var mapResizer = document.getElementById("map-resizer")
   var mapDiv = document.getElementById("map-div")
-  var tooltip = document.getElementById("tooltip")
+  var mapTooltip = document.getElementById("map-tooltip")
   var resetButton = document.getElementById("map-reset-button")
   var mapAggregationSwitch = document.getElementById("map-aggregation-switch")
-  var hospitalToggle = document.getElementById("show-hospitals")
-  var showHospitalIcons = document.getElementById("show-hospital-icons")
-  var hospitalSwitchBranch = document.getElementById("hospital-switch-branch")
+  var hospitalizationsToggle = document.getElementById("map-options-hospitalizations-toggle")
+  var hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
+  var hospitalizationsBranch = document.getElementById("map-options-hospitalizations-branch")
 
   var jsmapSVG = document.getElementById("map-svg")
   var mapSVG = d3.select("#map-svg")
-  var countiesGroup = d3.select("#counties")
+  var countiesGroup = d3.select("#map-counties")
 
   var width = jsmapSVG.width.baseVal.value
   var height = jsmapSVG.height.baseVal.value
@@ -90,7 +90,7 @@
   }
 
   function createHospitalCheck(disease, color) {
-    check = d3.select(hospitalSwitchBranch)
+    check = d3.select(hospitalizationsBranch)
       .append("sl-tree-item")
       .append("sl-checkbox")
       .attr("id", "hospital-" + disease + "-check")

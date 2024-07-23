@@ -1,8 +1,8 @@
 
 mapAggregationSwitch.addEventListener("sl-change", (event) => {
     reset()
-    mapSVG.select("#color-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value == "aggregated" && hospitalToggle.checked))
-    mapSVG.select("#hospital-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value != "aggregated" && hospitalToggle.checked))
+    mapSVG.select("#map-color-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value == "aggregated" && hospitalizationsToggle.checked))
+    mapSVG.select("#map-hospital-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value != "aggregated" && hospitalizationsToggle.checked))
     highlightCounty(focusCounty)
     
     if(mapAggregationSwitch.value == "aggregated") {
@@ -18,12 +18,12 @@ mapZoom = zoomer.on("zoom", function(e) {
     xSkew = e.transform.x
     ySkew = e.transform.y
 
-    mapSVG.select("#counties").attr("transform", e.transform)
-    mapSVG.select("#zctas").attr("transform", e.transform)
-    mapSVG.select("#color-legend").attr("transform", d3.zoomIdentity)
+    mapSVG.select("#map-counties").attr("transform", e.transform)
+    mapSVG.select("#map-zctas").attr("transform", e.transform)
+    mapSVG.select("#map-color-legend").attr("transform", d3.zoomIdentity)
 
     hospSize = Math.max(16, Math.min(width, height) * 0.015)
-    mapSVG.select("#hospitals").selectAll(".hospital").each(function(d) {
+    mapSVG.select("#map-hospitals").selectAll(".hospital").each(function(d) {
         coords = mapProjection(d.geometry.coordinates)
         d3.select(this)
             .attr("x", coords[0]*zoom + xSkew - hospSize/2)
@@ -48,28 +48,28 @@ resetButton.addEventListener("click", () => {
     mapSVG.transition().duration(750).call(mapZoom.transform, d3.zoomIdentity.translate(0, 0).scale(1))
 })
 
-hospitalToggle.addEventListener("sl-change", () => {
-    if(hospitalToggle.checked) {
-        mapSVG.selectAll("#hospital-bubbles, #zctas").transition().duration(500).style("opacity", 1)
-        mapSVG.selectAll("#color-legend").transition().duration(500).style("opacity", +(mapAggregationSwitch.value == "aggregated"))
-        mapSVG.selectAll("#hospital-legend").transition().duration(500).style("opacity", +(mapAggregationSwitch.value != "aggregated"))
-        mapSVG.selectAll("#hospital-bubbles, #hospital-legend, #color-legend, #zctas")
+hospitalizationsToggle.addEventListener("sl-change", () => {
+    if(hospitalizationsToggle.checked) {
+        mapSVG.selectAll("#hospital-bubbles, #map-zctas").transition().duration(500).style("opacity", 1)
+        mapSVG.selectAll("#map-color-legend").transition().duration(500).style("opacity", +(mapAggregationSwitch.value == "aggregated"))
+        mapSVG.selectAll("#map-hospital-legend").transition().duration(500).style("opacity", +(mapAggregationSwitch.value != "aggregated"))
+        mapSVG.selectAll("#hospital-bubbles, #map-hospital-legend, #map-color-legend, #map-zctas")
             .style("pointer-events", "auto")
     } else { 
-        mapSVG.selectAll("#hospital-bubbles, #hospital-legend, #color-legend, #zctas")
+        mapSVG.selectAll("#hospital-bubbles, #map-hospital-legend, #map-color-legend, #map-zctas")
             .transition().duration(500)
             .style("opacity", 0)
             .style("pointer-events", "none")
     }
 })
 
-showHospitalIcons.addEventListener("sl-change", () => {
-    if(showHospitalIcons.checked) {
-        mapSVG.select("#hospitals").raise().style("opacity", 1)
+hospitalIconsToggle.addEventListener("sl-change", () => {
+    if(hospitalIconsToggle.checked) {
+        mapSVG.select("#map-hospitals").raise().style("opacity", 1)
         mapSVG.selectAll("#disease-data").raise()
         mapSVG.selectAll("#hospital-data").raise()
     } else {
-        mapSVG.select("#hospitals").lower().style("opacity", 0)
+        mapSVG.select("#map-hospitals").lower().style("opacity", 0)
     }
 })
 
@@ -78,7 +78,7 @@ function zoomToCounty(dom, data) {
     d3.select(dom).on('click', function(event) {
         reset()
         zcta = d3.select(this)
-        county = d3.select("#"+zcta.attr("county"))
+        county = d3.select("#map-"+zcta.attr("county"))
         countyData = county.data()[0]
 
         if (focusCounty == zcta.attr("county")) {
@@ -106,8 +106,8 @@ function highlightCounty(county) {
         reset()
     } else {
         mapSVG.selectAll(".county").transition().duration(750).style("fill-opacity", .5)
-        mapSVG.select("#"+county).transition().duration(750).style("fill-opacity", .0)
-        mapSVG.select("#legends").raise()
+        mapSVG.select("#map-"+county).transition().duration(750).style("fill-opacity", .0)
+        mapSVG.select("#map-legends").raise()
         if (mapAggregationSwitch.value != "aggregated") {
             mapSVG.selectAll(".hospital-bubble").transition().duration(750)
                 .style("fill", "var(--sl-color-gray-300)")
@@ -137,21 +137,21 @@ function removeTooltip(element) {
 function hospitalTooltip(element) {
     var tooltipWidth = 200
     var tooltipHeight = 130
-    d3.select(tooltip).style("opacity", 0).style("z-index", -1)
+    d3.select(mapTooltip).style("opacity", 0).style("z-index", -1)
     element.on("pointermove", function(e) {
         if((e.layerY + tooltipHeight + 2*em) < mapDiv.clientHeight) {
-            tooltip.style.top = (e.layerY + 2*em) + "px"
+            mapTooltip.style.top = (e.layerY + 2*em) + "px"
         } else {
-            tooltip.style.top = (e.layerY - tooltipHeight - 4*em) + "px"
+            mapTooltip.style.top = (e.layerY - tooltipHeight - 4*em) + "px"
         }
         if ((e.layerX + tooltipWidth) < mapDiv.clientWidth) {
-            tooltip.style.left = e.layerX +"px"
+            mapTooltip.style.left = e.layerX +"px"
         } else {
-            tooltip.style.left = mapDiv.clientWidth - tooltipWidth + "px"
+            mapTooltip.style.left = mapDiv.clientWidth - tooltipWidth + "px"
         }
     })
     element.on("pointerleave", function(e) {
-        d3.select(tooltip)
+        d3.select(mapTooltip)
             .style("opacity", 0)
             .style("z-index", -1)
     })
@@ -165,9 +165,9 @@ function hospitalTooltip(element) {
         tooltipWidth = Math.max(400, width * .1)
         tooltipHeight = tooltipWidth * .65
 
-        ttp = d3.select(tooltip)
+        ttp = d3.select(mapTooltip)
         ttp.style("opacity", 1).style("z-index", 1)
-        ttpSVG = ttp.select("#tooltip-svg")
+        ttpSVG = ttp.select("#map-tooltip-svg")
             .attr("height", tooltipHeight)
             .attr("width", tooltipWidth)
 
@@ -312,39 +312,39 @@ function hospitalTooltip(element) {
     })
 }
 
-function generalTooltip(element) {
-    var tooltipWidth = 0
-    var tooltipHeight = 0
-    element.on("pointerenter", function(e) {
-        tooltip.innerHTML = ""
-        data = element.data()[0]
-        ttp = d3.select(tooltip)
-        ttp.style("opacity", 1).style("z-index", 1).style("background")
-        d3.selectAll(`.${element.attr("bubble-type")}-bubble.${data.region}.${data.date}`)
-            .each(function(d) {
-                p = ttp.append("p")
-                .attr("class", "tooltip text")
-                .text(`${d.disease}: ${formatInt(d.count)}`)
-            })
-        tooltipWidth = ttp.node().scrollWidth
-        tooltipHeight = ttp.node().clientHeight
-    })
+// function generalTooltip(element) {
+//     var tooltipWidth = 0
+//     var tooltipHeight = 0
+//     element.on("pointerenter", function(e) {
+//         tooltip.innerHTML = ""
+//         data = element.data()[0]
+//         ttp = d3.select(tooltip)
+//         ttp.style("opacity", 1).style("z-index", 1).style("background")
+//         d3.selectAll(`.${element.attr("bubble-type")}-bubble.${data.region}.${data.date}`)
+//             .each(function(d) {
+//                 p = ttp.append("p")
+//                 .attr("class", "tooltip text")
+//                 .text(`${d.disease}: ${formatInt(d.count)}`)
+//             })
+//         tooltipWidth = ttp.node().scrollWidth
+//         tooltipHeight = ttp.node().clientHeight
+//     })
         
-    element.on("pointermove", function(e) {
-        if((e.layerY + tooltipHeight + 25) < mapDiv.clientHeight) {
-            tooltip.style.top = (e.layerY + 25) + "px"
-        } else {
-            tooltip.style.top = (e.layerY - tooltipHeight - 10) + "px"
-        }
-        if ((e.layerX + tooltipWidth) < mapDiv.clientWidth) {
-            tooltip.style.left = e.layerX +"px"
-        } else {
-            tooltip.style.left = mapDiv.clientWidth - tooltipWidth + "px"
-        }
-    })
-    element.on("pointerleave", function(e) {
-        d3.select(tooltip)
-            .style("opacity", 0)
-            .style("z-index", -1)
-    })
-}
+//     element.on("pointermove", function(e) {
+//         if((e.layerY + tooltipHeight + 25) < mapDiv.clientHeight) {
+//             tooltip.style.top = (e.layerY + 25) + "px"
+//         } else {
+//             tooltip.style.top = (e.layerY - tooltipHeight - 10) + "px"
+//         }
+//         if ((e.layerX + tooltipWidth) < mapDiv.clientWidth) {
+//             tooltip.style.left = e.layerX +"px"
+//         } else {
+//             tooltip.style.left = mapDiv.clientWidth - tooltipWidth + "px"
+//         }
+//     })
+//     element.on("pointerleave", function(e) {
+//         d3.select(tooltip)
+//             .style("opacity", 0)
+//             .style("z-index", -1)
+//     })
+// }

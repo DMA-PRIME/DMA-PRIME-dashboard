@@ -1,5 +1,5 @@
-tooltip.style.backgroundColor = opacify(d3.select(tooltip).style("--sl-color-neutral-500").replace(/ /g, ","), 0.75)
-tooltip.style.borderColor = opacify(d3.select(tooltip).style("--sl-color-neutral-700").replace(/ /g, ","), 0.5)
+mapTooltip.style.backgroundColor = opacify(d3.select(mapTooltip).style("--sl-color-neutral-500").replace(/ /g, ","), 0.75)
+mapTooltip.style.borderColor = opacify(d3.select(mapTooltip).style("--sl-color-neutral-700").replace(/ /g, ","), 0.5)
 
 function displayMap() {
     width = jsmapSVG.width.baseVal.value
@@ -13,23 +13,23 @@ function displayMap() {
         pathGenerator = d3.geoPath(mapProjection)
 
         counties = mapSVG.append("g")
-                .attr("id", "counties")
+                .attr("id", "map-counties")
                 .style("pointer-events", "none")
         counties.selectAll("path")
               .data(mapdata.features)
               .enter()
               .append("path")
               .attr("class", "county")
-              .attr("id", d => fixName(d.properties.NAME))
+              .attr("id", d => "map-" + fixName(d.properties.NAME))
               .attr("d", d => pathGenerator(d))
               .attr("fill", "var(--sl-color-gray-300)")
               .attr("fill-opacity", 0)
 
         zctas = mapSVG.append("g")
-            .attr("id", "zctas")
+            .attr("id", "map-zctas")
 
         hospitals = mapSVG.append("g")
-                .attr("id", "hospitals")
+                .attr("id", "map-hospitals")
                 .style("pointer-events", "none")
 
     }).then(() => {
@@ -41,7 +41,7 @@ function displayMap() {
               .enter()
               .append("svg")
               .attr("class", "hospital")
-              .attr("id", d => fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
+              .attr("id", d => "map-"+fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
               .attr("viewBox", "0 0 16 16")
               .attr("x", (d) => mapProjection(d.geometry.coordinates)[0])
               .attr("y", (d) => mapProjection(d.geometry.coordinates)[1])
@@ -53,7 +53,7 @@ function displayMap() {
         })
 
         legendsGroup = mapSVG.append("g")
-                .attr("id", "legends")
+                .attr("id", "map-legends")
                 .style("pointer-events", "none")
                 
         d3.json("/get-hospital-zcta-data", { // zcta hospital data
@@ -86,21 +86,21 @@ function displayMap() {
                 })
                 
                 hospitalLegend = legendsGroup.append("g")
-                    .attr("id", "hospital-legend")
+                    .attr("id", "map-hospital-legend")
                     .style("opacity", 0)
 
                 hospitalLegend.append("rect")
-                    .attr("id", "hospital-legend-background")
+                    .attr("id", "map-hospital-legend-background")
                     .attr("class", "legend-background")
 
                 hospitalLegendInnards = hospitalLegend.append("g")
-                    .attr("id", "hospital-legend-innards")
+                    .attr("id", "map-hospital-legend-innards")
 
                 hospitalLegendInnards.append("text")
                     .attr("class", `legend title hospital`)
                     .text("Monthly Count")
 
-                hospitalLegendContent = hospitalLegendInnards.append("g").attr("id", "hospital-legend-contents")
+                hospitalLegendContent = hospitalLegendInnards.append("g").attr("id", "map-hospital-legend-contents")
                 hospitalLegendContent.selectAll("legend hospital").data(hospitalRadiusMap.ticks(3).reverse().filter((d) => d != 0))
                     .enter()
                     .append("g")
@@ -113,8 +113,8 @@ function displayMap() {
                         .text(formatInt(d))
                     })
 
-                legendBBox = hospitalLegend.select("#hospital-legend-innards").node().getBBox()
-                hospitalLegend.select("#hospital-legend-background")
+                legendBBox = hospitalLegend.select("#map-hospital-legend-innards").node().getBBox()
+                hospitalLegend.select("#map-hospital-legend-background")
                     .attr("x", legendBBox.x - 0.5*em)
                     .attr("y", legendBBox.y)
                     .attr("height", legendBBox.height + 0.5*em)
@@ -145,7 +145,7 @@ function displayMap() {
                         .enter()
                         .append("path")
                         .attr("class", "zcta")
-                        .attr("id", d => "_"+fixName(d.properties.ZCTA5CE20))
+                        .attr("id", d => "map-"+fixName(d.properties.ZCTA5CE20))
                         .attr("county", (d) => crosswalk[d.properties.ZCTA5CE20])
                         .attr("d", d => pathGenerator(d))
 
@@ -170,8 +170,8 @@ function displayMap() {
                         .each(function(data) {zoomToCounty(this, data)})
 
                     legendWidth = Math.max(width/3, 300)
-                    colorLegend = mapSVG.select("#legends").append("g")
-                        .attr("id", "color-legend")
+                    colorLegend = mapSVG.select("#map-legends").append("g")
+                        .attr("id", "map-color-legend")
 
                     colorLegendDefs = colorLegend.append("defs")
                     linearGrdient = colorLegendDefs.append("linearGradient")
@@ -188,14 +188,14 @@ function displayMap() {
                         .attr("stop-color", "saddlebrown")
 
                     colorLegend.append("rect")
-                        .attr("id", "color-legend-background")
+                        .attr("id", "map-color-legend-background")
                         .attr("class", "legend-background")
 
-                    colorLegendContent = colorLegend.append("g").attr("id", "color-legend-contents")
+                    colorLegendContent = colorLegend.append("g").attr("id", "map-color-legend-contents")
                     colorLegendContent.append("rect")
                         .style("fill", "url(#linear-gradient)");
 
-                    colorLegendContent.append("g").attr("id", "color-legend-axis")
+                    colorLegendContent.append("g").attr("id", "map-color-legend-axis")
                         .call(d3.axisBottom(d3.scaleLinear(heatmapColorMap.domain(), [0, legendWidth])))
 
                     colorLegendContent.append("text")
@@ -212,7 +212,7 @@ function displayMap() {
 }
 
 function resizeMap() {
-    mapSVG.select("#counties").raise()
+    mapSVG.select("#map-counties").raise()
 
     function setup() {
         return new Promise(function(resolve, failure) {
@@ -236,7 +236,7 @@ function resizeMap() {
             .attr("d", (d) => pathGenerator(d))
 
         hospSize = Math.max(16, Math.min(width, height) * 0.015)
-        mapSVG.select("#hospitals").selectAll(".hospital").each(function(d) {
+        mapSVG.select("#map-hospitals").selectAll(".hospital").each(function(d) {
                 coords = mapProjection(d.geometry.coordinates)
                 d3.select(this)
                     .attr("x", coords[0]*zoom + xSkew - hospSize/2)
@@ -246,25 +246,25 @@ function resizeMap() {
             })
 
         legendWidth = Math.max(width/3, 300)
-        colorLegend = mapSVG.select("#color-legend")
-        colorLegend.select("#color-legend-contents>rect")
+        colorLegend = mapSVG.select("#map-color-legend")
+        colorLegend.select("#map-color-legend-contents>rect")
             .attr("width", legendWidth)
             .attr("height", em)
             .attr("x", 2*em)
             .attr("y", height - 4.5*em)
 
-        colorLegendAxis = colorLegend.select("#color-legend-axis")
+        colorLegendAxis = colorLegend.select("#map-color-legend-axis")
         colorLegendAxis.selectAll("*").remove()
         colorLegendAxis
             .attr("transform", `translate(${2*em},${height - 3.5*em})`)
             .call(d3.axisBottom(d3.scaleLinear(heatmapColorMap.domain(), [0, legendWidth])))
 
-        colorLegend.select("#color-legend-contents>text")    
+        colorLegend.select("#map-color-legend-contents>text")    
             .attr("y", height-1*em)
             .attr("x", 2*em + legendWidth/2)
 
-        legendBBox = colorLegend.select("#color-legend-contents").node().getBBox()
-        colorLegend.select("#color-legend-background")
+        legendBBox = colorLegend.select("#map-color-legend-contents").node().getBBox()
+        colorLegend.select("#map-color-legend-background")
             .attr("x", legendBBox.x - 0.5*em)
             .attr("y", legendBBox.y)
             .attr("height", legendBBox.height + 0.5*em)
@@ -283,7 +283,7 @@ function resizeMap() {
 
             // updating legend stuff
             em = parseFloat(getComputedStyle(this).fontSize)
-            legend = mapSVG.select("#hospital-legend").attr("transform", `translate(${width} ${height}) scale(1 -1)`)
+            legend = mapSVG.select("#map-hospital-legend").attr("transform", `translate(${width} ${height}) scale(1 -1)`)
             legend.selectAll(".legend.hospital").selectAll("line")
                 .attr("x2", (d) => -(hospitalRadiusMap(maxHospitalCount) + 2.5*em))
                 .attr("y2", (d) => hospitalRadiusMap(d) + 3*em)
@@ -303,8 +303,8 @@ function resizeMap() {
                 .attr("x", (d) => -(hospitalRadiusMap(maxHospitalCount) + 3*em))
                 .attr("y", (d) => -em)
 
-            legendBBox = hospitalLegend.select("#hospital-legend-innards").node().getBBox()
-            hospitalLegend.select("#hospital-legend-background")
+            legendBBox = hospitalLegend.select("#map-hospital-legend-innards").node().getBBox()
+            hospitalLegend.select("#map-hospital-legend-background")
                 .attr("x", legendBBox.x - 0.5*em)
                 .attr("y", legendBBox.y)
                 .attr("height", legendBBox.height + 0.5*em)
@@ -316,9 +316,9 @@ function resizeMap() {
     setup().then(updateMap, (error) => {
         console.log("something bad happened during map resizing")
     }).then(() => {
-        legend = mapSVG.select("#hospital-legend-contents")
+        legend = mapSVG.select("#map-hospital-legend-contents")
         legendBBox = legend.node().getBBox()
-        legend.select("#hospital-legend-background")
+        legend.select("#map-hospital-legend-background")
                 .attr("x", legendBBox.x - 0.5*em)
                 .attr("y", legendBBox.y - 0.5*em)
                 .attr("height", legendBBox.height + em)
@@ -327,30 +327,3 @@ function resizeMap() {
     })
 }
 
-// function drawLegend(stats, type, show) {
-//     legends = mapSVG.select("#legends")
-//         .append("g")
-//         .attr("id", `${type}-legend`)
-//         .attr("class", "legend-group").style("opacity", 0)
-//     legends.selectAll(`.legend.${type}`)
-//         .data([[stats.max *3/3, 0], [stats.max * 2/3, 1], [stats.max * 1/3, 2]])
-//         .enter()
-//         .append("g")
-//         .attr("class", `legend ${type}`)
-//         .style("opacity", +show)
-//         .each(function(d) {
-//             em = parseFloat(getComputedStyle(this).fontSize)
-//             d3.select(this).append("rect").attr("id", "legend-background")
-//             d3.select(this).append("line")
-//             d3.select(this).append("circle")
-//             d3.select(this).append("text")
-//             .text(formatInt(d))
-//         })
-
-//     mapSVG.select(`#${type}-legend`).append("text")
-//         .attr("class", `legend title ${type}`)
-//         .style("opacity", +show)
-//         .text(() => type == "disease" ? "7 Day Average" : "Monthly Count")
-
-//     resizeMap()
-// }
