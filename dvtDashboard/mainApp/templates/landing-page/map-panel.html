@@ -1,19 +1,29 @@
 {% extends "subtemplates/panel.html" %}
 
 {% block options %}
-<div class="centering-container options-div">
-  <sl-button pill id="map-reset-button">Reset Map</sl-button>
+<div id="map-options">
+  <div class="centering-container options-div">
+    <sl-button pill id="map-reset-button">Reset Map</sl-button>
+  </div>
+  <sl-divider class="options-divider"></sl-divider>
+  <sl-tree class="options-div">
+    <sl-tree-item id="map-options-hospitalizations-branch" expanded>
+      <sl-switch id="map-options-hospitalizations-toggle" checked>
+        <p class="options-header">Hospitalizations</p>
+      </sl-switch>
+      <sl-tree-item>Monthly count of hospitalizations due to the below diseases.</sl-tree-item>
+    </sl-tree-item>
+    <sl-tree-item><sl-checkbox id="map-options-hospital-icons-toggle" checked>Hospital Icons</sl-checkbox></sl-tree-item>
+  </sl-tree>
 </div>
-<sl-divider class="options-divider"></sl-divider>
-<sl-tree class="options-div">
-  <sl-tree-item id="map-options-hospitalizations-branch" expanded>
-    <sl-switch id="map-options-hospitalizations-toggle" checked>
-      <p class="options-header">Hospitalizations</p>
-    </sl-switch>
-    <sl-tree-item>Monthly count of hospitalizations due to the below diseases.</sl-tree-item>
-  </sl-tree-item>
-  <sl-tree-item><sl-checkbox id="map-options-hospital-icons-toggle" checked>Hospital Icons</sl-checkbox></sl-tree-item>
-</sl-tree>
+<div class="options-div" id="map-aggregate-vis">
+  <sl-resize-observer id="map-aggregate-resizer">
+    <svg id="map-aggregate-svg" class="fill-width">
+
+    </svg>
+  </sl-resize-observer>
+</div>
+
 {% endblock %}
 
 {% block contents %}
@@ -36,17 +46,24 @@
 
 {% block scripts %}
 <script>
+  // containing elements
   var mapResizer = document.getElementById("map-resizer")
   var mapDiv = document.getElementById("map-div")
-  var mapTooltip = document.getElementById("map-tooltip")
+  var hospitalizationsBranch = document.getElementById("map-options-hospitalizations-branch")
+
+  // interactive elements
   var resetButton = document.getElementById("map-reset-button")
   var mapAggregationSwitch = document.getElementById("map-aggregation-switch")
   var hospitalizationsToggle = document.getElementById("map-options-hospitalizations-toggle")
   var hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
-  var hospitalizationsBranch = document.getElementById("map-options-hospitalizations-branch")
 
+  // visualization elements
+  var jsmapAggregateSvg = document.getElementById("map-aggregate-svg")
+  var mapAggregateSvg = d3.select("#map-aggregate-svg")
   var jsmapSVG = document.getElementById("map-svg")
   var mapSVG = d3.select("#map-svg")
+  var mapTooltip = document.getElementById("map-tooltip")
+
   var countiesGroup = d3.select("#map-counties")
 
   var width = jsmapSVG.width.baseVal.value
@@ -82,6 +99,7 @@
 
     check.node().addEventListener("sl-change", (e) => {
       checker = e.target
+      displayAggregateChart()
       bubbleGroup = d3.select("#" + checker.getAttribute("disease") + "-hospital-data")
       if (checker.checked) {
         bubbleGroup.raise().style("opacity", 1)
@@ -105,6 +123,7 @@
   set{{panel.name}}Panel()
 </script>
 
+<script src="{{ url_for('static', filename='js/landing-page/map-aggregation.js') }}"></script>
 <script src="{{ url_for('static', filename='js/landing-page/map.js') }}"></script>
 <script src="{{ url_for('static', filename='js/landing-page/map-interactions.js') }}"></script>
 

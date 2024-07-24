@@ -185,6 +185,35 @@ def create_app(test_config=None):
 
         return jsonify(return_data)
 
+    @app.route('/get-hospital-zcta-aggregation', methods=['POST'])
+    def getHospitalZCTAAggregation():
+        variables = request.get_json()
+
+        result = getZCTAHospitalData(slice(None), slice(None), slice(None))
+
+        to_group_by = ['date'] if variables['aggregate'] else ['disease', 'date'] 
+        grouped_data = result['data'].groupby(to_group_by).agg({'count':'sum'})
+
+        return_data = {}
+        return_stats = {'max': None, 'date-min': None, 'date-max': None}
+        
+        if variables['aggregate']:
+            return_stats['max'] = max(grouped_data['count'])
+            return_stats['date-min'] = grouped_data.index.min()
+            return_stats['date-max'] = grouped_data.index.max()
+            return_data = json.loads(grouped_data.to_json(orient='table', index=True))['data']
+        else:
+            return_stats['max'] = {}
+            return_stats['date-min'] = {}
+            return_stats['date-max'] = {}
+            for disease in grouped_data.index.levels[0]:
+                data = grouped_data.loc[disease]
+                return_stats['max'][disease] = max(data['count'])
+                return_stats['date-min'][disease] = data.index.min()
+                return_stats['date-max'][disease] = data.index.max()
+                return_data[disease] = json.loads(data.to_json(orient='table', index=True))['data']
+
+        return jsonify({'data':return_data, 'stats': return_stats})
 
     loadData()
 

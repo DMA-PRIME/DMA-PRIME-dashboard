@@ -12,17 +12,32 @@
     --spacing: 0;
 }
 
-
-
 #main-content-divider {
     font-size: 2rem;
     background-color: var(--sl-color-neutral-300);
 }
 
+#map-sidebar {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
 #map-options {
-    height: 100%;
-    overflow: hidden;
+    height: max-content;
     overflow-wrap: normal;
+    overflow-y: scroll;
+}
+
+#map-aggregation-vis {
+    width: 100%;
+    overflow: hidden;
+    padding: var(--sl-spacing-x-small);
+}
+
+#map-aggregation-graph-title {
+    margin: 0;
+    font-size: var(--sl-font-size-x-small);
 }
 
 #map-aggregation-switch {
@@ -39,7 +54,7 @@
     background-color: var(--sl-color-primary-600);
 }
 
-#map-options-hospital-icons-toggle:part(control--checked) {
+#map-options-hospital-icons-toggle::part(control--checked) {
     border-color: var(--sl-color-neutral-400);
     background-color: var(--sl-color-neutral-400);
 }

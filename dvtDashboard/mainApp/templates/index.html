@@ -30,16 +30,22 @@
 {% block bodyScripts %}
 
 <script>
-    displayMap();
     addEventListener("load", () => {
-        resizeMap();
-
+        // resizeMap();
+        displayMap().then(function() {
+            resizeMap()
+            mapSVG.call(mapZoom)
+            mapResizer.addEventListener("sl-resize", () => {
+                resizeMap()
+                displayAggregateChart()
+            })
+        displayAggregateChart()
+    })
         // styleSheet.insertRule(`
         //   #counties>path, #zctas>path {
         //     stroke: ${getComputedStyle(document.getElementsByClassName("options-header")[0]).getPropertyValue("color")}      
         //   } 
         // `)
-        mapSVG.call(mapZoom)
 
     });
 

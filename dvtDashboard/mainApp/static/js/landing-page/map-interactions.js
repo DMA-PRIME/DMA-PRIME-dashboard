@@ -1,5 +1,6 @@
 
 mapAggregationSwitch.addEventListener("sl-change", (event) => {
+    displayAggregateChart()
     reset()
     mapSVG.select("#map-color-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value == "aggregated" && hospitalizationsToggle.checked))
     mapSVG.select("#map-hospital-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value != "aggregated" && hospitalizationsToggle.checked))
@@ -39,10 +40,6 @@ mapZoom = zoomer.on("zoom", function(e) {
     })
 })
 mapSVG.call(mapZoom)
-
-mapResizer.addEventListener("sl-resize", () => {
-    resizeMap()
-})
 
 resetButton.addEventListener("click", () => {
     mapSVG.transition().duration(750).call(mapZoom.transform, d3.zoomIdentity.translate(0, 0).scale(1))
@@ -84,6 +81,9 @@ function zoomToCounty(dom, data) {
         if (focusCounty == zcta.attr("county")) {
             resetButton.click()
             focusCounty = null
+            d3.select(mapTooltip)
+                .style("opacity", 0)
+                .style("z-index", -1)
         } else {
             focusCounty = zcta.attr("county")
 
@@ -199,7 +199,7 @@ function hospitalTooltip(element) {
                             .nice()
 
                 temp = ttpSVG.append("text").text(yScale.domain()[1]).attr("x", 0).attr("y", 0)
-                margins = {
+                ttpMargins = {
                     "top": em, 
                     "bottom": 2.5*em,
                     "left": temp.node().getBBox().width + em,
@@ -207,8 +207,8 @@ function hospitalTooltip(element) {
                 }
                 temp.remove()
 
-                xScale = d3.scaleUtc([fullTimeDomain[0], fullTimeDomain[fullTimeDomain.length - 1]], [margins.left, tooltipWidth - margins.right]) 
-                yScale.range([tooltipHeight - margins.bottom, margins.top])
+                xScale = d3.scaleUtc([fullTimeDomain[0], fullTimeDomain[fullTimeDomain.length - 1]], [ttpMargins.left, tooltipWidth - ttpMargins.right]) 
+                yScale.range([tooltipHeight - ttpMargins.bottom, ttpMargins.top])
                 
                 line = d3.line()
                     .x((d) => xScale(d.date))
@@ -288,25 +288,25 @@ function hospitalTooltip(element) {
                 graphSVG.append("rect")
                     .attr("id", "tooltip-prediction-highlighter")
                     .attr("x", xScale(predictiveData[0].date))
-                    .attr("y", margins.top)
+                    .attr("y", ttpMargins.top)
                     .attr("width", xScale(predictiveData[predictiveData.length - 1].date) - xScale(predictiveData[0].date))
-                    .attr("height", tooltipHeight - margins.bottom - margins.top)
+                    .attr("height", tooltipHeight - ttpMargins.bottom - ttpMargins.top)
 
                 ttpSVG.select("#tooltip-prediction-separator")
                     .attr("x1", xScale(predictiveData[0].date))
-                    .attr("y1", margins.top)
+                    .attr("y1", ttpMargins.top)
                     .attr("x2", xScale(predictiveData[0].date))
-                    .attr("y2", tooltipHeight - margins.bottom)
+                    .attr("y2", tooltipHeight - ttpMargins.bottom)
 
                 ttpSVG.append("g")
-                .attr("transform", `translate(0,${tooltipHeight - margins.bottom})`)
+                .attr("transform", `translate(0,${tooltipHeight - ttpMargins.bottom})`)
                 .call(d3.axisBottom(xScale).tickValues(fullTimeDomain).tickSize(4).tickFormat(d3.timeFormat("%b %Y")))
                 .selectAll("text")  
                 .style("text-anchor", "end")
                 .attr("transform", "rotate(-30)");
     
                 ttpSVG.append("g")
-                .attr("transform", `translate(${margins.left},0)`)
+                .attr("transform", `translate(${ttpMargins.left},0)`)
                 .call(d3.axisLeft(yScale).ticks(5).tickSize(4));
             })
     })

@@ -5,7 +5,7 @@ function displayMap() {
     width = jsmapSVG.width.baseVal.value
     height = jsmapSVG.height.baseVal.value
     
-    d3.json("../../static/data/tl_2023_sc_county_trimmed.json").then(function(mapdata) {
+    return d3.json("../../static/data/tl_2023_sc_county_trimmed.json").then(function(mapdata) {
         mapData = mapdata
         mapProjection = d3.geoAlbers().fitExtent(
             [[margins.left, margins.top], [width-margins.right,height-margins.bottom]],
@@ -35,7 +35,7 @@ function displayMap() {
     }).then(() => {
         
         hospSize = Math.max(16, Math.min(width, height) * 0.015)
-        d3.json("../../static/data/Hospitals.geojson").then(function(hospdata){
+        d3.json("../../static/data/Hospitals.geojson").then( async function(hospdata){
               hospitals.selectAll("svg")
               .data(hospdata.features)
               .enter()
@@ -43,8 +43,6 @@ function displayMap() {
               .attr("class", "hospital")
               .attr("id", d => "map-"+fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
               .attr("viewBox", "0 0 16 16")
-              .attr("x", (d) => mapProjection(d.geometry.coordinates)[0])
-              .attr("y", (d) => mapProjection(d.geometry.coordinates)[1])
               .attr("width", hospSize)
               .attr("height", hospSize)
               .each(function(d) {
@@ -115,10 +113,6 @@ function displayMap() {
 
                 legendBBox = hospitalLegend.select("#map-hospital-legend-innards").node().getBBox()
                 hospitalLegend.select("#map-hospital-legend-background")
-                    .attr("x", legendBBox.x - 0.5*em)
-                    .attr("y", legendBBox.y)
-                    .attr("height", legendBBox.height + 0.5*em)
-                    .attr("width", legendBBox.width + em)
                     .attr("rx", 0.5*em)
 
                 // draw bubbles
@@ -135,8 +129,8 @@ function displayMap() {
                         .style("opacity", 0)
                     });
         }).then(() => {
-            d3.json("../../static/data/tl_2023_sc_zcta_trimmed.json").then(function(mapdata) {
-                d3.json("../../static/data/zcta_county_crosswalk.json").then(function(crosswalk) {
+            d3.json("../../static/data/tl_2023_sc_zcta_trimmed.json").then( async function(mapdata) {
+                d3.json("../../static/data/zcta_county_crosswalk.json").then( async function(crosswalk) {
                     zcta = mapdata
                     pathGenerator = d3.geoPath(mapProjection)
         
@@ -200,32 +194,23 @@ function displayMap() {
 
                     colorLegendContent.append("text")
                         .text("Aggregated Monthly Hospitalizations")
-      
-                    resizeMap()
                 })
             })
         })
-    }).then(() => {
-        console.log("resizepls")
-        resizeMap()
     })
 }
 
-function resizeMap() {
+async function resizeMap() {
+    console.log("resizing")
     mapSVG.select("#map-counties").raise()
 
-    function setup() {
-        return new Promise(function(resolve, failure) {
-            width = jsmapSVG.width.baseVal.value
-            height = jsmapSVG.height.baseVal.value
-            mapProjection = d3.geoAlbers().fitExtent(
-                [[margins.left, margins.top], [width-margins.right,height-margins.bottom]],
-                mapData)
-            pathGenerator = d3.geoPath(mapProjection)
-
-            resolve("set")
-            failure("idk")
-        })
+    async function setup() {
+        width = jsmapSVG.width.baseVal.value
+        height = jsmapSVG.height.baseVal.value
+        mapProjection = d3.geoAlbers().fitExtent(
+            [[margins.left, margins.top], [width-margins.right,height-margins.bottom]],
+            mapData)
+        pathGenerator = d3.geoPath(mapProjection)
     }
 
     function updateMap(value) {
@@ -243,7 +228,7 @@ function resizeMap() {
                     .attr("y", coords[1]*zoom + ySkew - hospSize/2)
                     .attr("width", hospSize)
                     .attr("height", hospSize)
-            })
+        })
 
         legendWidth = Math.max(width/3, 300)
         colorLegend = mapSVG.select("#map-color-legend")
@@ -269,7 +254,6 @@ function resizeMap() {
             .attr("y", legendBBox.y)
             .attr("height", legendBBox.height + 0.5*em)
             .attr("width", legendBBox.width + em)
-            .attr("rx", 0.5*em)
 
         maxHospitalCount = hospitalStats.max[hospitalMetadata.date[0]]
         maxHospitalRadius = Math.min(height, width) * 0.025
@@ -309,21 +293,12 @@ function resizeMap() {
                 .attr("y", legendBBox.y)
                 .attr("height", legendBBox.height + 0.5*em)
                 .attr("width", legendBBox.width + em)
-                .attr("rx", 0.5*em)
         })
     }
 
-    setup().then(updateMap, (error) => {
+    setup().then(updateMap).catch((error) => {
         console.log("something bad happened during map resizing")
-    }).then(() => {
-        legend = mapSVG.select("#map-hospital-legend-contents")
-        legendBBox = legend.node().getBBox()
-        legend.select("#map-hospital-legend-background")
-                .attr("x", legendBBox.x - 0.5*em)
-                .attr("y", legendBBox.y - 0.5*em)
-                .attr("height", legendBBox.height + em)
-                .attr("width", legendBBox.width + em)
-                .attr("rx", 0.5*em)
+        setTimeout(resizeMap, 100)
     })
 }
 
