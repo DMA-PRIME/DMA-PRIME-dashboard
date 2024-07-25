@@ -33,8 +33,17 @@
     width: 100%;
     overflow: hidden;
     padding: var(--sl-spacing-x-small);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
+#map-aggregation-donut-svg {
+    aspect-ratio: 50/20;
+}
+#map-aggregation-svg {
+    aspect-ratio: 50/35;
+}
 #map-aggregation-graph-title {
     margin: 0;
     font-size: var(--sl-font-size-x-small);

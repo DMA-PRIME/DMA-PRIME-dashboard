@@ -8,8 +8,12 @@ mapAggregationSwitch.addEventListener("sl-change", (event) => {
     
     if(mapAggregationSwitch.value == "aggregated") {
         mapSVG.selectAll(".zcta").style('fill', function(d) { return heatmapColorMap(d3.select(this).attr('count')) })
+        d3.selectAll(".hospital-check-branch")
+            .style("visibility", "collapse")
     } else {
         mapSVG.selectAll(".zcta").style("fill", "var(--sl-color-gray-800)")
+        d3.selectAll(".hospital-check-branch")
+            .style("visibility", "visible")
     }
 })
 

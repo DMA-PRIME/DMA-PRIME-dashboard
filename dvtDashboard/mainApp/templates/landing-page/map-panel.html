@@ -16,9 +16,24 @@
     <sl-tree-item><sl-checkbox id="map-options-hospital-icons-toggle" checked>Hospital Icons</sl-checkbox></sl-tree-item>
   </sl-tree>
 </div>
-<div class="options-div" id="map-aggregate-vis">
-  <sl-resize-observer id="map-aggregate-resizer">
-    <svg id="map-aggregate-svg" class="fill-width">
+<div class="options-div" id="map-aggregation-vis">
+  <svg id="map-aggregation-donut-svg" class="fill-width">
+    <defs>
+      <pattern id="nan-pattern"
+          width="2.5%" height="2.5%"
+          patternUnits="userSpaceOnUse"
+          patternTransform="rotate(45)">
+        <line stroke="white" stroke-width="3%" y2="2.5%"/>
+      </pattern>
+      <mask id="nan-pattern-mask" x="-100%" y="-100%" width="200%" height="200%" >
+        <rect x="-100%" y="-100%" width="200%" height="200%" fill="url(#nan-pattern)" />
+      </mask>
+    </defs>
+    <g id="map-aggregation-donut"></g>
+    <!-- <rect style="width: 100%; height: 100%;"></rect> -->
+  </svg>
+  <sl-resize-observer id="map-aggregation-resizer">
+    <svg id="map-aggregation-svg" class="fill-width">
 
     </svg>
   </sl-resize-observer>
@@ -48,6 +63,7 @@
 <script>
   // containing elements
   var mapResizer = document.getElementById("map-resizer")
+  var mapAggregationResizer = document.getElementById("map-aggregation-resizer")
   var mapDiv = document.getElementById("map-div")
   var hospitalizationsBranch = document.getElementById("map-options-hospitalizations-branch")
 
@@ -58,8 +74,11 @@
   var hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
 
   // visualization elements
-  var jsmapAggregateSvg = document.getElementById("map-aggregate-svg")
-  var mapAggregateSvg = d3.select("#map-aggregate-svg")
+  var jsmapAggregationDonutSvg = document.getElementById("map-aggregation-donut-svg")
+  var mapAggregationDonutSvg = d3.select("#map-aggregation-donut-svg")
+  var mapAggregationDonut = d3.select("#map-aggregation-donut")
+  var jsmapAggregationSvg = document.getElementById("map-aggregation-svg")
+  var mapAggregationSvg = d3.select("#map-aggregation-svg")
   var jsmapSVG = document.getElementById("map-svg")
   var mapSVG = d3.select("#map-svg")
   var mapTooltip = document.getElementById("map-tooltip")
@@ -90,6 +109,8 @@
   function createHospitalCheck(disease, color) {
     check = d3.select(hospitalizationsBranch)
       .append("sl-tree-item")
+      .attr("class", "hospital-check-branch")
+      .style("visibility", "collapse")
       .append("sl-checkbox")
       .attr("id", "hospital-" + disease + "-check")
       .attr("class", "hospital-check ")

@@ -37,9 +37,15 @@
             mapSVG.call(mapZoom)
             mapResizer.addEventListener("sl-resize", () => {
                 resizeMap()
-                displayAggregateChart()
             })
-        displayAggregateChart()
+
+        Promise.all([displayAggregateChart(), displayDonut()]).then(() => {
+            mapAggregationResizer.addEventListener("sl-resize", () => {
+                displayAggregateChart()
+                displayDonut()
+            })
+        })
+        
     })
         // styleSheet.insertRule(`
         //   #counties>path, #zctas>path {
