@@ -74,11 +74,28 @@ def create_app(test_config=None):
     
     @app.route('/model-exploration')
     def modelExploration():
-        return render_template('main-vis.html')
+        panels = [
+            {
+                'name': 'main',
+                'displayName': 'DMA-PRIME',
+            },
+            {
+                'name': 'grid',
+                'displayName': 'Grid View',
+                'active': True,
+                'html': 'main-vis/grid-panel.html'
+            },
+            {
+                'name': 'map',
+                'displayName': 'Map View',
+                'html': 'main-vis/map-panel.html'
+            }, 
+        ]
+        return render_template('main-vis.html', panels=panels)
     
     @app.route('/testing')
     def testing():
-        return render_template('testing-vis.html')
+        return render_template('main-vis-old.html')
 
     @app.route('/hospital/<id>')
     def getHospitalHTML(id):

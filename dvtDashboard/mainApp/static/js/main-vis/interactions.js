@@ -47,29 +47,6 @@ timeSlider.addEventListener("sl-change", (details) => {
 
 // options visual functionality
 {
-optionsHider.addEventListener("click", () => {
-    optionsOpen = !optionsOpen;
-
-    if (optionsOpen) {
-        optionsHider.name = "chevron-compact-left"
-        mainContent.position = optionsPosition
-    } else {
-        optionsPosition = mainContent.position
-        mainContent.position = 0
-        optionsHider.name = "chevron-compact-right"
-    }
-});
-
-mainContent.addEventListener("sl-reposition", () => {
-    if (mainContent.position > 0) {
-        optionsOpen = true;
-        optionsHider.name = "chevron-compact-left"
-    } else {
-        optionsOpen = false;
-        optionsHider.name = "chevron-compact-right"
-    }
-});
-
 forecastSelector.addEventListener("sl-after-hide", () => {
     changePrediction()
 })

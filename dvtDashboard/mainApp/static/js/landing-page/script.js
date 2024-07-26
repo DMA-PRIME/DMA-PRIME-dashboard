@@ -1,7 +1,6 @@
 
 // visualization variables
 var formatInt = d3.format(".0f")
-var em = parseFloat(getComputedStyle(document.head).fontSize)
 
 margins = {
     top: 8,

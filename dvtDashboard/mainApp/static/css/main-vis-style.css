@@ -1,20 +1,55 @@
-/*  */
+
+p,
+text {
+  font-family: var(--sl-font-sans);
+}
+
 .fill-height {
   height: 100%;
+}
+
+.fill-width {
+  width: 100%;
 }
 
 .hide-overflow {
   overflow: hidden
 }
 
-#main-content {
+.scroll {
+  overflow: scroll;
+  overflow-x: scroll;
+  overflow-y: scroll;
+}
+
+.centering-container {
+  display: flex;
+  justify-content: center;
+}
+
+sl-tab-group,
+sl-tab-group::part(base),
+sl-tab-group::part(body),
+sl-tab-panel,
+sl-tab-panel::part(base),
+sl-tab-panel::part(body) {
   height: 100%;
 }
 
-#main-content-divider {
-  font-size: 2rem;
-  background-color: lightgray;
+sl-tab-panel::part(base) {
+  padding: 0;
 }
+
+#prediction-modelling-button-link {
+  margin: auto var(--sl-spacing-small) auto auto;
+  display: block;
+}
+
+.content-divider {
+  font-size: 2rem;
+  background-color: var(--sl-color-neutral-200);
+}
+/*  dfadfsdadsaf */
 
 #options {
   height: 100%;

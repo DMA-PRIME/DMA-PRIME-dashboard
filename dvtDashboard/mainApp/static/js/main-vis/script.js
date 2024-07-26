@@ -1,7 +1,7 @@
 
 // list of objects (organization is hard...)
     // containing divs
-var mainContent = document.getElementById("main-content")
+var mainContent = document.getElementById("map-main-content")
 var navBar = document.getElementById("nav-bar")
 var mainVisResizer = document.getElementById("main-vis-resizer")
 var minorVisResizer = document.getElementById("minor-vis-resizer")
