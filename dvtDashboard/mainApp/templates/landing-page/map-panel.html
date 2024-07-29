@@ -110,7 +110,7 @@
     check = d3.select(hospitalizationsBranch)
       .append("sl-tree-item")
       .attr("class", "hospital-check-branch")
-      .style("visibility", "collapse")
+      .style("display", "none")
       .append("sl-checkbox")
       .attr("id", "hospital-" + disease + "-check")
       .attr("class", "hospital-check ")

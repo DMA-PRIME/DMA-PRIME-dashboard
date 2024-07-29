@@ -26,7 +26,7 @@
 #map-options {
     height: max-content;
     overflow-wrap: normal;
-    overflow-y: scroll;
+    overflow-y: auto;
 }
 
 #map-aggregation-vis {
