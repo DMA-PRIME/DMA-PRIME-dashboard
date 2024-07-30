@@ -1,6 +1,3 @@
-.options-div {
-    padding: var(--sl-spacing-x-small)
-}
 
 .options-header {
     font-size: var(--sl-font-size-large);
@@ -10,6 +7,10 @@
 
 .options-divider {
     --spacing: 0;
+}
+
+.map-options-centered {
+    justify-self: center;
 }
 
 #main-content-divider {
@@ -27,6 +28,9 @@
     height: max-content;
     overflow-wrap: normal;
     overflow-y: auto;
+    display: grid;
+    row-gap: var(--sl-spacing-x-small);
+    padding: var(--sl-spacing-small);
 }
 
 #map-aggregation-vis {
@@ -48,19 +52,13 @@
     font-size: var(--sl-font-size-x-small);
 }
 
-#map-aggregation-switch {
-    position: absolute;
-    top: var(--sl-spacing-small);
-    right: var(--sl-spacing-small);
-}
-
-#map-aggregation-switch>sl-radio-button::part(button) {
+/* #map-aggregation-switch>sl-radio-button::part(button) {
     background-color: var(--sl-color-neutral-500);
 }
 
 #map-aggregation-switch>sl-radio-button::part(button--checked) {
     background-color: var(--sl-color-primary-600);
-}
+} */
 
 #map-options-hospital-icons-toggle::part(control--checked) {
     border-color: var(--sl-color-neutral-400);

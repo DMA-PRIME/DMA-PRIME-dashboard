@@ -2,17 +2,17 @@
 mapAggregationSwitch.addEventListener("sl-change", (event) => {
     displayAggregateChart()
     reset()
-    mapSVG.select("#map-color-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value == "aggregated" && hospitalizationsToggle.checked))
-    mapSVG.select("#map-hospital-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value != "aggregated" && hospitalizationsToggle.checked))
+    mapSVG.select("#map-color-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value == "aggregated")) // && hospitalizationsToggle.checked))
+    mapSVG.select("#map-hospital-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value != "aggregated")) // && hospitalizationsToggle.checked))
     highlightCounty(focusCounty)
     
     if(mapAggregationSwitch.value == "aggregated") {
         mapSVG.selectAll(".zcta").style('fill', function(d) { return heatmapColorMap(d3.select(this).attr('count')) })
-        d3.selectAll(".hospital-check-branch")
+        d3.selectAll(".hospital-check")
             .style("display", "none")
     } else {
         mapSVG.selectAll(".zcta").style("fill", "var(--sl-color-gray-800)")
-        d3.selectAll(".hospital-check-branch")
+        d3.selectAll(".hospital-check")
             .style("display", "initial")
     }
 })
@@ -49,20 +49,20 @@ resetButton.addEventListener("click", () => {
     mapSVG.transition().duration(750).call(mapZoom.transform, d3.zoomIdentity.translate(0, 0).scale(1))
 })
 
-hospitalizationsToggle.addEventListener("sl-change", () => {
-    if(hospitalizationsToggle.checked) {
-        mapSVG.selectAll("#hospital-bubbles, #map-zctas").transition().duration(500).style("opacity", 1)
-        mapSVG.selectAll("#map-color-legend").transition().duration(500).style("opacity", +(mapAggregationSwitch.value == "aggregated"))
-        mapSVG.selectAll("#map-hospital-legend").transition().duration(500).style("opacity", +(mapAggregationSwitch.value != "aggregated"))
-        mapSVG.selectAll("#hospital-bubbles, #map-hospital-legend, #map-color-legend, #map-zctas")
-            .style("pointer-events", "auto")
-    } else { 
-        mapSVG.selectAll("#hospital-bubbles, #map-hospital-legend, #map-color-legend, #map-zctas")
-            .transition().duration(500)
-            .style("opacity", 0)
-            .style("pointer-events", "none")
-    }
-})
+// hospitalizationsToggle.addEventListener("sl-change", () => {
+//     if(hospitalizationsToggle.checked) {
+//         mapSVG.selectAll("#hospital-bubbles, #map-zctas").transition().duration(500).style("opacity", 1)
+//         mapSVG.selectAll("#map-color-legend").transition().duration(500).style("opacity", +(mapAggregationSwitch.value == "aggregated"))
+//         mapSVG.selectAll("#map-hospital-legend").transition().duration(500).style("opacity", +(mapAggregationSwitch.value != "aggregated"))
+//         mapSVG.selectAll("#hospital-bubbles, #map-hospital-legend, #map-color-legend, #map-zctas")
+//             .style("pointer-events", "auto")
+//     } else { 
+//         mapSVG.selectAll("#hospital-bubbles, #map-hospital-legend, #map-color-legend, #map-zctas")
+//             .transition().duration(500)
+//             .style("opacity", 0)
+//             .style("pointer-events", "none")
+//     }
+// })
 
 hospitalIconsToggle.addEventListener("sl-change", () => {
     if(hospitalIconsToggle.checked) {

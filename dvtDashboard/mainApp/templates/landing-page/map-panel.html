@@ -2,11 +2,25 @@
 
 {% block options %}
 <div id="map-options">
-  <div class="centering-container options-div">
-    <sl-button pill id="map-reset-button">Reset Map</sl-button>
-  </div>
+  <sl-button pill id="map-reset-button" class="map-options-centered">Reset Map</sl-button>
   <sl-divider class="options-divider"></sl-divider>
-  <sl-tree class="options-div">
+  <sl-radio-group value="aggregated" id="map-aggregation-switch" class="map-options-switch map-options-centered" size="small">
+    <sl-radio-button pill value="aggregated">Aggregated</sl-radio-button>
+    <sl-radio-button pill value="individual">Individual</sl-radio-button>
+  </sl-radio-group>
+  <sl-radio-group value="total" id="map-population-switch" class="map-options-switch map-options-centered" size="small">
+    <sl-radio-button pill value="total">Total</sl-radio-button>
+    <sl-radio-button pill value="pop-norm">Pop. Norm.</sl-radio-button>
+  </sl-radio-group>
+  
+  <p id="map-summary" class="map-options">
+    Monthly count of hospitalizations due to the below diseases.
+  </p>
+  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-options" checked >Hospital Icons</sl-checkbox>
+  <div id="map-options-hospitalizations-branch" class="map-options">
+
+  </div>
+  <!-- <sl-tree class="options-div">
     <sl-tree-item id="map-options-hospitalizations-branch" expanded>
       <sl-switch id="map-options-hospitalizations-toggle" checked>
         <p class="options-header">Hospitalizations</p>
@@ -14,7 +28,7 @@
       <sl-tree-item>Monthly count of hospitalizations due to the below diseases.</sl-tree-item>
     </sl-tree-item>
     <sl-tree-item><sl-checkbox id="map-options-hospital-icons-toggle" checked>Hospital Icons</sl-checkbox></sl-tree-item>
-  </sl-tree>
+  </sl-tree> -->
 </div>
 <div class="options-div" id="map-aggregation-vis">
   <svg id="map-aggregation-donut-svg" class="fill-width">
@@ -44,10 +58,6 @@
 {% block contents %}
 <div class="fill-width fill-height" id="map-div">
   <sl-resize-observer id="map-resizer">
-    <sl-radio-group value="aggregated" id="map-aggregation-switch">
-      <sl-radio-button pill value="aggregated">Aggregated</sl-radio-button>
-      <sl-radio-button pill value="individual">Individual</sl-radio-button>
-    </sl-radio-group>
     <svg id="map-svg" class="scroll fill-height fill-width"></svg>
   </sl-resize-observer>
   <div id="map-tooltip">
@@ -70,7 +80,7 @@
   // interactive elements
   var resetButton = document.getElementById("map-reset-button")
   var mapAggregationSwitch = document.getElementById("map-aggregation-switch")
-  var hospitalizationsToggle = document.getElementById("map-options-hospitalizations-toggle")
+  // var hospitalizationsToggle = document.getElementById("map-options-hospitalizations-toggle")
   var hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
 
   // visualization elements
@@ -108,14 +118,12 @@
 
   function createHospitalCheck(disease, color) {
     check = d3.select(hospitalizationsBranch)
-      .append("sl-tree-item")
-      .attr("class", "hospital-check-branch")
-      .style("display", "none")
       .append("sl-checkbox")
       .attr("id", "hospital-" + disease + "-check")
       .attr("class", "hospital-check ")
       .attr("disease", disease)
       .attr("checked", "")
+      .style("display", "none")
       .html(disease)
 
     check.node().addEventListener("sl-change", (e) => {

@@ -1,6 +1,7 @@
 p,
 text {
   font-family: var(--sl-font-sans);
+  margin: 0;
 }
 
 .fill-height {
@@ -19,6 +20,10 @@ text {
   overflow: scroll;
   overflow-x: scroll;
   overflow-y: scroll;
+}
+
+.grid {
+  display: grid;
 }
 
 .centering-container {
