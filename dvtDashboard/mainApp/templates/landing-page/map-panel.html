@@ -80,6 +80,7 @@
   // interactive elements
   var resetButton = document.getElementById("map-reset-button")
   var mapAggregationSwitch = document.getElementById("map-aggregation-switch")
+  var mapPopulationSwitch = document.getElementById("map-population-switch")
   // var hospitalizationsToggle = document.getElementById("map-options-hospitalizations-toggle")
   var hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
 
@@ -105,9 +106,10 @@
   var ySkew = 0
 
   var numDiseases = 3
-  var diseaseIndexing = { "covid-19": 1, "flu": 2, "opioid": 3 }
-  var diseaseColorMap = d3.scaleOrdinal().domain(Object.keys(diseaseIndexing)).range(d3.schemeSet1)
+  var diseaseIndexing = { "covid-19": 1, "influenza": 2, "rsv": 3 }
+  var diseaseColorMap = d3.scaleOrdinal().domain(Object.keys(diseaseIndexing)).unknown("var(--sl-color-gray-600").range(d3.schemeSet1)
   var heatmapColorMap = null
+  var hospitalRadiusMap = null
 
   var diseaseStats = null
   var diseaseMetadata = null

@@ -8,7 +8,7 @@ import pandas as pd
 import glob
 import json
 
-from .utility import counties 
+# from .utility import counties 
 
 # Data:
 #    map, county, zip code
@@ -23,7 +23,7 @@ real_dict = {
     'zcta': {'shape': {}, 'stats': None, 'data': None}, # zip code level data
     'county': {'shape': {}, 'stats': None, 'data': None}, # county level data
     'hospital': {'coordinates':{}, 'stats': None, 'usage': None}, # from individual hospitals
-    'hospital-zcta': {'stats': None, 'data': None}, # from individual hospitals
+    'hospital-zcta': {'stats': None, 'data': None, 'county-crosswalk': None}, # from individual hospitals
 }
 
 def create_app(test_config=None):
@@ -95,7 +95,7 @@ def create_app(test_config=None):
     
     @app.route('/testing')
     def testing():
-        return render_template('main-vis-old.html')
+        return render_template('testing-vis.html')
 
     @app.route('/hospital/<id>')
     def getHospitalHTML(id):
@@ -163,25 +163,44 @@ def create_app(test_config=None):
     @app.route('/get-hospital-zcta-data', methods=['POST'])
     def returnZCTAHospitalData():
         variables = request.get_json()
-        region = variables['region-name']
-        disease = slice(None) if variables['disease'] == 'all' else variables['disease'].split(',') 
-        date = [max(real_dict['hospital-zcta']['data'].index.levels[2])] if variables['date'] == 'max' else slice(None) if variables['date'] == 'all' else variables['date'].split(',')
+        base_data = real_dict['hospital-zcta']['data']
+
+        # region = slice(None) if variables['region-name'] == 'all' else variables['region-name']
+        # disease = slice(None) if variables['disease'] == 'all' else variables['disease']
+        # date = [max(real_dict['hospital-zcta']['data'].index.levels[2])] if variables['date'] == 'max' else slice(None) if variables['date'] == 'all' else variables['date']
         
-        region2 = None
-        if isinstance(region, list):
-            region2 = []
-            for r in region:
-                if int(r) in real_dict['hospital-zcta']['data'].index.levels[0]:
-                    region2.append(r)
-        elif region == 'all':
-                region2 = slice(None)
-        else:
-                if int(region) in real_dict['hospital-zcta']['data'].index.levels[0]:
-                    return jsonify({'data': None, 'stats': None, 'metadata': None})
+        region = slice(None)
+        disease = slice(None)
+        date = '2023-11' # [max(base_data.index.levels[3])]
 
-        result =  getZCTAHospitalData(region2, disease, date)
+        if not isinstance(region, slice):
+            if isinstance(region, list):
+                for i in range(len(region)):
+                    region[i] = int(region[i])
+            else:
+                region = int(region)
+            region = base_data.index.levels[0].intersection(region) # make sure region exists
 
-        return jsonify({'data': json.loads(result['data'].to_json(orient='table', index=True))['data'], 'stats': result['stats'].to_dict(), 'metadata': result['metadata']})
+        return_data = base_data.groupby(['zcta', 'disease', 'date']).agg({'INTPTLAT': 'max', 'INTPTLON': 'max', 'ZCTA_POP': 'max', 'count': 'sum', 'days': 'max'})
+        return_data = return_data.loc[(region, disease, date), ['count', 'INTPTLON', 'INTPTLAT', 'ZCTA_POP']]
+
+        returned_index = return_data.index.remove_unused_levels().set_names('date', level=2).set_names('region', level=0)
+        return_data.index = returned_index
+
+        stats = {}
+        stats['max'] = return_data.groupby('disease').max()['count'].to_dict()
+        stats['max']['aggregated'] = return_data.groupby('region', axis=0).sum()['count'].max()
+        stats['max']['all'] = return_data['count'].max()
+
+        metadata = {
+            'region': returned_index.levels[0].to_list(),
+            'disease': returned_index.levels[1].to_list(),
+            'date': returned_index.levels[2].to_list(),
+            'zcta-county-crosswalk': real_dict['hospital-zcta']['county-crosswalk']
+        }
+
+        return jsonify({'data': json.loads(return_data.to_json(orient='table', index=True))['data'], 'stats': stats, 'metadata': metadata})
+
 
     @app.route('/get-hospital-zcta-data-by-county', methods=['POST'])
     def returnZCTAHospitalDataByCounty():
@@ -203,29 +222,50 @@ def create_app(test_config=None):
     def getHospitalZCTATooltip():
         variables = request.get_json()
 
-        date = max(real_dict['hospital-zcta']['data'].index.levels[2]) if variables['date'] == 'max' else variables['date'].split(',')[0]
+        date = max(real_dict['hospital-zcta']['data'].index.levels[3]) if variables['date'] == 'max' else variables['date'].split(',')[0]
         dates = pd.date_range(end=date, periods=12, freq='MS').strftime('%Y-%m').to_list()
 
         pred_dates = (pd.Timestamp(date) + pd.DateOffset(months=1)).strftime('%Y-%m')
 
-        historical_result = getZCTAHospitalData(variables['region-name'].split(','), variables['disease'].split(','), dates)
-
+        try:
+            historical_result = getZCTAHospitalData(variables['region-name'].split(','), variables['disease'].split(','), dates)
+            population = historical_result['data']['ZCTA_POP'].max()
+        except KeyError:
+            temp_index = pd.MultiIndex.from_product(
+                [variables['region-name'].split(','), variables['disease'].split(','), ['temp'], dates],
+                names=['zcta', 'disease', 'county', 'date'])
+            temp_df = pd.DataFrame(index=temp_index, columns=['count'])
+            temp_df.loc[(variables['region-name'].split(','), variables['disease'].split(','), slice(None), dates)] = 0
+            historical_result = {'data': temp_df}
+            historical_result['metadata'] = {name: vals.to_list() for (name, vals) in zip(temp_index.names, temp_index.levels)}
+            population = 1
         historical_return_data = historical_result['data']['count']
         historical_return_data.index = historical_return_data.index.droplevel(0)
         historical_return_data_dict = {}
         for disease in historical_return_data.index.levels[0]:
-            historical_return_data_dict[disease] = historical_return_data.xs(disease).to_dict()
+            historical_return_data_dict[disease] = historical_return_data.xs(disease).groupby('date').sum().to_dict()
 
-        predictive_result = getZCTAHospitalData(variables['region-name'].split(','), variables['disease'].split(','), pred_dates)
+        try:
+            predictive_result = getZCTAHospitalData(variables['region-name'].split(','), variables['disease'].split(','), pred_dates)
+        except KeyError:
+            temp_index = pd.MultiIndex.from_product(
+                [variables['region-name'].split(','), variables['disease'].split(','), ['temp'], pred_dates if isinstance(pred_dates, list) else [pred_dates]],
+                names=['zcta', 'disease', 'county', 'date'])
+            temp_df = pd.DataFrame(index=temp_index, columns=['count'])
+            temp_df.loc[(variables['region-name'].split(','), variables['disease'].split(','), slice(None), pred_dates)] = 0
+            predictive_result = {'data': temp_df}
+            predictive_result['metadata'] = {name: vals.to_list() for (name, vals) in zip(temp_index.names, temp_index.levels)}
         predictive_return_data = predictive_result['data']['count']
         predictive_return_data.index = predictive_return_data.index.droplevel(0)
         predictive_return_data_dict = {}
         for disease in predictive_return_data.index.levels[0]:
-            predictive_return_data_dict[disease] = predictive_return_data.xs(disease).to_dict()
+            predictive_return_data_dict[disease] = predictive_return_data.xs(disease).groupby('date').sum().to_dict()
 
         return_stats_dict = {'min': min(historical_return_data.min(axis=None), predictive_return_data.min(axis=None)), 'max': max(historical_return_data.max(axis=None), predictive_return_data.max(axis=None))}
         metadata = historical_result['metadata']
         metadata['date'] = {'historical': historical_result['metadata']['date'], 'predictive': predictive_result['metadata']['date']}
+        metadata['population'] = population
+
         return_data = {'data': {'historical': historical_return_data_dict, 'predictive': predictive_return_data_dict}, 'stats': return_stats_dict, 'metadata': metadata}
 
         return jsonify(return_data)
@@ -282,9 +322,9 @@ def getZCTAHospitalData(region, disease, date):
     if not isinstance(region, slice):
         for i in range(len(region)):
             region[i] = int(region[i])
-    return_data = base_data.loc[(region, disease, date), ['count', 'INTPTLON', 'INTPTLAT', 'county']] 
+    return_data = base_data.loc[(region, disease, slice(None), date), ['count', 'INTPTLON', 'INTPTLAT', 'ZCTA_POP']] 
     return_stats = base_stats.loc[date, :]
-    returned_index = return_data.index.remove_unused_levels().set_names('date', level=2).set_names('region', level=0)
+    returned_index = return_data.index.remove_unused_levels().set_names('date', level=3).set_names('region', level=0)
     return_data.index = returned_index
     metadata = {name: vals.to_list() for (name, vals) in zip(returned_index.names, returned_index.levels)}
     return {'data': return_data, 'stats': return_stats, 'metadata': metadata}
@@ -293,7 +333,7 @@ def getZCTAHospitalData(region, disease, date):
 
 def loadData():
     loadCountyData()
-    loadZCTAData()
+    loadZCTAData2()
 
 def getQuantiles(num_quantiles, data):
     quantiles = []
@@ -379,4 +419,39 @@ def loadZCTAData():
     real_dict['hospital-zcta']['stats'] = stats_df
 
 
+def loadZCTAData2():
+    # zcta
+    # index_names = ['zcta', 'disease', 'year-month']
+    index_names = ['zcta', 'disease', 'county', 'date']
+    # zcta,county,date,count,disease,days,INTPTLON,INTPTLAT,PARTIAL_POP,ZCTA_POP
+
+    df_multi = pd.DataFrame()
+
+    files = [
+    'mainApp/static/data/covid_hospital_zcta_new.csv', # 'mainApp/static/data/covid_hospital_zcta.csv',
+    'mainApp/static/data/influenza_hospital_zcta_new.csv', #'mainApp/static/data/flu_hospital_zcta.csv',
+    'mainApp/static/data/rsv_hospital_zcta_new.csv',
+    ]
+
+    for f_path in files:
+        df = pd.read_csv(f_path)
+        value_columns = df.columns.difference(index_names)
+        temp_df = pd.pivot_table(df, values=value_columns, index=index_names)
+        df_multi = pd.concat([df_multi, temp_df])
+    df_multi.sort_index(inplace=True)
+
+    # zcta stats
+    columns=['min', 'q20', 'q25', 'q40', 'q50', 'q60', 'q75', 'q80', 'max']
+    quantiles = [0, .2, .25, .4, .5, .6, .75, .8, 1]
+    dates = df_multi.index.levels[3]
+
+    stats_df = pd.DataFrame(columns=columns, index=dates)
+    stats_df.sort_index(inplace=True)
+    for idx in dates:    
+        stats_df.loc[idx, :] = np.nanquantile(df_multi.loc[(slice(None), slice(None), slice(None), idx), 'count'], quantiles)
+
     
+    # saving to dict
+    real_dict['hospital-zcta']['data'] = df_multi
+    real_dict['hospital-zcta']['county-crosswalk'] = df_multi.groupby(['zcta', 'county']).max().index.to_frame(index=False).groupby(['zcta']).apply(lambda x: list(x.county)).to_dict()
+    real_dict['hospital-zcta']['stats'] = stats_df

@@ -22,8 +22,8 @@ function displayMap() {
               .attr("class", "county")
               .attr("id", d => "map-" + fixName(d.properties.NAME))
               .attr("d", d => pathGenerator(d))
-              .attr("fill", "var(--sl-color-gray-300)")
-              .attr("fill-opacity", 0)
+              .style("fill", "var(--sl-color-gray-300)")
+              .style("fill-opacity", 0)
 
         zctas = mapSVG.append("g")
             .attr("id", "map-zctas")
@@ -61,79 +61,85 @@ function displayMap() {
                 "region-name": "all",
                 "disease": "all",
                 "date": "2021-11",
-            })}).then((result) => { 
-                hospitalData = mapSVG.append("g")
+        })}).then((result) => { 
+            hospitalData = mapSVG.append("g")
                 .attr("id", "hospital-bubbles")
                 .style("pointer-events", "none")
 
-                data = result.data.map(function(item) {
-                    item["region"] = "_"+item["region"]
-                    return item
+            data = result.data.map(function(item) {
+                item["region"] = "_"+item["region"]
+                return item
+            })
+            hospitalStats = result.stats
+            hospitalMetadata = result.metadata
+
+            maxHospitalCount = hospitalStats.max['all']
+            maxHospitalRadius = Math.min(height, width) * 0.025
+            hospitalRadiusMap = d3.scaleLinear([0, maxHospitalCount], [0, maxHospitalRadius]).unknown(0).nice(9) // unknown values are being set to 0 if they are encountered
+            diseaseGroups = {}
+            hospitalMetadata.disease.forEach(disease => {
+                diseaseGroups[disease] = hospitalData.append("g").attr("id", disease + "-hospital-data").attr("class", "hospital-data-group").raise()
+                // create checkbox
+                createHospitalCheck(disease, diseaseColorMap(disease))
+            })
+            
+            hospitalLegend = legendsGroup.append("g")
+                .attr("id", "map-hospital-legend")
+                .style("opacity", 0)
+
+            hospitalLegend.append("rect")
+                .attr("id", "map-hospital-legend-background")
+                .attr("class", "legend-background")
+
+            hospitalLegendInnards = hospitalLegend.append("g")
+                .attr("id", "map-hospital-legend-innards")
+
+            hospitalLegendInnards.append("text")
+                .attr("class", `legend title hospital`)
+                .text("Monthly Count")
+
+            hospitalLegendContent = hospitalLegendInnards.append("g").attr("id", "map-hospital-legend-contents")
+            hospitalLegendContent.selectAll("legend hospital").data(hospitalRadiusMap.ticks(3).reverse().filter((d) => d != 0))
+                .enter()
+                .append("g")
+                .attr("class", "legend hospital")
+                .each(function(d) {
+                    em = parseFloat(getComputedStyle(this).fontSize)
+                    d3.select(this).append("line")
+                    d3.select(this).append("circle")
+                    d3.select(this).append("text")
+                    .text(formatInt(d))
                 })
-                hospitalStats = result.stats
-                hospitalMetadata = result.metadata
 
-                maxHospitalCount = hospitalStats.max[hospitalMetadata.date[0]]
-                maxHospitalRadius = Math.min(height, width) * 0.025
-                hospitalRadiusMap = d3.scaleLinear([0, maxHospitalCount], [0, maxHospitalRadius]).nice(9)
-                diseaseGroups = {}
-                hospitalMetadata.disease.forEach(disease => {
-                    diseaseGroups[disease] = hospitalData.append("g").attr("id", disease + "-hospital-data").attr("class", "hospital-data-group").raise()
-                    // create checkbox
-                    createHospitalCheck(disease, diseaseColorMap(disease))
-                })
-                
-                hospitalLegend = legendsGroup.append("g")
-                    .attr("id", "map-hospital-legend")
-                    .style("opacity", 0)
+            legendBBox = hospitalLegend.select("#map-hospital-legend-innards").node().getBBox()
+            hospitalLegend.select("#map-hospital-legend-background")
+                .attr("rx", 0.5*em)
 
-                hospitalLegend.append("rect")
-                    .attr("id", "map-hospital-legend-background")
-                    .attr("class", "legend-background")
-
-                hospitalLegendInnards = hospitalLegend.append("g")
-                    .attr("id", "map-hospital-legend-innards")
-
-                hospitalLegendInnards.append("text")
-                    .attr("class", `legend title hospital`)
-                    .text("Monthly Count")
-
-                hospitalLegendContent = hospitalLegendInnards.append("g").attr("id", "map-hospital-legend-contents")
-                hospitalLegendContent.selectAll("legend hospital").data(hospitalRadiusMap.ticks(3).reverse().filter((d) => d != 0))
+            // draw bubbles
+            data.forEach(element => {
+                temp = diseaseGroups[element.disease].selectAll(`.hospital-bubble .${element.disease} .${element.region}`)
+                temp
+                    .data([element])
                     .enter()
-                    .append("g")
-                    .attr("class", "legend hospital")
+                    .append("circle")
+                    .attr("class", `hospital-bubble ${element.disease} ${element.region}`)
+                    .attr("bubble-type", "hospital")
+                    .style("fill", diseaseColorMap(element.disease))
+                    .style("stroke", diseaseColorMap(element.disease))
+                    .style("opacity", 0)
                     .each(function(d) {
-                        em = parseFloat(getComputedStyle(this).fontSize)
-                        d3.select(this).append("line")
-                        d3.select(this).append("circle")
-                        d3.select(this).append("text")
-                        .text(formatInt(d))
+                        bubble = d3.select(this)
+                        result.metadata["zcta-county-crosswalk"][d.region.substring(1)].forEach((county) => {
+                            bubble.attr(county, true)
+                        })
                     })
+                });
 
-                legendBBox = hospitalLegend.select("#map-hospital-legend-innards").node().getBBox()
-                hospitalLegend.select("#map-hospital-legend-background")
-                    .attr("rx", 0.5*em)
-
-                // draw bubbles
-                data.forEach(element => {
-                    temp = diseaseGroups[element.disease].selectAll(`.hospital-bubble .${element.disease} .${element.region}`)
-                    temp
-                        .data([element])
-                        .enter()
-                        .append("circle")
-                        .attr("class", `hospital-bubble ${element.disease} ${element.region} ${element.county}`)
-                        .attr("bubble-type", "hospital")
-                        .style("fill", diseaseColorMap(element.disease))
-                        .style("stroke", diseaseColorMap(element.disease))
-                        .style("opacity", 0)
-                    });
-        }).then(() => {
             d3.json("../../static/data/tl_2023_sc_zcta_trimmed.json").then( async function(mapdata) {
                 d3.json("../../static/data/zcta_county_crosswalk.json").then( async function(crosswalk) {
                     zcta = mapdata
-                    pathGenerator = d3.geoPath(mapProjection)
         
+                    aggregated = []
                     zctas.selectAll("path")
                         .data(mapdata.features)
                         .enter()
@@ -142,26 +148,26 @@ function displayMap() {
                         .attr("id", d => "map-"+fixName(d.properties.ZCTA5CE20))
                         .attr("county", (d) => crosswalk[d.properties.ZCTA5CE20])
                         .attr("d", d => pathGenerator(d))
-
-                    aggregated = []
-                    zctas.selectAll("path").each(function(data) {
-                        hospitalTooltip(d3.select(this))
-                        bubbles = mapSVG.selectAll(`._${data.properties.ZCTA5CE20}`)
-                        if (!bubbles.empty())
-                        {                    
-                            value = null ? bubbles.empty() : 0
+                        .each(function(zctaData) {
+                            zcta = d3.select(this)
+                            hospitalTooltip(zcta)
+                            zcta.datum().properties['counties'] = result.metadata["zcta-county-crosswalk"][zctaData.properties.ZCTA5CE20]
+                            zcta.attr("population", null)
+    
+                            value = 0
+                            bubbles = mapSVG.selectAll(`._${zctaData.properties.ZCTA5CE20}`)
                             bubbles.each((d) => {
                                 value += d.count
+                                zcta.attr("population", d.ZCTA_POP)
                             })
-                            d3.select(this).attr("count", value)
+                            zcta.attr("count", value)
                             aggregated.push(value)
-                        }
-                    })
-                    
-                    heatmapColorMap = d3.scaleLinear([d3.min(aggregated), d3.max(aggregated)], ["white", "saddlebrown"]).unknown("var(--sl-color-gray-600)").nice()
+                        })
+
+                    heatmapColorMap = d3.scaleLinear([0, d3.max(aggregated)], ["white", "saddlebrown"]).unknown("var(--sl-color-gray-600)").nice()
                     zctas.selectAll("path")
-                        .style('fill', function(d) { return heatmapColorMap(d3.select(this).attr("count")) })
-                        .each(function(data) {zoomToCounty(this, data)})
+                        .style('fill', function(d) { return heatmapColorMap(d3.select(this).attr("count"))})
+                        .each(function(data) {zoomToCounty(d3.select(this), data)})
 
                     legendWidth = Math.max(width/3, 300)
                     colorLegend = mapSVG.select("#map-legends").append("g")
@@ -190,7 +196,7 @@ function displayMap() {
                         .style("fill", "url(#linear-gradient)");
 
                     colorLegendContent.append("g").attr("id", "map-color-legend-axis")
-                        .call(d3.axisBottom(d3.scaleLinear(heatmapColorMap.domain(), [0, legendWidth])))
+                        .call(d3.axisBottom(d3.scaleLinear(heatmapColorMap.domain(), [0, legendWidth])).ticks(9))
 
                     colorLegendContent.append("text")
                         .text("Aggregated Monthly Hospitalizations")
@@ -218,12 +224,19 @@ async function resizeMap() {
             .attr("d", (d) => pathGenerator(d))
 
         mapSVG.selectAll(".zcta")
+            .transition().duration(750)
             .attr("d", (d) => pathGenerator(d))
+            .style("fill", function(d) {
+                zcta = d3.select(this)
+                population = zcta.attr("population") ? zcta.attr("population") : 1
+                population = population == 0 ? NaN : population
+                return mapAggregationSwitch.value == "aggregated" ? heatmapColorMap(zcta.attr("count") / (mapPopulationSwitch.value == "total" ? 1 : population)) : "var(--sl-color-gray-800)"
+            })
 
         hospSize = Math.max(16, Math.min(width, height) * 0.015)
         mapSVG.select("#map-hospitals").selectAll(".hospital").each(function(d) {
                 coords = mapProjection(d.geometry.coordinates)
-                d3.select(this)
+                d3.select(this).transition().duration(750)
                     .attr("x", coords[0]*zoom + xSkew - hospSize/2)
                     .attr("y", coords[1]*zoom + ySkew - hospSize/2)
                     .attr("width", hospSize)
@@ -242,9 +255,9 @@ async function resizeMap() {
         colorLegendAxis.selectAll("*").remove()
         colorLegendAxis
             .attr("transform", `translate(${2*em},${height - 3.5*em})`)
-            .call(d3.axisBottom(d3.scaleLinear(heatmapColorMap.domain(), [0, legendWidth])))
+            .call(d3.axisBottom(d3.scaleLinear(heatmapColorMap.domain(), [0, legendWidth])).ticks(9))
 
-        colorLegend.select("#map-color-legend-contents>text")    
+        colorLegend.select("#map-color-legend-contents>text") 
             .attr("y", height-1*em)
             .attr("x", 2*em + legendWidth/2)
 
@@ -255,35 +268,48 @@ async function resizeMap() {
             .attr("height", legendBBox.height + 0.5*em)
             .attr("width", legendBBox.width + em)
 
-        maxHospitalCount = hospitalStats.max[hospitalMetadata.date[0]]
+        maxHospitalCount = hospitalRadiusMap.domain()[1]
         maxHospitalRadius = Math.min(height, width) * 0.025
         mapSVG.selectAll(".hospital-bubble").each(function(d) {
             mapCoords = mapProjection([d.INTPTLON, d.INTPTLAT])
             newPos = skew(mapCoords, maxHospitalRadius/5, diseaseIndexing[d.disease], numDiseases)
-            d3.select(this)
+            d3.select(this).transition().duration(750)
                 .attr("cx", newPos[0]*zoom + xSkew)
                 .attr("cy", newPos[1]*zoom + ySkew)
-                .attr("r", hospitalRadiusMap(d.count))
+                .attr("r", function(d) {
+                    population = d.ZCTA_POP
+                    population = population == 0 ? NaN : population
+                    return hospitalRadiusMap(d.count / (mapPopulationSwitch.value == "total" ? 1 : population))
+                })
+            })
 
             // updating legend stuff
-            em = parseFloat(getComputedStyle(this).fontSize)
             legend = mapSVG.select("#map-hospital-legend").attr("transform", `translate(${width} ${height}) scale(1 -1)`)
-            legend.selectAll(".legend.hospital").selectAll("line")
-                .attr("x2", (d) => -(hospitalRadiusMap(maxHospitalCount) + 2.5*em))
-                .attr("y2", (d) => hospitalRadiusMap(d) + 3*em)
-                .attr("x1", (d) => -(5*hospitalRadiusMap(d) + hospitalRadiusMap(maxHospitalCount) + 2*em))
-                .attr("y1", (d) => hospitalRadiusMap(d) + 3*em)
 
-            legend.selectAll(".legend.hospital").select("circle")
-                .attr("cx", (d) => -(hospitalRadiusMap(maxHospitalCount) + 2.5 * em))
-                .attr("cy", (d) => hospitalRadiusMap(d) + 3*em)
-                .attr("r", (d) => hospitalRadiusMap(d))
+            legend.select("#map-hospital-legend-contents").selectAll("g").data(hospitalRadiusMap.ticks(3).reverse().filter((d) => d != 0))
+                .join(
+                    enter => enter,
+                    update => update
+                    .each(function(d) {          
+                        d3.select(this).select("line").transition().duration(750)
+                            .attr("x2", (d) => -(hospitalRadiusMap(maxHospitalCount) + 2.5*em))
+                            .attr("y2", (d) => hospitalRadiusMap(d) + 3*em)
+                            .attr("x1", (d) => -(5*hospitalRadiusMap(d) + hospitalRadiusMap(maxHospitalCount) + 2*em))
+                            .attr("y1", (d) => hospitalRadiusMap(d) + 3*em)
 
-            legend.selectAll(".legend.hospital").select("text")
-                .attr("x", (d) => -(5*hospitalRadiusMap(d) + hospitalRadiusMap(maxHospitalCount) + 2.25*em))
-                .attr("y", (d) => -(hospitalRadiusMap(d) + 2.5*em))
+                        d3.select(this).select("circle").transition().duration(750)
+                            .attr("cx", (d) => -(hospitalRadiusMap(maxHospitalCount) + 2.5 * em))
+                            .attr("cy", (d) => hospitalRadiusMap(d) + 3*em)
+                            .attr("r", (d) => hospitalRadiusMap(d))
 
-            legend.select(".legend.title.hospital")
+                        d3.select(this).select("text").transition().duration(750)
+                            .attr("x", (d) => -(5*hospitalRadiusMap(d) + hospitalRadiusMap(maxHospitalCount) + 2.25*em))
+                            .attr("y", (d) => -(hospitalRadiusMap(d) + 2.5*em))
+                            .text(d)
+                }),
+                exit => exit.remove()
+                )
+            legend.select(".legend.title.hospital").transition().duration(750)
                 .attr("x", (d) => -(hospitalRadiusMap(maxHospitalCount) + 3*em))
                 .attr("y", (d) => -em)
 
@@ -293,10 +319,10 @@ async function resizeMap() {
                 .attr("y", legendBBox.y)
                 .attr("height", legendBBox.height + 0.5*em)
                 .attr("width", legendBBox.width + em)
-        })
     }
 
     setup().then(updateMap).catch((error) => {
+        console.log(error)
         console.log("something bad happened during map resizing")
         setTimeout(resizeMap, 100)
     })

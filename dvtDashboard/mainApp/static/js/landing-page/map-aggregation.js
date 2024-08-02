@@ -27,6 +27,10 @@ async function displayAggregateChart() {
             })
         }
 
+        if (mapPopulationSwitch.value != "total") {
+            maxCount /= scPopulation
+        }
+
         dateMin = dayjs.tz(dateMin, "YYYY-MM", "America/New_York").toDate()
         dateMax = dayjs.tz(dateMax, "YYYY-MM", "America/New_York").toDate()
 
@@ -66,7 +70,7 @@ async function displayAggregateChart() {
         // add graph
         line = d3.line()
             .x((d) => xScale(dayjs.tz(d.date, "YYYY-MM", "America/New_York").toDate()))
-            .y((d) => yScale(d.count))
+            .y((d) => yScale(mapPopulationSwitch.value=='total' ? d.count : d.count/scPopulation))
         
         aggregateChart = mapAggregationSvg.append("g")
 
@@ -77,8 +81,8 @@ async function displayAggregateChart() {
                         .attr("id", "map-aggregate-chart-"+entry[0])
                         .attr("d", line(entry[1]))
                         .attr("stroke", diseaseColorMap(entry[0]))
-                        .attr("fill", "none")
-                        .attr("stroke-width", 2)
+                        .style("fill", "none")
+                        .style("stroke-width", 2)
                 }
             })
             
@@ -87,19 +91,10 @@ async function displayAggregateChart() {
             .attr("id", "map-aggregate-chart")
             .attr("d", line(data))
             .attr("stroke", "saddlebrown")
-            .attr("fill", "none")
+            .style("fill", "none")
             .attr("stroke-width", 2)
         }
         
-
-        // aggregateChart.selectAll("circle")
-        //       .data(data)
-        //       .enter()
-        //       .append("circle")
-        //       .attr("cx", (d) => xScale(dayjs.tz(d.date, "YYYY-MM", "America/New_York").toDate()))
-        //       .attr("cy", (d) => yScale(d.count))
-        //       .attr("r", 2.5)
-        //       .attr("fill", "saddlebrown")
 
     })
 }
@@ -112,10 +107,9 @@ async function displayDonut() {
         "icu": [undefined, undefined]
     }
 
-    height = jsmapAggregationDonutSvg.height.baseVal.value
-    width = jsmapAggregationDonutSvg.width.baseVal.value
+    aggregateHeight = jsmapAggregationDonutSvg.height.baseVal.value
 
-    radius = (height - margin.top) / 2
+    radius = (aggregateHeight - margins.top) / 2
     radiusInner = radius * .25
     radiusRange = radius * .75
 
@@ -127,7 +121,7 @@ async function displayDonut() {
     bedsColorMap = d3.scaleOrdinal().domain(Object.keys(data)).range(d3.schemeSet2)
 
     mapAggregationDonut.append("path")
-        .attr("transform", `translate(${radius},${height/2})`)
+        .attr("transform", `translate(${radius},${aggregateHeight/2})`)
         .attr("d", d3.arc()({
             innerRadius: radiusInner,
             outerRadius: radius,
@@ -138,7 +132,7 @@ async function displayDonut() {
 
     mapAggregationDonutLegend = mapAggregationDonut.append("g")
         .attr("id", "map-aggregation-donut-legend")
-        .attr("transform", `translate(${radius*2+em/2}, ${height/2 - (bedTypes*1.5-.5)*em/2})`)
+        .attr("transform", `translate(${radius*2+em/2}, ${aggregateHeight/2 - (bedTypes*1.5-.5)*em/2})`)
 
     Object.entries(data).forEach((entry, index) => {
         const arc = d3.arc()
@@ -149,7 +143,7 @@ async function displayDonut() {
             d3.select(`#${entry[0]}-bed-usage-group`) : 
             mapAggregationDonut.append('g').attr("id", `#${entry[0]}-bed-usage-group`)
 
-        group.attr("transform", `translate(${radius}, ${height/2})`)
+        group.attr("transform", `translate(${radius}, ${aggregateHeight/2})`)
         
         mapAggregationDonutLegend.append("rect")
             .attr("id", `${entry[0]}-bed-usage-legend-color`)

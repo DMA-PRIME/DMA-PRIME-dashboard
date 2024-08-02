@@ -7,7 +7,12 @@ mapAggregationSwitch.addEventListener("sl-change", (event) => {
     highlightCounty(focusCounty)
     
     if(mapAggregationSwitch.value == "aggregated") {
-        mapSVG.selectAll(".zcta").style('fill', function(d) { return heatmapColorMap(d3.select(this).attr('count')) })
+        mapSVG.selectAll(".zcta").style('fill', function(d) { 
+            zcta = d3.select(this)
+            population = zcta.attr("population") ? zcta.attr("population") : 1
+            population = population == 0 ? NaN : population
+            return heatmapColorMap(zcta.attr("count") / (mapPopulationSwitch.value == "total" ? 1 : population))
+        })
         d3.selectAll(".hospital-check")
             .style("display", "none")
     } else {
@@ -15,6 +20,28 @@ mapAggregationSwitch.addEventListener("sl-change", (event) => {
         d3.selectAll(".hospital-check")
             .style("display", "initial")
     }
+})
+
+mapPopulationSwitch.addEventListener("sl-change", (event) => {
+    displayAggregateChart()
+    aggregatedMax = d3.max(mapSVG.selectAll(".zcta"), d => {
+        zcta = d3.select(d)
+        population = zcta.attr("population") ? zcta.attr("population") : 1
+        population = population == 0 ? NaN : population
+
+       return zcta.attr("count") / (mapPopulationSwitch.value == "total" ? 1 : population)
+    })
+    individualMax = d3.max(mapSVG.selectAll(".hospital-bubble"), d => {
+        zcta = d3.select(d).datum()
+        population = zcta.ZCTA_POP
+        population = population == 0 ? NaN : population
+        return zcta.count / (mapPopulationSwitch.value == "total" ? 1 : population)
+    })
+
+    heatmapColorMap.domain([0, aggregatedMax]).nice()
+    hospitalRadiusMap.domain([0, individualMax]).nice(9)
+
+    resizeMap()
 })
 
 zoomer = d3.zoom().scaleExtent([1, 10])
@@ -75,21 +102,21 @@ hospitalIconsToggle.addEventListener("sl-change", () => {
 })
 
 
-function zoomToCounty(dom, data) {
-    d3.select(dom).on('click', function(event) {
+function zoomToCounty(zcta, data) {
+    zcta.on('click', function(event) {
         reset()
-        zcta = d3.select(this)
-        county = d3.select("#map-"+zcta.attr("county"))
+        countyName = getClickedCounty(event, zcta)
+        county = d3.select("#map-"+countyName)
         countyData = county.data()[0]
 
-        if (focusCounty == zcta.attr("county")) {
+        if (focusCounty == countyName) {
             resetButton.click()
             focusCounty = null
             d3.select(mapTooltip)
                 .style("opacity", 0)
                 .style("z-index", -1)
         } else {
-            focusCounty = zcta.attr("county")
+            focusCounty = countyName
 
             center = mapProjection([countyData.properties.INTPTLON, countyData.properties.INTPTLAT])        
             dims = county.node().getBBox()
@@ -116,7 +143,8 @@ function highlightCounty(county) {
             mapSVG.selectAll(".hospital-bubble").transition().duration(750)
                 .style("fill", "var(--sl-color-gray-300)")
                 .style("stroke", "var(--sl-color-gray-300)")
-            mapSVG.selectAll(".hospital-bubble."+zcta.attr("county")).transition().duration(750)
+            mapSVG.selectAll(`.hospital-bubble[${focusCounty}=true]`)
+                .transition().duration(750)
                 .style("opacity", 1)
                 .style("fill", (d) => diseaseColorMap(d.disease))
                 .style("stroke", (d) => diseaseColorMap(d.disease))
@@ -162,7 +190,9 @@ function hospitalTooltip(element) {
 
     element.on("pointerenter", function(e) {
 
-        if(focusCounty != element.attr("county")) {
+        county = getClickedCounty(e, element)
+
+        if(focusCounty != county) {
             return
         }
         
@@ -177,7 +207,7 @@ function hospitalTooltip(element) {
 
         data = element.data()[0]
 
-        ttp.select("p.tooltip").node().innerHTML = `${element.attr("county")[0].toUpperCase() + element.attr("county").slice(1)}<br>ZCTA: ${data.properties.ZCTA5CE20}`
+        ttp.select("p.tooltip").node().innerHTML = `${county[0].toUpperCase() + county.slice(1)}<br>ZCTA: ${data.properties.ZCTA5CE20}`
         ttpSVG.node().innerHTML = ""
 
         d3.json("/get-hospital-zcta-tooltip", { // hospital zcta data
@@ -199,7 +229,8 @@ function hospitalTooltip(element) {
                 fullTimeDomain = historicalTimeDomain.concat(predictiveTimeDomain)
 
                 yScale = d3.scaleLinear()
-                            .domain([result.stats.min, result.stats.max])        
+                            .domain([mapPopulationSwitch.value == "total" ? result.stats.min : result.stats.min/result.metadata.population, 
+                                mapPopulationSwitch.value == "total" ? result.stats.max : result.stats.max/result.metadata.population])        
                             .nice()
 
                 temp = ttpSVG.append("text").text(yScale.domain()[1]).attr("x", 0).attr("y", 0)
@@ -216,7 +247,7 @@ function hospitalTooltip(element) {
                 
                 line = d3.line()
                     .x((d) => xScale(d.date))
-                    .y((d) => yScale(d.count))
+                    .y((d) => yScale(mapPopulationSwitch.value == "total" ? d.count : d.count/result.metadata.population))
                     .curve(d3.curveMonotoneX)
 
                 ttpSVG.append("line").attr("id", "tooltip-prediction-separator")
@@ -246,7 +277,7 @@ function hospitalTooltip(element) {
                     .append("circle")
                     .attr("r", 3)
                     .attr("cx", (d) => xScale(d.date))
-                    .attr("cy", (d) => yScale(d.count))
+                    .attr("cy", (d) => yScale(mapPopulationSwitch.value == "total" ? d.count : d.count/result.metadata.population))
                     .attr("fill", diseaseColorMap(disease))
 
                     predictiveData = [{
@@ -314,6 +345,24 @@ function hospitalTooltip(element) {
                 .call(d3.axisLeft(yScale).ticks(5).tickSize(4));
             })
     })
+}
+
+function getClickedCounty(event, zcta) {
+    counties =  zcta.datum().properties['counties']
+
+    numPointSamples = 100
+    county = counties ? counties.filter((countyName) => {
+        path = document.getElementById(`map-${countyName}`)
+        len = path.getTotalLength()
+        points = []
+        for (i=0; i < numPointSamples; i++) {
+            point = path.getPointAtLength(i/(numPointSamples-1) * len)
+            points.push([point.x, point.y])
+        }
+        return d3.polygonContains(points, [(event.layerX-xSkew)/zoom, (event.layerY-ySkew)/zoom])
+    })[0] : zcta.attr("county")
+
+    return county
 }
 
 // function generalTooltip(element) {

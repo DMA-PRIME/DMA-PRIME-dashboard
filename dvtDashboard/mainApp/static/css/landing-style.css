@@ -22,10 +22,6 @@ text {
   overflow-y: scroll;
 }
 
-.grid {
-  display: grid;
-}
-
 .centering-container {
   display: flex;
   justify-content: center;
