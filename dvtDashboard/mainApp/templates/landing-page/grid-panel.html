@@ -46,7 +46,7 @@
 {% endblock %}
 
 {% block contents %}
-<div class="container"></div>
+<div id="grid-container"></div>
 <button class="toggle-button" id="toggleButton">TOT
 </button>
 
@@ -58,7 +58,8 @@
 {% block scripts %}
 <script>
   var gridContainer = document.getElementById("grid-container")
-
+  var gridPopulationSwitch = document.getElementById("grid-population-switch")
+  var gridAggregationSwitch = document.getElementById("grid-aggregation-switch")
   set{{panel.name}}Panel()
 </script>
 

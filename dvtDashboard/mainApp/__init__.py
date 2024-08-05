@@ -189,7 +189,7 @@ def create_app(test_config=None):
 
         stats = {}
         stats['max'] = return_data.groupby('disease').max()['count'].to_dict()
-        stats['max']['aggregated'] = return_data.groupby('region', axis=0).sum()['count'].max()
+        stats['max']['aggregated'] = return_data.groupby('region').sum()['count'].max()
         stats['max']['all'] = return_data['count'].max()
 
         metadata = {
@@ -207,14 +207,25 @@ def create_app(test_config=None):
     @app.route('/get-hospital-zcta-data-by-county', methods=['POST'])
     def returnZCTAHospitalDataByCounty():
         variables = request.get_json()
-            
+        base_data = real_dict['hospital-zcta']['data']
+
+        # county: aggregate disease, disease1, disease2, etc
+            # disease: {date: value, count: value}
+        # stats: max of (cumulative sum for every county) - the way hospital data is handled, it is current cases, not new cases, so this aggregation number does not make much sense...
+        # stats: county: max per disease (aggregate or otherwise)
+
+        stats = {
+            'county': {}, # max of all disease for plotting, max point (date, count) for each disease
+            'max-cum': 0,
+            'min-date': base_data.index.levels[3].min(),
+            'max-date': base_data.index.levels[3].max(),
+        }
+
         county_to_zcta = real_dict['hospital-zcta']['zcta-stats'].groupby(['zcta', 'main-county']).max().index.to_frame(index=False).groupby(['main-county']).apply(lambda x: list(x.zcta)).to_dict()
 
-        return_df = pd.DataFrame()
         return_data = {}
         
         for county, zctas in county_to_zcta.items():
-            base_data = real_dict['hospital-zcta']['data']
             if isinstance(zctas, list):
                 for i in range(len(zctas)):
                     zctas[i] = int(zctas[i])
@@ -222,36 +233,40 @@ def create_app(test_config=None):
                 zctas = int(zctas)
             zctas = base_data.index.levels[0].intersection(zctas) # make sure region exists
             result = base_data.loc[(zctas, slice(None), slice(None), slice(None)), ['count']] 
-            # print(pd.concat({county: result.groupby(['disease', 'date']).sum()}, names=['county']))
-            return_df = pd.concat([return_df, pd.concat({county: result.groupby(['disease', 'date']).sum()}, names=['county'])])
 
-        # print(json.loads(return_data.to_json(orient='table', index=True))['data'])
-
-        aggregated_df = return_df.groupby(['county', 'date']).sum()
-
-        return_data_dict = {
-            'individual': json.loads(return_df.to_json(orient='table', index=True))['data'],
-            'aggregated': json.loads(aggregated_df.to_json(orient='table', index=True))['data'],
-        }
-
-        stats = {
-            'max': {
-                'individual': return_df.max(axis=None),
-                'aggregated': aggregated_df.max(axis=None),
+            return_data[county] = {
+                'aggregated': None,
+                'individual': [],
             }
-        }
 
-        # county = variables['region-name']
-        # region = slice(None)
-        # disease = slice(None) if variables['disease'] == 'all' else variables['disease'].split(',') 
-        # date = [max(real_dict['hospital-zcta']['data'].index.levels[2])] if variables['date'] == 'max' else slice(None) if variables['date'] == 'all' else variables['date'].split(',')
-        
-        # result =  getZCTAHospitalData(region, disease, date)
+            temp1 = result.groupby(['disease', 'date']).sum()
+            stats['county'][county] = {
+                'individual': {}
+            }
 
-        # grouped_data = result['data'].groupby(['disease', 'date','county']).agg({'count':'sum'})
-        # data = grouped_data.xs(county.lower(), level=2, drop_level=False)
+            for disease in result.index.levels[1]:
+                temp2 = temp1.xs(disease)
+                stats['county'][county]['individual'][disease] = {
+                    'date': temp2.idxmax().values[0],
+                    'count': temp2.loc[temp2.idxmax()].values[0][0]
+                }
+                return_data[county]['individual'].append({'disease': disease, 'data': json.loads(temp2.to_json(orient='table', index=True))['data']})
 
-        return jsonify({'data': return_data_dict, 'stats': stats})
+            aggregate = result.groupby(['date']).sum()
+            return_data[county]['aggregated'] = [{'disease': 'aggregated', 'data': json.loads(aggregate.to_json(orient='table', index=True))['data']}] 
+            stats['county'][county]['max'] = aggregate.max().values[0]
+            stats['county'][county]['aggregated'] = {'aggregated':{
+                'date': aggregate.idxmax().values[0],
+                'count': aggregate.loc[aggregate.idxmax()].values[0][0]
+            }}
+
+            cumsummax = aggregate.cumsum().max().values[0]
+            return_data[county]['cum-sum'] = cumsummax
+
+            if stats['max-cum'] < cumsummax:
+                stats['max-cum'] = cumsummax
+
+        return jsonify({'data': return_data, 'stats': stats})
 
 
     @app.route('/get-hospital-zcta-tooltip', methods=['POST'])
