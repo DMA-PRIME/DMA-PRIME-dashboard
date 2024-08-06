@@ -40,13 +40,23 @@
                 resizeMap()
             })
 
-        Promise.all([displayAggregateChart(), displayDonut()]).then(() => {
+        Promise.all([displayMapAggregateChart(), displayMapDonut()]).then(() => {
             mapAggregationResizer.addEventListener("sl-resize", () => {
-                displayAggregateChart()
-                displayDonut()
+                displayMapAggregateChart()
+                displayMapDonut()
             })
         })
+
+        gridContainerResizer.addEventListener("sl-resize", () => {
+                initialVisualisation() 
+        })
         
+        Promise.all([displayGridAggregateChart(), displayGridDonut()]).then(() => {
+            gridAggregationResizer.addEventListener("sl-resize", () => {
+                displayGridAggregateChart()
+                displayGridDonut()
+            })        
+        })
     })
         // styleSheet.insertRule(`
         //   #counties>path, #zctas>path {

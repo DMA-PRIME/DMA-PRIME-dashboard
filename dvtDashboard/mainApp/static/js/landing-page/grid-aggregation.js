@@ -1,13 +1,13 @@
 
-async function displayMapAggregateChart() {
+async function displayGridAggregateChart() {
 
-    jsmapAggregationSvg.innerHTML = ""
+    jsgridAggregationSvg.innerHTML = ""
 
     d3.json("/get-hospital-zcta-aggregation", { // hospital zcta data
         "method": "POST",
         "headers": {"Content-Type": "application/json"},
         "body": JSON.stringify({
-            "aggregate": mapAggregationSwitch.value ? mapAggregationSwitch.value == "aggregated" : false,
+            "aggregate": gridAggregationSwitch.value ? gridAggregationSwitch.value == "aggregated" : false,
     })}).then((result) => {
 
         data = result.data
@@ -15,7 +15,7 @@ async function displayMapAggregateChart() {
         maxCount = stats.max
         dateMin = stats["date-min"]
         dateMax = stats["date-max"]
-        if (mapAggregationSwitch.value != "aggregated") {
+        if (gridAggregationSwitch.value != "aggregated") {
             maxCount = d3.max(Object.entries(stats.max), (entry) => {
                 return getVisibleHospitalDiseases().includes(entry[0]) ? entry[1] : NaN
             })
@@ -27,34 +27,34 @@ async function displayMapAggregateChart() {
             })
         }
 
-        if (mapPopulationSwitch.value != "total") {
+        if (gridPopulationSwitch.value != "total") {
             maxCount /= scPopulation
         }
 
         dateMin = dayjs.tz(dateMin, "YYYY-MM", "America/New_York").toDate()
         dateMax = dayjs.tz(dateMax, "YYYY-MM", "America/New_York").toDate()
 
-        aggregateWidth = jsmapAggregationSvg.width.baseVal.value
-        aggregateHeight = jsmapAggregationSvg.height.baseVal.value
+        aggregateWidth = jsgridAggregationSvg.width.baseVal.value
+        aggregateHeight = jsgridAggregationSvg.height.baseVal.value
 
         // add title
-        mapAggregationSvg.append("foreignObject")
+        gridAggregationSvg.append("foreignObject")
             .attr("x", 0)
             .attr("y", 0)
             .attr("width", "100%")
             .attr("height", em)
             .append("xhtml:p")
-            .attr("id", "map-aggregation-graph-title")
+            .attr("id", "grid-aggregation-graph-title")
             .attr("xmlns", "http://www.w3.org/1999/xhtml")
             .attr("align", "center")
-            .html(`${mapAggregationSwitch.value == "aggregated" ? "Aggregated" : ""} Disease Count Over Time`)
+            .html(`${gridAggregationSwitch.value == "aggregated" ? "Aggregated" : ""} Disease Count Over Time`)
 
         // add y axis
         yScale = d3.scaleLinear()
                     .domain([0, maxCount]).range([aggregateHeight - 2*em, margins.bottom + em])    
                     .nice()
 
-        mapAggregationSvg.append("g")
+        gridAggregationSvg.append("g")
             .attr("transform", `translate(${margins.left + 2*em},0)`)
             .call(d3.axisLeft(yScale).ticks(5).tickSize(0))
 
@@ -63,22 +63,22 @@ async function displayMapAggregateChart() {
                     .domain([dateMin, dateMax]).range([margins.left + 2*em, aggregateWidth - margins.right*2])    
                     .nice()
 
-        mapAggregationSvg.append("g")
+        gridAggregationSvg.append("g")
             .attr("transform", `translate(0, ${aggregateHeight - 2*em})`)
             .call(d3.axisBottom(xScale)) 
 
         // add graph
         line = d3.line()
             .x((d) => xScale(dayjs.tz(d.date, "YYYY-MM", "America/New_York").toDate()))
-            .y((d) => yScale(mapPopulationSwitch.value=='total' ? d.count : d.count/scPopulation))
+            .y((d) => yScale(gridPopulationSwitch.value=='total' ? d.count : d.count/scPopulation))
         
-        aggregateChart = mapAggregationSvg.append("g")
+        aggregateChart = gridAggregationSvg.append("g")
 
-        if (mapAggregationSwitch.value != "aggregated") {
+        if (gridAggregationSwitch.value != "aggregated") {
             Object.entries(data).forEach((entry) => {
                 if(getVisibleHospitalDiseases().includes(entry[0])){
                     aggregateChart.append("path")
-                        .attr("id", "map-aggregate-chart-"+entry[0])
+                        .attr("id", "grid-aggregate-chart-"+entry[0])
                         .attr("d", line(entry[1]))
                         .attr("stroke", diseaseColorMap(entry[0]))
                         .style("fill", "none")
@@ -88,7 +88,7 @@ async function displayMapAggregateChart() {
             
         } else {
             aggregateChart.append("path")
-            .attr("id", "map-aggregate-chart")
+            .attr("id", "grid-aggregate-chart")
             .attr("d", line(data))
             .attr("stroke", "saddlebrown")
             .style("fill", "none")
@@ -99,15 +99,15 @@ async function displayMapAggregateChart() {
     })
 }
 
-async function displayMapDonut() {
-    mapAggregationDonut.node().innerHTML = ""
+async function displayGridDonut() {
+    gridAggregationDonut.node().innerHTML = ""
     data = {
         // "type of bed": [beds full, beds empty]
         "regular": [8, 2],
         "icu": [undefined, undefined]
     }
 
-    aggregateHeight = jsmapAggregationDonutSvg.height.baseVal.value
+    aggregateHeight = jsgridAggregationDonutSvg.height.baseVal.value
 
     radius = (aggregateHeight - margins.top) / 2
     radiusInner = radius * .25
@@ -120,7 +120,7 @@ async function displayMapDonut() {
 
     bedsColorMap = d3.scaleOrdinal().domain(Object.keys(data)).range(d3.schemeSet2)
 
-    mapAggregationDonut.append("path")
+    gridAggregationDonut.append("path")
         .attr("transform", `translate(${radius},${aggregateHeight/2})`)
         .attr("d", d3.arc()({
             innerRadius: radiusInner,
@@ -130,8 +130,8 @@ async function displayMapDonut() {
         }))
         .style("fill", "currentColor")
 
-    mapAggregationDonutLegend = mapAggregationDonut.append("g")
-        .attr("id", "map-aggregation-donut-legend")
+    gridAggregationDonutLegend = gridAggregationDonut.append("g")
+        .attr("id", "grid-aggregation-donut-legend")
         .attr("transform", `translate(${radius*2+em/2}, ${aggregateHeight/2 - (bedTypes*1.5-.5)*em/2})`)
 
     Object.entries(data).forEach((entry, index) => {
@@ -141,11 +141,11 @@ async function displayMapDonut() {
 
         group = d3.select(`#${entry[0]}-bed-usage-group`).node() ? 
             d3.select(`#${entry[0]}-bed-usage-group`) : 
-            mapAggregationDonut.append('g').attr("id", `#${entry[0]}-bed-usage-group`)
+            gridAggregationDonut.append('g').attr("id", `#${entry[0]}-bed-usage-group`)
 
         group.attr("transform", `translate(${radius}, ${aggregateHeight/2})`)
         
-        mapAggregationDonutLegend.append("rect")
+        gridAggregationDonutLegend.append("rect")
             .attr("id", `${entry[0]}-bed-usage-legend-color`)
             .attr("x", 0)
             .attr("y", index*1.5*em)
@@ -153,7 +153,7 @@ async function displayMapDonut() {
             .attr("width", em/2)
             .style("fill", bedsColorMap(entry[0]))
 
-        mapAggregationDonutLegend.append("text")
+        gridAggregationDonutLegend.append("text")
             .attr("id", `${entry[0]}-bed-usage-legend-text1`)
             .attr("x", em*.75)
             .attr("y", (index*1.5-.0625)*em)
@@ -162,7 +162,7 @@ async function displayMapDonut() {
             .style("font-size", em*.75 + "px")
             .text(`${entry[0]} bed utilizaiton:`)
 
-        mapAggregationDonutLegend.append("text")
+        gridAggregationDonutLegend.append("text")
             .attr("id", `${entry[0]}-bed-usage-legend-text2`)
             .attr("x", em*.75)
             .attr("y", (index*1.5+.75)*em)
@@ -179,7 +179,7 @@ async function displayMapDonut() {
                 .attr("fill", bedsColorMap(entry[0]))
                 .attr("d", arc)
 
-            mapAggregationDonutLegend.select(`#${entry[0]}-bed-usage-legend-text2`)
+            gridAggregationDonutLegend.select(`#${entry[0]}-bed-usage-legend-text2`)
                 .text(`unknown`)
         } else {
             group.selectAll("path")
@@ -189,7 +189,7 @@ async function displayMapDonut() {
                 .attr("fill", (d, i) => i ? "currentColor" : bedsColorMap(entry[0]) )
                 .attr("d", arc)
 
-            mapAggregationDonutLegend.select(`#${entry[0]}-bed-usage-legend-text2`)
+            gridAggregationDonutLegend.select(`#${entry[0]}-bed-usage-legend-text2`)
                 .text(`${d3.format(".0%")(entry[1][0]/(entry[1][0]+entry[1][1]))}`)
                 
         }

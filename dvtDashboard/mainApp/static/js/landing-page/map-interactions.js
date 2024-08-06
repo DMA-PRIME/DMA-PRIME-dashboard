@@ -1,6 +1,6 @@
 
 mapAggregationSwitch.addEventListener("sl-change", (event) => {
-    displayAggregateChart()
+    displayMapAggregateChart()
     reset()
     mapSVG.select("#map-color-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value == "aggregated")) // && hospitalizationsToggle.checked))
     mapSVG.select("#map-hospital-legend").transition().duration(750).style("opacity", +(mapAggregationSwitch.value != "aggregated")) // && hospitalizationsToggle.checked))
@@ -23,7 +23,7 @@ mapAggregationSwitch.addEventListener("sl-change", (event) => {
 })
 
 mapPopulationSwitch.addEventListener("sl-change", (event) => {
-    displayAggregateChart()
+    displayMapAggregateChart()
     aggregatedMax = d3.max(mapSVG.selectAll(".zcta"), d => {
         zcta = d3.select(d)
         population = zcta.attr("population") ? zcta.attr("population") : 1

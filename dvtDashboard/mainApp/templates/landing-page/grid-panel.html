@@ -46,22 +46,34 @@
 {% endblock %}
 
 {% block contents %}
-<div id="grid-container"></div>
-<button class="toggle-button" id="toggleButton">TOT
-</button>
+<sl-resize-observer id="grid-container-resizer">
+  <div id="grid-container"></div>
+</sl-resize-observer>
 
-<div id="legend">
-  <!-- <script src="script.js"></script> -->
-</div>
+<!-- <div id="legend">
+  <script src="script.js"></script>
+</div> -->
 {% endblock %}
 
 {% block scripts %}
 <script>
+  var gridContainerResizer = document.getElementById("grid-container-resizer")
+  var gridAggregationResizer = document.getElementById("grid-aggregation-resizer")
+
   var gridContainer = document.getElementById("grid-container")
   var gridPopulationSwitch = document.getElementById("grid-population-switch")
   var gridAggregationSwitch = document.getElementById("grid-aggregation-switch")
+
+  var jsgridAggregationDonutSvg = document.getElementById("grid-aggregation-donut-svg")
+  var gridAggregationDonutSvg = d3.select("#grid-aggregation-donut-svg")
+  var gridAggregationDonut = d3.select("#grid-aggregation-donut")
+  var jsgridAggregationSvg = document.getElementById("grid-aggregation-svg")
+  var gridAggregationSvg = d3.select("#grid-aggregation-svg")
+
   set{{panel.name}}Panel()
 </script>
 
 <script src="{{ url_for('static', filename='js/landing-page/grid.js') }}"></script>
+<script src="{{ url_for('static', filename='js/landing-page/grid-aggregation.js') }}"></script>
+<script src="{{ url_for('static', filename='js/landing-page/grid-interactions.js') }}"></script>
 {% endblock %}

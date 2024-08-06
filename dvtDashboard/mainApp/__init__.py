@@ -214,6 +214,9 @@ def create_app(test_config=None):
         # stats: max of (cumulative sum for every county) - the way hospital data is handled, it is current cases, not new cases, so this aggregation number does not make much sense...
         # stats: county: max per disease (aggregate or otherwise)
 
+        if variables['pop-norm']:
+            countyPops = pd.read_csv('mainApp/static/data/county/countyPopulations.csv')
+
         stats = {
             'county': {}, # max of all disease for plotting, max point (date, count) for each disease
             'max-cum': 0,
@@ -226,6 +229,10 @@ def create_app(test_config=None):
         return_data = {}
         
         for county, zctas in county_to_zcta.items():
+            countyPop = 1
+            if variables['pop-norm']:
+                countyPop = countyPops.loc[countyPops['county'] == county, 'population'].values[0].item()
+
             if isinstance(zctas, list):
                 for i in range(len(zctas)):
                     zctas[i] = int(zctas[i])
@@ -245,27 +252,27 @@ def create_app(test_config=None):
             }
 
             for disease in result.index.levels[1]:
-                temp2 = temp1.xs(disease)
+                temp2 = temp1.xs(disease) / countyPop
                 stats['county'][county]['individual'][disease] = {
                     'date': temp2.idxmax().values[0],
-                    'count': temp2.loc[temp2.idxmax()].values[0][0]
+                    'count': temp2.loc[temp2.idxmax()].values[0][0].item()
                 }
                 return_data[county]['individual'].append({'disease': disease, 'data': json.loads(temp2.to_json(orient='table', index=True))['data']})
 
-            aggregate = result.groupby(['date']).sum()
+            aggregate = result.groupby(['date']).sum() / countyPop
             return_data[county]['aggregated'] = [{'disease': 'aggregated', 'data': json.loads(aggregate.to_json(orient='table', index=True))['data']}] 
-            stats['county'][county]['max'] = aggregate.max().values[0]
+            stats['county'][county]['max'] = aggregate.max().values[0].item()
             stats['county'][county]['aggregated'] = {'aggregated':{
                 'date': aggregate.idxmax().values[0],
-                'count': aggregate.loc[aggregate.idxmax()].values[0][0]
+                'count': aggregate.loc[aggregate.idxmax()].values[0][0].item()
             }}
 
-            cumsummax = aggregate.cumsum().max().values[0]
+            cumsummax = aggregate.cumsum().max().values[0].item()
             return_data[county]['cum-sum'] = cumsummax
 
             if stats['max-cum'] < cumsummax:
                 stats['max-cum'] = cumsummax
-
+        print(stats['max-cum'])
         return jsonify({'data': return_data, 'stats': stats})
 
 

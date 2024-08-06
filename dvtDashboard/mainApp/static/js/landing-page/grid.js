@@ -7,20 +7,6 @@
 // common script file for all the conties loop over county names and csv for each county
 //test for toggle button (done)
 
-
-// button to toggle between total and average cases?
-const toggleButton = document.getElementById("toggleButton");
-let isToggled = true;
-gridPopulationSwitch.addEventListener("sl-change", () => {
-    updateCountyGraphs(gridAggregationSwitch.value, gridPopulationSwitch.value)
-});
-
-gridAggregationSwitch.addEventListener("sl-change", () => {
-    updateCountyGraphs(gridAggregationSwitch.value, gridPopulationSwitch.value)
-});
-
-const chosenColumn = 0; // Change this to the column you want to display on the y-axis
-
 countyNames = [
     "abbeville",
     "aiken",
@@ -92,14 +78,7 @@ for (let i = 0; i < countyNames.length; i++) {
 const colors = ["white", "saddlebrown"] //["#2E1E30", "#331427", "#A20D32", "#FF073A"];
 var colorMap = d3.scaleLinear().range(colors)
 
-gridHeight = gridContainer.clientHeight
-gridWidth = gridContainer.clientWidth
-
-// console.log(gridHeight, gridWidth)
-
-var margin = { top: em, right: 0, bottom: 0.5*em, left: 0 },
-    gridItemWidth = (gridWidth/10) - (margin.left + margin.right),
-    gridItemHeight = (gridHeight/8) - (margin.top + margin.bottom);
+var margin = { top: em, right: 0, bottom: 0.5*em, left: 0 }
 
 
 // create svg's for each county
@@ -115,7 +94,6 @@ countyPOPCsvMapping.forEach(({ county }) => {
 
 
 createBaseObjects();
-initialVisualisation();
 
 function createBaseObjects() {
     countyPOPCsvMapping.forEach(({ county }) => {
@@ -123,19 +101,11 @@ function createBaseObjects() {
 
         // display data
         const svg = d3.select("#" + county + "-grid")
-            .attr("width", gridItemWidth + margin.left + margin.right)
-            .attr("height", gridItemHeight + margin.top + margin.bottom)
-
-        svg
-            .append("g")
-            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         // background rep value
         svg
             .append("rect")
-            .attr("width", gridItemWidth + margin.left + margin.right)
-            .attr("height", gridItemHeight + margin.top + margin.bottom)
-            .style("fill", "black");
+            .style("fill", "grey");
 
         // link to county-vis w/ text
         svg
@@ -143,9 +113,8 @@ function createBaseObjects() {
             .attr("class", "county-label")
             .attr("x", 0.5*em)
             .attr("y", em)
-            // .attr("text-anchor", "middle")
             .text(countyName)
-            .style("fill", "white")
+            .style("fill", "black")
             .style("font-size", "var(--sl-font-size-small)")
 
     });
@@ -153,7 +122,7 @@ function createBaseObjects() {
 }
 
 function initialVisualisation() {
-    uploadAbsolute();
+    updateCountyGraphs();
     countyPOPCsvMapping.forEach(({ county }) => {
 
         d3.select("#" + county + "-grid")
@@ -172,27 +141,31 @@ function initialVisualisation() {
     });
 }
 
-function uploadAbsolute() {
-    updateCountyGraphs("aggregated", "total");
-}
-
-function uploadAveraged() {
-    updateCountyGraphs("aggregated", "popAdjusted");
-}
-
-function updateCountyGraphs(diseaseType, popType) {
+function updateCountyGraphs() {
     d3.json("/get-hospital-zcta-data-by-county", { // zcta hospital data
         "method": "POST",
         "headers": {"Content-Type": "application/json"},
         "body": JSON.stringify({
             "disease": "all",
             "date": "all",
+            "pop-norm": gridPopulationSwitch.value == "pop-norm"
     })}).then(function(result) {
-        console.log(diseaseType, popType, result)
+        console.log("run")
+        diseaseType = gridAggregationSwitch.value
+
+        gridHeight = gridContainer.clientHeight
+        gridWidth = gridContainer.clientWidth
+
+        gridItemWidth = (gridWidth/8) - 1
+        gridItemHeight = (gridHeight/6)
+
+        console.log(gridItemHeight, gridItemWidth)
+        
+
         data = result.data
         
         var parseDate = function(date) {return dayjs.tz(date, "YYYY-MM", "America/New_York").toDate()}
-        colorMap.domain([0, result.stats['max-cum'] / (popType == "total" ? 1 : countyPop)])
+        colorMap.domain([0, result.stats['max-cum']])
 
         const x = d3
             .scaleTime()
@@ -201,10 +174,16 @@ function updateCountyGraphs(diseaseType, popType) {
 
         countyPOPCsvMapping.forEach(({ county, countyPop }) => {
             countyData = result.data[county]
-            maxYValue = result.stats['county'][county]['max'] / (popType == "total" ? 1 : countyPop)
+            maxYValue = result.stats['county'][county]['max']
 
+            countySVG = d3.select("#" + county + "-grid")
+            
+            countySVG
+                .attr("width", gridItemWidth)
+                .attr("height", gridItemHeight)
+                
             if (diseaseType == "aggregated") {
-                countyValue = countyData["cum-sum"] / (popType == "total" ? 1 : countyPop)
+                countyValue = countyData["cum-sum"]
             }
             else {
                 countyValue = ""
@@ -221,19 +200,18 @@ function updateCountyGraphs(diseaseType, popType) {
             const line = d3.line()
                 .defined((d) => !isNaN(d.count))
                 .x((d) => x(parseDate(d.date)))
-                .y((d) => y(d.count / (popType == "total" ? 1 : countyPop)));
+                .y((d) => y(d.count));
 
 
-            getMaxPoint = function(county, diseaseType, popType, data) {
-                console.log(data)
+            getMaxPoint = function(county, diseaseType, data) {
                 dataPoint = result.stats['county'][county][diseaseType][data.disease]
                 return {
                         'date': parseDate(dataPoint.date),
-                        'count': dataPoint.count / (popType == "total" ? 1 : countyPop),
+                        'count': dataPoint.count,
                     }  
             }
 
-            diseasePaths = d3.select("#" + county + "-grid")
+            diseasePaths = countySVG
                 .selectAll(".path-container")
                 .data(countyData[diseaseType])
 
@@ -255,34 +233,34 @@ function updateCountyGraphs(diseaseType, popType) {
             allPaths = newPaths
                 .merge(diseasePaths)
 
-            console.log(allPaths)
-            console.log(allPaths.data())
-
             allPaths
                 .select("path").transition().duration(750)
                 .attr("stroke", d => diseaseType == "aggregated" ? "black" : diseaseColorMap(d.disease))
                 .attr("d", d => line(d.data));
             allPaths.datum(d => d)
                 .select("circle").transition().duration(750)
-                .attr("cx", d => x(getMaxPoint(county, diseaseType, popType, d).date)) // x-coordinate
-                .attr("cy", d => y(getMaxPoint(county, diseaseType, popType, d).count)) // y-coordinate
-                .attr("r", 2)
+                .attr("cx", d => x(getMaxPoint(county, diseaseType, d).date)) // x-coordinate
+                .attr("cy", d => y(getMaxPoint(county, diseaseType, d).count)) // y-coordinate
+                .attr("r", 2.5)
                 .attr("fill", d => diseaseType == "aggregated" ? d3.color("saddlebrown").brighter() : diseaseColorMap(d.disease))
             allPaths.datum(d => d)
                 .select("text").transition().duration(750)
-                .attr("x", d => x(getMaxPoint(county, diseaseType, popType, d).date) + 8) // x-coordinate
-                .attr("y", d => y(getMaxPoint(county, diseaseType, popType, d).count) - 4) // Adjust the position to be above the circle
-                .text(d => Math.round(getMaxPoint(county, diseaseType, popType, d).count));
+                .attr("x", d => x(getMaxPoint(county, diseaseType, d).date)) // x-coordinate
+                .attr("y", d => y(getMaxPoint(county, diseaseType, d).count) - 4) // Adjust the position to be above the circle
+                .style("font-size", "var(--sl-font-size-x-small)")
+                .style("text-anchor", "middle")
+                .text(d => d3.format("2.2r")(getMaxPoint(county, diseaseType, d).count));
 
-            d3.select("#" + county + "-grid")
+            countySVG
                 .select(".totnumb").text(`(${countyValue})`)
                 .attr("title", countyTitle);
 
-            d3.select("#" + county + "-grid")
+            countySVG
                 .select("rect")
-                .transition()
-                .duration(2000)
-                .style("fill", diseaseType == 'aggregated' ? colorMap(countyValue) : "black");
+                .transition().duration(750)
+                .attr("width", gridItemWidth)
+                .attr("height", gridItemHeight)
+                .style("fill", diseaseType == 'aggregated' ? colorMap(countyValue) : "grey");
         })
     })
 }
