@@ -68,6 +68,11 @@ def create_app(test_config=None):
                 'name': 'grid',
                 'displayName': 'Grid View',
                 'html': 'landing-page/grid-panel.html'
+            },
+            {
+                'name': 'comparison',
+                'displayName': 'Map Comparison View',
+                'html': 'landing-page/comparison-panel.html'
             }
         ]
         return render_template('index.html', panels=panels)

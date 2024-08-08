@@ -27,6 +27,10 @@ text {
   justify-content: center;
 }
 
+.center-self {
+  justify-self: center;
+}
+
 sl-tab-group,
 sl-tab-group::part(base),
 sl-tab-group::part(body),
@@ -45,6 +49,12 @@ sl-tab-panel::part(base) {
   display: block;
 }
 
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
 .options-header {
   font-size: var(--sl-font-size-large);
   margin-top: 0;
@@ -55,7 +65,20 @@ sl-tab-panel::part(base) {
   --spacing: 0;
 }
 
-.content-divider {
+.sidebar-container {
+  height: max-content;
+  overflow-wrap: normal;
+  overflow-y: auto;
+  display: grid;
+  row-gap: var(--sl-spacing-x-small);
+  padding: var(--sl-spacing-small);
+}
+
+.hidden > * {
+  display: none;
+}
+
+.hide-options-button {
   font-size: 2rem;
   background-color: var(--sl-color-neutral-200);
 }

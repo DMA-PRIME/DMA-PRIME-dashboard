@@ -1,24 +1,4 @@
 
-
-.map-options-centered {
-    justify-self: center;
-}
-
-#map-sidebar {
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-}
-
-#map-options {
-    height: max-content;
-    overflow-wrap: normal;
-    overflow-y: auto;
-    display: grid;
-    row-gap: var(--sl-spacing-x-small);
-    padding: var(--sl-spacing-small);
-}
-
 #map-aggregation-vis {
     width: 100%;
     overflow: hidden;

@@ -1,22 +1,22 @@
 {% extends "subtemplates/panel.html" %}
 
 {% block options %}
-<div id="grid-options">
-  <sl-radio-group value="aggregated" id="grid-aggregation-switch" class="grid-options-switch grid-options-centered" size="small">
+<div id="grid-options" class="pansidebarel-container">
+  <sl-radio-group value="aggregated" id="grid-aggregation-switch" class="center-self" size="small">
     <sl-radio-button pill value="aggregated">Aggregated</sl-radio-button>
     <sl-radio-button pill value="individual">Individual</sl-radio-button>
   </sl-radio-group>
-  <sl-radio-group value="total" id="grid-population-switch" class="grid-options-switch grid-options-centered" size="small">
+  <sl-radio-group value="total" id="grid-population-switch" class="center-self" size="small">
     <sl-radio-button pill value="total">Total</sl-radio-button>
     <sl-radio-button pill value="pop-norm">Pop. Norm.</sl-radio-button>
   </sl-radio-group>
 
-  <p id="grid-summary" class="grid-options">
+  <p id="grid-summary">
     Monthly count of hospitalizations due to covid-19, influenza, and respiratory syncytial virus (RSV).
     <br/>
     Hospitalization cases are aggregated by county.
   </p>
-  <div id="grid-options-hospitalizations-branch" class="grid-options">
+  <div id="grid-options-hospitalizations-branch">
 
   </div>
 

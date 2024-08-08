@@ -125,7 +125,6 @@ function initialVisualisation() {
     
     Object.entries(diseaseIndexing).forEach((entry) => {
         createGridCheck(entry[0], diseaseColorMap(entry[0]))
-        console.log(entry)
     })
 
     updateCountyGraphs();

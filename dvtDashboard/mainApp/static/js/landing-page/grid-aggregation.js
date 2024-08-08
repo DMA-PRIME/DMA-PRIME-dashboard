@@ -74,8 +74,6 @@ async function displayGridAggregateChart() {
         
         aggregateChart = gridAggregationSvg.append("g")
 
-        console.log(getVisibleGridDiseases())
-
         if (gridAggregationSwitch.value != "aggregated") {
             Object.entries(data).forEach((entry) => {
                 if(getVisibleGridDiseases().includes(entry[0])){

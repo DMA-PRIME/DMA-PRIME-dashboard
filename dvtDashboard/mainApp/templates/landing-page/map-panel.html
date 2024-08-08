@@ -1,19 +1,19 @@
 {% extends "subtemplates/panel.html" %}
 
 {% block options %}
-<div id="map-options">
-  <sl-button pill id="map-reset-button" class="map-options-centered">Reset Map</sl-button>
+<div id="map-options" class="sidebar-container">
+  <sl-button pill id="map-reset-button" class="center-self">Reset Map</sl-button>
   <sl-divider class="options-divider"></sl-divider>
-  <sl-radio-group value="aggregated" id="map-aggregation-switch" class="map-options-switch map-options-centered" size="small">
+  <sl-radio-group value="aggregated" id="map-aggregation-switch" class="center-self" size="small">
     <sl-radio-button pill value="aggregated">Aggregated</sl-radio-button>
     <sl-radio-button pill value="individual">Individual</sl-radio-button>
   </sl-radio-group>
-  <sl-radio-group value="total" id="map-population-switch" class="map-options-switch map-options-centered" size="small">
+  <sl-radio-group value="total" id="map-population-switch" class="center-self" size="small">
     <sl-radio-button pill value="total">Total</sl-radio-button>
     <sl-radio-button pill value="pop-norm">Pop. Norm.</sl-radio-button>
   </sl-radio-group>
   
-  <p id="map-summary" class="map-options">
+  <p id="map-summary">
     Monthly count of hospitalizations due to covid-19, influenza, and respiratory syncytial virus (RSV).
     <br/>
     Hospitalization cases are aggregated by zip code tabulation area (zcta).

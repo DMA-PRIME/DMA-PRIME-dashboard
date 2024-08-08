@@ -4,6 +4,7 @@
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/landing-style.css') }}" />
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/map-style.css') }}" />
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/grid-style.css') }}" />
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/comparison-style.css') }}" />
 {% endblock %}
 
 {% block headScripts %}
@@ -40,13 +41,14 @@
                 resizeMap()
             })
 
-        Promise.all([displayMapAggregateChart(), displayMapDonut()]).then(() => {
-            mapAggregationResizer.addEventListener("sl-resize", () => {
-                displayMapAggregateChart()
-                displayMapDonut()
+            Promise.all([displayMapAggregateChart(), displayMapDonut()]).then(() => {
+                mapAggregationResizer.addEventListener("sl-resize", () => {
+                    displayMapAggregateChart()
+                    displayMapDonut()
+                })
             })
         })
-
+        
         initialVisualisation() 
         gridContainerResizer.addEventListener("sl-resize", () => {
             updateCountyGraphs()
@@ -58,7 +60,12 @@
                 displayGridDonut()
             })        
         })
-    })
+
+        comparisonInitialVisualization()
+        Object.entries(comparisonResizers).forEach(function(d) {
+            d[1].addEventListener("sl-resize", resizeComparisonMaps)
+        })
+
         // styleSheet.insertRule(`
         //   #counties>path, #zctas>path {
         //     stroke: ${getComputedStyle(document.getElementsByClassName("options-header")[0]).getPropertyValue("color")}      
