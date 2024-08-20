@@ -114,6 +114,14 @@ function createBaseObjects() {
             .style("fill", "black")
             .style("font-size", "var(--sl-font-size-small)")
 
+        svg
+            .append("text")
+            .attr("class", "totnumb")
+            .attr("x", 0.5*em)
+            .attr("y", 2*em) // Adjust the y-coordinate to position it below the existing text
+            .style("font-size", "var(--sl-font-size-x-small)")
+            .style("fill", "black")
+
     });
 
 }
@@ -161,8 +169,8 @@ function updateCountyGraphs() {
         gridWidth = gridContainer.clientWidth
 
         gridItemWidth = (gridWidth/8) - 1
-        gridItemHeight = (gridHeight/6) - 1     
-
+        gridItemHeight = (gridHeight/6) - 1  
+        
         data = result.data
         
         var parseDate = function(date) {return dayjs.tz(date, "YYYY-MM", "America/New_York").toDate()}
@@ -259,11 +267,26 @@ function updateCountyGraphs() {
                 .attr("y", d => y(getMaxPoint(county, diseaseType, d).count) - 4) // Adjust the position to be above the circle
                 .style("font-size", "var(--sl-font-size-x-small)")
                 .style("text-anchor", "middle")
-                .text(d => d3.format("2.2r")(getMaxPoint(county, diseaseType, d).count));
+                .text(d => d3.format("2.2r")(getMaxPoint(county, diseaseType, d).count))
+                .on("end", function(d) {
+                    text = d3.select(this)
+                    tempWidth = parseFloat(d3.select(this.ownerSVGElement).attr("width"))
+                    tempLength = this.getBBox().width
+                    xPos = parseFloat(text.attr("x"))
+                    if (xPos < tempWidth/2) {
+                        if (xPos - (1/2 * tempLength) < 0) {
+                            text.style("text-anchor", "start")
+                        }
+                    } else {
+                        if (tempWidth < xPos + (1/2 * tempLength)) {
+                            text.style("text-anchor", "end")
+                        }
+                    }
+                })
 
             // Add title for type of data (see when countyTitle is set above)
             countySVG
-                .select(".totnumb").text(`(${countyValue})`)
+                .select(".totnumb").text(countyValue == "" ? countyValue : `(${d3.format("2.2r")(countyValue)})`)
                 .attr("title", countyTitle);
 
             // color rectangle of county grid item
