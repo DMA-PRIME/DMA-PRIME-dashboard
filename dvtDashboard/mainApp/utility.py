@@ -48,3 +48,13 @@ counties = [
     'williamsburg',
     'york',
 ]
+
+def input_parser(input):
+    if isinstance(input, str):
+        if input == 'all':
+            return slice(None)
+        elif input == 'max':
+            return input
+        else:
+            return [input]
+    return input

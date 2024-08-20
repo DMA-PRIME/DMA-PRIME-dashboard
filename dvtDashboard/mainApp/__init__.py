@@ -223,7 +223,13 @@ def create_app(test_config=None):
     def returnZCTAHospitalDataByCounty():
         variables = request.get_json()
         base_data = real_dict['hospital-zcta']['data']
-        diseases = slice(None) if variables['disease'] == 'all' else variables['disease']
+        diseases = variables['disease']
+
+        if isinstance(diseases, str): 
+            if diseases == 'all': 
+                diseases = slice(None)
+            else:
+                diseases = [diseases]
         
         if variables['pop-norm']:
             countyPops = pd.read_csv(main_dir+'/static/data/county/countyPopulations.csv')
@@ -295,20 +301,24 @@ def create_app(test_config=None):
     def getHospitalZCTATooltip():
         variables = request.get_json()
 
-        date = max(real_dict['hospital-zcta']['data'].index.levels[3]) if variables['date'] == 'max' else variables['date'].split(',')[0]
+        variables['region-name'] = input_parser(variables['region-name'])
+        variables['disease'] = input_parser(variables['disease'])
+        date = variables['date']
+        if date == 'max':
+            date = max(real_dict['hospital-zcta']['data'].index.levels[3])
         dates = pd.date_range(end=date, periods=12, freq='MS').strftime('%Y-%m').to_list()
 
         pred_dates = (pd.Timestamp(date) + pd.DateOffset(months=1)).strftime('%Y-%m')
 
         try:
-            historical_result = getZCTAHospitalData(variables['region-name'].split(','), variables['disease'], dates)
+            historical_result = getZCTAHospitalData(variables['region-name'], variables['disease'], dates)
             population = historical_result['data']['ZCTA_POP'].max()
         except KeyError:
             temp_index = pd.MultiIndex.from_product(
-                [variables['region-name'].split(','), variables['disease'].split(','), ['temp'], dates],
+                [variables['region-name'], variables['disease'], ['temp'], dates],
                 names=['zcta', 'disease', 'county', 'date'])
             temp_df = pd.DataFrame(index=temp_index, columns=['count'])
-            temp_df.loc[(variables['region-name'].split(','), variables['disease'].split(','), slice(None), dates)] = 0
+            temp_df.loc[(variables['region-name'], variables['disease'], slice(None), dates)] = 0
             historical_result = {'data': temp_df}
             historical_result['metadata'] = {name: vals.to_list() for (name, vals) in zip(temp_index.names, temp_index.levels)}
             population = 1
@@ -319,13 +329,13 @@ def create_app(test_config=None):
             historical_return_data_dict[disease] = historical_return_data.xs(disease).groupby('date').sum().to_dict()
 
         try:
-            predictive_result = getZCTAHospitalData(variables['region-name'].split(','), variables['disease'], pred_dates)
+            predictive_result = getZCTAHospitalData(variables['region-name'], variables['disease'], pred_dates)
         except KeyError:
             temp_index = pd.MultiIndex.from_product(
-                [variables['region-name'].split(','), variables['disease'], ['temp'], pred_dates if isinstance(pred_dates, list) else [pred_dates]],
+                [variables['region-name'], variables['disease'], ['temp'], pred_dates if isinstance(pred_dates, list) else [pred_dates]],
                 names=['zcta', 'disease', 'county', 'date'])
             temp_df = pd.DataFrame(index=temp_index, columns=['count'])
-            temp_df.loc[(variables['region-name'].split(','), variables['disease'].split(','), slice(None), pred_dates)] = 0
+            temp_df.loc[(variables['region-name'], variables['disease'], slice(None), pred_dates)] = 0
             predictive_result = {'data': temp_df}
             predictive_result['metadata'] = {name: vals.to_list() for (name, vals) in zip(temp_index.names, temp_index.levels)}
         predictive_return_data = predictive_result['data']['count']
@@ -393,6 +403,8 @@ def getZCTAHospitalData(region, disease, date):
     base_data = real_dict['hospital-zcta']['data']
     base_stats = real_dict['hospital-zcta']['stats']
     if not isinstance(region, slice):
+        if isinstance(region, str):
+            region = [region]
         for i in range(len(region)):
             region[i] = int(region[i])
     return_data = base_data.loc[(region, disease, slice(None), date), ['count', 'INTPTLON', 'INTPTLAT', 'ZCTA_POP']] 
