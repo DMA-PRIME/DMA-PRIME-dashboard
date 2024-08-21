@@ -5,60 +5,105 @@
 
 function comparisonInitialVisualization() {
 
-    d3.json("/map-data/county").then(function(mapdata) {
+    d3.json("/map-data/zcta").then(function(mapdata) {
+        comparisonMapData = mapdata
 
-        d3.selectAll(".comparison-svg").each(function(d) {
-            // Create a map for each disease
-            svg = d3.select(this)
-            disease = svg.attr("disease")
-            
-            comparisonWidth = this.width.baseVal.value
-            comparisonHeight = this.height.baseVal.value
+        comparisonMapCount = visibleComparisonMaps.childElementCount
+        numSplit = Math.max(Math.ceil(Math.sqrt(comparisonMapCount)), 1) // don't want div/0 errors
+        comparisonWidth = visibleComparisonMaps.clientWidth * ((1 / numSplit) - .02)
+        comparisonHeight = visibleComparisonMaps.clientHeight * ((1 / numSplit) - .02)
+    
+        comparisonProjection = d3.geoAlbers().fitExtent(
+            [[margins.left, margins.top], [comparisonWidth-margins.right,comparisonHeight-margins.bottom]],
+            mapdata)
+        comparisonPathGenerator = d3.geoPath(comparisonProjection)
 
-            mapData = mapdata
-            comparisonProjection = d3.geoAlbers().fitExtent(
-                [[margins.left, margins.top], [comparisonWidth-margins.right,comparisonHeight-margins.bottom]],
-                mapdata)
-            comparisonPathGenerator = d3.geoPath(comparisonProjection)
+        d3.json("/get-hospital-zcta-data", { // zcta hospital data
+            "method": "POST",
+            "headers": {"Content-Type": "application/json"},
+            "body": JSON.stringify({
+                "region-name": "all",
+                "disease": "all",
+                "date": "2021-11",
+        })}).then((result) => {
+            data = result.data
+            comparisonStats = result.stats
+    
+            comparisonColormaps = {}
 
-            svg.append("g")
-                .attr("id", `comparison-${disease}-counties`)
-                .style("pointer-events", "none")
-                .selectAll("path")
-                    .data(mapdata.features)
-                    .enter()
-                    .append("path")
-                    .attr("class", "county")
-                    .attr("id", d => disease + "-map-" + fixName(d.properties.NAME))
-                    .attr("d", d => comparisonPathGenerator(d))
-                    .style("fill", disease == "aggregated" ? "saddlebrown" : diseaseColorMap(disease))
+            d3.selectAll(".comparison-svg")
+                .attr("width", comparisonWidth)
+                .attr("height", comparisonHeight)   
+                .each(function(d) {
+                    // Create a map for each disease
+                    svg = d3.select(this)
+                    disease = svg.attr("disease")
 
+                    diseaseColor = disease == "aggregated" ? "saddlebrown" : diseaseColorMap(disease)
+                    comparisonColormaps[disease] = d3.scaleLinear([0, comparisonStats.max[disease]], ["white", diseaseColor]).unknown("var(--sl-color-gray-600)").nice()                    
+                
+                    svg.append("g")
+                        .attr("id", `comparison-${disease}-zctas`)
+                        .style("pointer-events", "none")
+                        .selectAll("path")
+                            .data(mapdata.features)
+                            .enter()
+                            .append("path")
+                            .attr("class", "zcta")
+                            .attr("id", d => disease + "-map-" + d.properties.ZCTA5CE20)
+                            .attr("d", d => comparisonPathGenerator(d))
+                            .attr("disease", disease)
+                            .attr("count", 0)
+                            .style("fill", diseaseColor)
+                })
+
+            data.forEach(d => {
+                d3.select(`#${d.disease}-map-${d.region}`)
+                    .attr("count", d.count)
+                    .attr("population", d.ZCTA_POP ? d.ZCTA_POP : "")
+
+                aggMapItem = d3.select(`#aggregated-map-${d.region}`)
+                aggMapItem
+                    .attr("count", parseFloat(aggMapItem.attr("count")) + d.count)
+                    .attr("population", d.ZCTA_POP ? d.ZCTA_POP : "")
+            })
+
+            d3.selectAll(".comparison-svg").selectAll("path").each(function(d) {
+                item = d3.select(this)
+
+                item.style("fill", comparisonColormaps[item.attr("disease")](item.attr("count")))
+            })
+        
         })
+
     })
 
 }
 
 function resizeComparisonMaps() {
     // Resize maps
-    d3.select(visibleComparisonMaps).selectAll(".comparison-svg").each(function(d) {
-        async function setup(map) {
-            comparisonWidth = map.width.baseVal.value
-            comparisonHeight = map.height.baseVal.value
-    
-            comparisonProjection = d3.geoAlbers().fitExtent(
-                [[margins.left, margins.top], [comparisonWidth-margins.right,comparisonHeight-margins.bottom]],
-                mapData)
-                
-            comparisonPathGenerator = d3.geoPath(comparisonProjection)
-        }
-        
-        setup(this).then(() => {
-            svg = d3.select(this)
-            disease = svg.attr("disease")
+    async function setup(map) {
+        comparisonMapCount = visibleComparisonMaps.childElementCount
+        numSplit = Math.max(Math.ceil(Math.sqrt(comparisonMapCount)), 1) // don't want div/0 errors
+        comparisonWidth = visibleComparisonMaps.clientWidth * ((1 / numSplit) - .02)
+        comparisonHeight = visibleComparisonMaps.clientHeight * ((1 / numSplit) - .02)
 
-            svg.select(`#comparison-${disease}-counties`).selectAll("path")
+        comparisonProjection = d3.geoAlbers().fitExtent(
+            [[margins.left, margins.top], [comparisonWidth-margins.right,comparisonHeight-margins.bottom]],
+            comparisonMapData)
+            
+        comparisonPathGenerator = d3.geoPath(comparisonProjection)
+
+                
+        d3.selectAll(".comparison-svg")
+        .attr("width", comparisonWidth)
+        .attr("height", comparisonHeight) 
+    }
+    
+    setup(this).then(() => {
+
+        d3.select(visibleComparisonMaps).selectAll("path")
             .attr("d", d => comparisonPathGenerator(d))
-        })
-        
     })
+    
 }

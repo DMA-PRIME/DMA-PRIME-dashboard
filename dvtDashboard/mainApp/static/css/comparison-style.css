@@ -11,15 +11,6 @@
     align-content: space-around;
 }
 
-.comparison-container {
-    /* Div that holds the map SVG */
-    /* TODO: make this variable so the maps grow and shrink depending on how many are visualized
-        This may only be relevant for when there's one map
-    */
-    width: 45%;
-    height: 45%;
-}
-
 .comparison-svg {
     /* Map svg */
     width: 100%;

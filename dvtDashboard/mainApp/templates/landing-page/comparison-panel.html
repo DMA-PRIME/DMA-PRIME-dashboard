@@ -45,22 +45,23 @@
 {% endblock %}
 
 {% block contents %}
-<div id="visible-comparison-maps" class="fill-height fill-width">
-  <div id="comparison-aggregated-container" class="comparison-container">
-    <sl-resize-observer class="comparison-resizer">
-      <svg id="comparison-aggregated-svg" class="comparison-svg" disease="aggregated">
-      </svg>
-    </sl-resize-observer>
+<sl-resize-observer id="comparison-resizer">
+  <div id="visible-comparison-maps" class="fill-height fill-width">
+    <div id="comparison-aggregated-container" class="comparison-container">
+        <svg id="comparison-aggregated-svg" class="comparison-svg" disease="aggregated">
+        </svg>
+    </div>
   </div>
-</div>
-<div id="hidden-comparison-maps"></div>
+  <div id="hidden-comparison-maps"></div>
+</sl-resize-observer>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
   // containing elements
   var comparisonContainer = document.getElementById("comparison-container")
-  var comparisonResizers = document.getElementsByClassName("comparison-resizer")
+  var comparisonResizer = document.getElementById("comparison-resizer")
   var comparisonAggregationResizer = document.getElementById("comparison-aggregation-resizer")
   var comparisonOptionsHospitalizationsBranch = document.getElementById("comparison-options-hospitalizations-branch")
   var visibleComparisonMaps = document.getElementById("visible-comparison-maps")
@@ -69,19 +70,18 @@
   // interactive elements
   var comparisonPopulationSwitch = document.getElementById("comparison-population-switch")
 
-  // TODO: implement comparison panel aggregation visualization
-  // aggregation visualization elements (haven't implemented this yet)
-  var comparisonAggregationDonutSvg = d3.select("#comparison-aggregation-donut-svg")
-  var comparisonAggregationDonut = d3.select("#comparison-aggregation-donut")
-  var jscomparisonAggregationSvg = document.getElementById("comparison-aggregation-svg")
+  // aggregation visualization elements
+  var jscomparisonAggregationDonutSvg = document.getElementById("comparison-aggregation-donut-svg")
+  var comparisonAggregationDonutGroup = d3.select("#comparison-aggregation-donut")
   var comparisonAggregationSvg = d3.select("#comparison-aggregation-svg")
-
+  
   // visualization data
-  var mapData = null
+  var comparisonMapData = null
+  var comparisonStats = null
 
   // visualization functions
   var comparisonProjection = null
-
+  var comparisonColormaps = null
 
   comparisonCheckFunction = function(e) {
     div = d3.select(`#comparison-${d3.select(this).attr("disease")}-container`)
@@ -92,8 +92,9 @@
     } else {
       hiddenComparisonMaps.appendChild(div.node())
       div.classed("hidden", true)
-
     }
+    resizeComparisonMaps()
+
   }
 
   aggCheck = document.getElementById("comparison-aggregated-check")
@@ -113,8 +114,6 @@
           .append("div")
               .attr("id", `comparison-${entry[0]}-container`)
               .attr("class", "comparison-container")
-          .append("sl-resize-observer")
-            .attr("class", "comparison-resizer")
           .append("svg")
               .attr("id", `comparison-${entry[0]}-svg`)
               .attr("class", "comparison-svg")
@@ -140,10 +139,28 @@
       )
   }
 
+  async function displayComparisonAggregateChart() {
+    displayAggregateChart(
+        "comparison",
+        comparisonAggregationSvg,
+        false,
+        comparisonPopulationSwitch.value != "total",
+        getVisibleDiseases("comparison")
+    )
+  }
+
+  async function displayComparisonDonut() {
+      displayDonut(
+          "comparison",
+          jscomparisonAggregationDonutSvg,
+          comparisonAggregationDonutGroup
+      )
+  }
+
   set{{panel.name}}Panel()
 </script>
 
 <script src="{{ url_for('static', filename='js/landing-page/comparison.js') }}"></script>
 <!-- <script src="{{ url_for('static', filename='js/landing-page/grid-aggregation.js') }}"></script> -->
-<!-- <script src="{{ url_for('static', filename='js/landing-page/grid-interactions.js') }}"></script> -->
+<script src="{{ url_for('static', filename='js/landing-page/comparison-interactions.js') }}"></script>
 {% endblock %}

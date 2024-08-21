@@ -345,8 +345,8 @@ async function updateMap() {
             .attr("width", legendBBox.width + em)
 
         } catch (error) {
-            console.log("something bad happened during map resizing", error)
-            setTimeout(updateMap, 100)
+            // console.log("something bad happened during map resizing", error)
+            setTimeout(updateMap, 500)
         }
     }
 

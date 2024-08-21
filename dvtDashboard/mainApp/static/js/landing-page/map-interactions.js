@@ -208,7 +208,7 @@ function hospitalTooltip(element) {
     element.on("pointerleave", function(e) {
         // hide tooltip on pointer leave
         d3.select(mapTooltip)
-            .style("display", none)
+            .style("display", "none")
             .style("z-index", -1)
     })
 

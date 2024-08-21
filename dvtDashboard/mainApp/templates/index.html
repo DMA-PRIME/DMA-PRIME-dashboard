@@ -75,12 +75,15 @@
         })
 
         // Create 4 map comparison visualization
-        // comparisonInitialVisualization()
+        comparisonInitialVisualization()
 
         // Display aggregate visualizations for comparison
-        // Object.entries(comparisonResizers).forEach(function(d) {
-        //     d[1].addEventListener("sl-resize", resizeComparisonMaps)
-        // })
+        Promise.all([displayComparisonAggregateChart(), displayComparisonDonut()]).then(() => {
+            comparisonAggregationResizer.addEventListener("sl-resize", () => {
+                displayComparisonAggregateChart()
+                displayComparisonDonut()
+            })        
+        })
 
     });
 
