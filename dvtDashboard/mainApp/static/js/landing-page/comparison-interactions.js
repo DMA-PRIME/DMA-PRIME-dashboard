@@ -51,7 +51,7 @@ function setupComparisonTooltip(element) {
 
         groups.select("path")
             .style("stroke-width", 3)
-            zctaGroup.select("text")
+        zctaGroup.select("text")
             .style("visibility", "visible")
     })
 
