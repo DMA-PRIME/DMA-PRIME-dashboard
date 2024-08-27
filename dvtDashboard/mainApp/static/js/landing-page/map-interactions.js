@@ -242,7 +242,8 @@ function hospitalTooltip(element) {
             "body": JSON.stringify({
                 "region-name": data.properties.ZCTA5CE20,
                 "disease": getVisibleDiseases("hospital"),
-                "date": hospitalMetadata.date[0]
+                "date": hospitalMetadata.date[0],
+                "aggregated": mapAggregationSwitch.value == "aggregated"
             })}).then((result) => { 
                 console.log(result)
                 // fix dates
@@ -306,7 +307,7 @@ function hospitalTooltip(element) {
                     historicalGroup = diseaseGroup.append("g")
                     historicalGroup.append("path")
                         .attr("d", line(data))
-                        .attr("stroke", diseaseColorMap(disease))
+                        .attr("stroke", mapAggregationSwitch.value == "aggregated" ? "saddlebrown" : diseaseColorMap(disease))
                         .attr("fill", "none")
                         .attr("stroke-width", 2)
     
@@ -317,82 +318,84 @@ function hospitalTooltip(element) {
                         .attr("r", 3)
                         .attr("cx", (d) => xScale(d.date))
                         .attr("cy", (d) => yScale(mapPopulationSwitch.value == "total" ? d.count : d.count/result.metadata.population))
-                        .attr("fill", diseaseColorMap(disease))
+                        .attr("fill", mapAggregationSwitch.value == "aggregated" ? "saddlebrown" : diseaseColorMap(disease))
 
-                    predictiveData = [{
-                        "date": dayjs.tz(hospitalMetadata.date[0], "YYYY-MM", "America/New_York").toDate(), 
-                        "count": values[hospitalMetadata.date[0]],
-                        "min-prediction": values[hospitalMetadata.date[0]], 
-                        "max-prediction": values[hospitalMetadata.date[0]]}]
-                    Object.entries(result.data.predictive[disease]).forEach(function([date, prediction]) {
-                        date = dayjs.tz(date, "YYYY-MM-DD", "America/New_York").toDate()
-                        predictiveData.push({"date": date, "count": prediction.prediction, 
-                            "min-prediction": prediction.min_prediction, "max-prediction": prediction.max_prediction})
-                    })
-
-                    console.log(predictiveData)
-
-                    // draw predictive data line chart
-                    predictiveGroup = diseaseGroup.append("g")
-                    predictiveGroup.append("path")
-                        .attr("d", line(predictiveData))
-                        .attr("stroke", diseaseColorMap(disease))
-                        .attr("stroke-dasharray", "5,5")
-                        .attr("fill", "none")
-                        .attr("stroke-width", 2)
+                    if (mapAggregationSwitch.value == "individual") {
+                        predictiveData = [{
+                            "date": dayjs.tz(hospitalMetadata.date[0], "YYYY-MM", "America/New_York").toDate(), 
+                            "count": values[hospitalMetadata.date[0]],
+                            "min-prediction": values[hospitalMetadata.date[0]], 
+                            "max-prediction": values[hospitalMetadata.date[0]]}]
+                        Object.entries(result.data.predictive[disease]).forEach(function([date, prediction]) {
+                            date = dayjs.tz(date, "YYYY-MM-DD", "America/New_York").toDate()
+                            predictiveData.push({"date": date, "count": prediction.prediction, 
+                                "min-prediction": prediction.min_prediction, "max-prediction": prediction.max_prediction})
+                        })
     
-                    // marks each datapoint on historical line
-                    predictiveGroup.selectAll("circle").data(predictiveData.slice(1))
-                        .enter()
-                        .append("circle")
-                        .attr("r", 3)
-                        .attr("cx", (d) => xScale(d.date))
-                        .attr("cy", (d) => yScale(d.count))
-                        .attr("fill", diseaseColorMap(disease))
-
-                    // Show confidence interval
-                    predictiveGroup.append("path")
-                        .attr("class", "prediction-background")
-                        .datum(predictiveData)
-                        .style("fill", diseaseColorMap(disease))
-                        .style("opacity", 0.25)
-                        .attr("stroke", "none")
-                        .attr("d", d3.area()
-                            .x(function(d) { return xScale(d.date) })
-                            .y0(function(d, i) { return yScale(i == 0 ? d.count : d["min-prediction"]) })
-                            .y1(function(d, i) { return yScale(i == 0 ? d.count : d["max-prediction"]) })
-                            .curve(d3.curveMonotoneX)
-                        )
+                        // draw predictive data line chart
+                        predictiveGroup = diseaseGroup.append("g")
+                        predictiveGroup.append("path")
+                            .attr("d", line(predictiveData))
+                            .attr("stroke", diseaseColorMap(disease))
+                            .attr("stroke-dasharray", "5,5")
+                            .attr("fill", "none")
+                            .attr("stroke-width", 2)
+        
+                        // marks each datapoint on historical line
+                        predictiveGroup.selectAll("circle").data(predictiveData.slice(1))
+                            .enter()
+                            .append("circle")
+                            .attr("r", 3)
+                            .attr("cx", (d) => xScale(d.date))
+                            .attr("cy", (d) => yScale(d.count))
+                            .attr("fill", diseaseColorMap(disease))
+    
+                        // Show confidence interval
+                        predictiveGroup.append("path")
+                            .attr("class", "prediction-background")
+                            .datum(predictiveData)
+                            .style("fill", diseaseColorMap(disease))
+                            .style("opacity", 0.25)
+                            .attr("stroke", "none")
+                            .attr("d", d3.area()
+                                .x(function(d) { return xScale(d.date) })
+                                .y0(function(d, i) { return yScale(i == 0 ? d.count : d["min-prediction"]) })
+                                .y1(function(d, i) { return yScale(i == 0 ? d.count : d["max-prediction"]) })
+                                .curve(d3.curveMonotoneX)
+                            )
+                    }
 
                 })
 
-                // highlights predictive data
-                graphSVG.append("rect")
-                    .attr("id", "tooltip-prediction-highlighter")
-                    .attr("x", xScale(predictiveData[0].date))
-                    .attr("y", ttpMargins.top)
-                    .attr("width", xScale(predictiveData[predictiveData.length - 1].date) - xScale(predictiveData[0].date))
-                    .attr("height", tooltipHeight - ttpMargins.bottom - ttpMargins.top)
+                if (mapAggregationSwitch.value == "individual") {
+                    // highlights predictive data
+                    graphSVG.append("rect")
+                        .attr("id", "tooltip-prediction-highlighter")
+                        .attr("x", xScale(predictiveData[0].date))
+                        .attr("y", ttpMargins.top)
+                        .attr("width", xScale(predictiveData[predictiveData.length - 1].date) - xScale(predictiveData[0].date))
+                        .attr("height", tooltipHeight - ttpMargins.bottom - ttpMargins.top)
 
-                // place line separating historical and prediction data
-                ttpSVG.select("#tooltip-prediction-separator")
-                    .attr("x1", xScale(predictiveData[0].date))
-                    .attr("y1", ttpMargins.top)
-                    .attr("x2", xScale(predictiveData[0].date))
-                    .attr("y2", tooltipHeight - ttpMargins.bottom)
-
+                    // place line separating historical and prediction data
+                    ttpSVG.select("#tooltip-prediction-separator")
+                        .attr("x1", xScale(predictiveData[0].date))
+                        .attr("y1", ttpMargins.top)
+                        .attr("x2", xScale(predictiveData[0].date))
+                        .attr("y2", tooltipHeight - ttpMargins.bottom)
+                }
+ 
                 // display x-axis on the bottom
                 ttpSVG.append("g")
-                .attr("transform", `translate(0,${tooltipHeight - ttpMargins.bottom})`)
-                .call(d3.axisBottom(xScale).tickValues(fullTimeDomain).tickSize(4).tickFormat(d3.timeFormat("%b %Y")))
-                .selectAll("text")  
-                .style("text-anchor", "end")
-                .attr("transform", "rotate(-30)");
+                    .attr("transform", `translate(0,${tooltipHeight - ttpMargins.bottom})`)
+                    .call(d3.axisBottom(xScale).tickValues(fullTimeDomain).tickSize(4).tickFormat(d3.timeFormat("%b %Y")))
+                    .selectAll("text")  
+                    .style("text-anchor", "end")
+                    .attr("transform", "rotate(-30)");
     
                 // display y-axis on the left
                 ttpSVG.append("g")
-                .attr("transform", `translate(${ttpMargins.left},0)`)
-                .call(d3.axisLeft(yScale).ticks(5).tickSize(4));
+                    .attr("transform", `translate(${ttpMargins.left},0)`)
+                    .call(d3.axisLeft(yScale).ticks(5).tickSize(4));
             })
     })
 }

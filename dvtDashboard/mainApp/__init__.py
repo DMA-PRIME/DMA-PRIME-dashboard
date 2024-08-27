@@ -104,9 +104,9 @@ def create_app(test_config=None):
     
     @app.route('/map-data/<mapType>')
     def mapData(mapType):
-        if mapType == "zcta_county_crosswalk":
+        if mapType == 'zcta_county_crosswalk':
             mapDataDict = json.load(open(f'{main_dir}/static/data/zcta_county_crosswalk.json'))
-        elif mapType == "hospitals":
+        elif mapType == 'hospitals':
             mapDataDict = json.load(open(f'{main_dir}/static/data/Hospitals.geojson'))
         else:
             mapDataDict = json.load(open(f'{main_dir}/static/data/tl_2023_sc_{mapType}_trimmed.json'))
@@ -303,8 +303,13 @@ def create_app(test_config=None):
     def getHospitalZCTATooltip():
         variables = request.get_json()
 
+        print(variables['aggregated'], variables['aggregated'] == True)
+
         variables['region-name'] = input_parser(variables['region-name'])
-        variables['disease'] = input_parser(variables['disease'])
+        if variables['aggregated']:
+            variables['disease'] = slice(None)
+        else:
+            variables['disease'] = input_parser(variables['disease'])
         date = variables['date']
         if date == 'max':
             date = max(real_dict['hospital-zcta']['data'].index.levels[3])
@@ -313,7 +318,7 @@ def create_app(test_config=None):
         pred_dates = (pd.Timestamp(date) + pd.DateOffset(months=1)).strftime('%Y-%m')
         
         # TODO: TEMPORARY NOTES - make pred dates dynamic 
-        pred_dates = pd.date_range(pd.to_datetime("11/20/2023"), periods=5, freq='7D').strftime('%Y-%m-%d').to_list()
+        pred_dates = pd.date_range(pd.to_datetime('11/20/2023'), periods=5, freq='7D').strftime('%Y-%m-%d').to_list()
 
         try:
             historical_result = getZCTAHospitalData(variables['region-name'], variables['disease'], dates)
@@ -330,41 +335,51 @@ def create_app(test_config=None):
         historical_return_data = historical_result['data']['count']
         historical_return_data.index = historical_return_data.index.droplevel(0)
         historical_return_data_dict = {}
-        for disease in historical_return_data.index.levels[0]:
-            historical_return_data_dict[disease] = historical_return_data.xs(disease).groupby('date').sum().to_dict()
+
+        if variables['aggregated']:
+            historical_return_data_dict['aggregated'] = historical_return_data.groupby('date').sum().to_dict()
+        else:
+            for disease in historical_return_data.index.levels[0]:
+                historical_return_data_dict[disease] = historical_return_data.xs(disease).groupby('date').sum().to_dict()
+
 
         predictive_return_data_dict = {}
-        
+        predictive_result = {'metadata': {'date': []}}
         p_mins = []
         p_maxs = []
-        for disease in variables['disease']:
-                
-            try:
-                # predictive_result = getZCTAHospitalData(variables['region-name'], variables['disease'], pred_dates)
-                predictive_result = getZCTAHospitalPredictionData(variables['region-name'], disease, pred_dates)
-                predictive_return_data = predictive_result['data']
-                predictive_return_data.index = predictive_return_data.index.droplevel(0) # drop region
-                predictive_return_data.index = predictive_return_data.index.droplevel(0) # drop disease since we know what it is
- 
-                p_mins.append(predictive_return_data['min_prediction'].min(axis=None))
-                p_maxs.append(predictive_return_data['max_prediction'].max(axis=None))
-                predictive_return_data_dict[disease] = predictive_return_data.to_dict(orient='index')
-            except KeyError:
-                predictive_return_data_dict[disease] = []
-                p_mins.append(historical_return_data.min(axis=None))
-                p_maxs.append(historical_return_data.max(axis=None))
-                continue
 
-            # predictive_return_data = predictive_result['data']['count']
-            # print(predictive_result['data'])
-            # predictive_return_data = predictive_result['data']['prediction', 'max_prediction', 'min_prediction']
-            # predictive_return_data.index = predictive_return_data.index.droplevel(0)
-            # predictive_return_data_dict = {}
-            # for disease in predictive_return_data.index.levels[0]:
-            #     predictive_return_data_dict[disease] = predictive_return_data.xs(disease).groupby('date').sum().to_dict()
+        p_min = historical_return_data.min(axis=None)
+        p_max = historical_return_data.max(axis=None)
+        if not variables['aggregated']: 
 
-        p_min = min(p_mins)
-        p_max = max(p_maxs)
+            for disease in variables['disease']:
+                    
+                try:
+                    # predictive_result = getZCTAHospitalData(variables['region-name'], variables['disease'], pred_dates)
+                    predictive_result = getZCTAHospitalPredictionData(variables['region-name'], disease, pred_dates)
+                    predictive_return_data = predictive_result['data']
+                    predictive_return_data.index = predictive_return_data.index.droplevel(0) # drop region
+                    predictive_return_data.index = predictive_return_data.index.droplevel(0) # drop disease since we know what it is
+    
+                    p_mins.append(predictive_return_data['min_prediction'].min(axis=None))
+                    p_maxs.append(predictive_return_data['max_prediction'].max(axis=None))
+                    predictive_return_data_dict[disease] = predictive_return_data.to_dict(orient='index')
+                except KeyError:
+                    predictive_return_data_dict[disease] = []
+                    p_mins.append(historical_return_data.min(axis=None))
+                    p_maxs.append(0)
+                    continue
+
+                # predictive_return_data = predictive_result['data']['count']
+                # print(predictive_result['data'])
+                # predictive_return_data = predictive_result['data']['prediction', 'max_prediction', 'min_prediction']
+                # predictive_return_data.index = predictive_return_data.index.droplevel(0)
+                # predictive_return_data_dict = {}
+                # for disease in predictive_return_data.index.levels[0]:
+                #     predictive_return_data_dict[disease] = predictive_return_data.xs(disease).groupby('date').sum().to_dict()
+
+            p_min = min(p_mins)
+            p_max = max(p_maxs)
 
         # return_stats_dict = {'min': min(historical_return_data.min(axis=None), predictive_return_data.min(axis=None)), 'max': max(historical_return_data.max(axis=None), predictive_return_data.max(axis=None))}
         return_stats_dict = {'min': min(historical_return_data.min(axis=None), p_min), 'max': max(historical_return_data.max(axis=None), p_max)}
@@ -527,8 +542,8 @@ def loadZCTAData():
         df_multi = pd.concat([df_multi, temp_df])
     df_multi.sort_index(inplace=True)
     
-    df_multi["county"] = ""
-    zcta_county_crosswalk = pd.read_csv(main_dir+"/static/data/zcta_county_weights.csv").fillna(0)
+    df_multi['county'] = ''
+    zcta_county_crosswalk = pd.read_csv(main_dir+'/static/data/zcta_county_weights.csv').fillna(0)
     one_to_one_crosswalk = zcta_county_crosswalk.groupby('GEOID_ZCTA5_20').apply(lambda zcta: zcta.loc[zcta['WEIGHT'].idxmax()])
     for zcta in temp_df.index.levels[0]:
         county = one_to_one_crosswalk.loc[zcta, 'County'].split(' County')[0].lower()
@@ -594,9 +609,9 @@ def loadZCTAData2():
     for idx in dates:    
         stats_df.loc[idx, :] = np.nanquantile(df_multi.loc[(slice(None), slice(None), slice(None), idx), ['count']], quantiles)
 
-    population_df = pd.read_csv(main_dir+"/static/data/zcta_county_weights.csv")
+    population_df = pd.read_csv(main_dir+'/static/data/zcta_county_weights.csv')
     zcta_population = population_df.groupby(['GEOID_ZCTA5_20']).max()['ZCTA_POP']
-    zcta_main_county_df = pd.read_json(main_dir+"/static/data/zcta_county_crosswalk.json", typ='series')
+    zcta_main_county_df = pd.read_json(main_dir+'/static/data/zcta_county_crosswalk.json', typ='series')
     zcta_counties_df = df_multi.groupby(['zcta', 'county']).max().index.to_frame(index=False).groupby(['zcta']).apply(lambda x: list(x.county))
     zcta_stats = pd.concat([zcta_population, zcta_main_county_df, zcta_counties_df], axis=1).rename({0: 'main-county', 1: 'counties'}, axis=1)
     zcta_stats.index.set_names(['zcta'], inplace=True)
