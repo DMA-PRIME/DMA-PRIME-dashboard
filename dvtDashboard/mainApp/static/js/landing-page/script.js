@@ -296,7 +296,7 @@ async function displayDonut(
             .style("fill", "currentColor")
             .style("dominant-baseline", "middle")
             .style("font-size", em*.75 + "px")
-            .text(`${entry[0]} bed utilizaiton:`)
+            .text(`${entry[0]} bed utilization:`)
 
         // add second line of text to legend (actual utilization)
         aggregationDonutLegend.append("text")
