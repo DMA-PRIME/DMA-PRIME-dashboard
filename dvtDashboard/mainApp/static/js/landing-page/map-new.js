@@ -2,6 +2,10 @@
 // Draw the map components
 function mapInitialVisualization() {
     d3.json("/map-data/county").then(function(mapdata) {
+        // add group for zcta map
+        zctas = mapSVG.append("g")
+            .attr("id", "map-zctas")
+
         // draw county map
         mapData = mapdata
         mapProjection = d3.geoAlbers().fitExtent(
@@ -21,19 +25,17 @@ function mapInitialVisualization() {
               .attr("d", d => pathGenerator(d))
               .style("fill-opacity", 0)
 
-        // add group for zcta map
-        zctas = mapSVG.append("g")
-            .attr("id", "map-zctas")
+
 
         // add group for hospital icons
         hospitals = mapSVG.append("g")
-                .attr("id", "map-hospitals")
-                .style("pointer-events", "none")
+            .attr("id", "map-hospitals")
+            .style("pointer-events", "none")
 
         // add group for map legends
         legendsGroup = mapSVG.append("g")
-                .attr("id", "map-legends")
-                .style("pointer-events", "none")
+            .attr("id", "map-legends")
+            .style("pointer-events", "none")
     }).then(() => {
         // draw zcta map items
         d3.json("/map-data/zcta").then( async function(mapdata) {
@@ -51,6 +53,7 @@ function mapInitialVisualization() {
                 .attr('fill', "var(--sl-color-gray-600)")
                 .each(function(zctaData) {
                     zcta = d3.select(this)
+                    setZctaInteractions(zcta)
                     // hospitalTooltip(zcta)
                     // zoomToCounty(zcta)
                 })
@@ -212,15 +215,3 @@ function updateMapData() {
     })
 }
 
-
-mapRateSwitch.addEventListener("sl-change", (event) => {
-    updateMapData()
-})
-
-mapDataSourceSelector.addEventListener("sl-change", (event) => {
-    updateMapData()
-})
-
-mapDiseaseSelector.addEventListener("sl-change", (event) => {
-    updateMapData()
-})
