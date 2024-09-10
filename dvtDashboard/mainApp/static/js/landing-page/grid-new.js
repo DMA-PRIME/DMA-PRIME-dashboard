@@ -71,6 +71,7 @@ function gridInitialVisualization() {
 }
 
 function updateGridData() {
+    console.log("updating grid data")
     gridHeight = gridContainer.clientHeight
     gridWidth = gridContainer.clientWidth
 
@@ -103,12 +104,13 @@ function updateGridData() {
 
                 data = result.data
                 stats = result.stats
-
+                
                 stats.date.min = parseDate(stats.date.min)
                 stats.date.max = parseDate(stats.date.max)
                 
                 value = {
                     "state-model": 0,
+                    "state-model-sum": 0,
                     "health-system": 0,
                     "zcta": itemData
                 }
@@ -120,7 +122,7 @@ function updateGridData() {
 
                 xScale = d3.scaleUtc()
                     .domain([stats.date.min, stats.date.max])
-                    .range([0, gridItemWidth]) 
+                    .range([0, gridItemWidth*.75]) 
 
                 line = d3.line()
                     .x((d) => xScale(parseDate(d.date)))
@@ -148,6 +150,20 @@ function updateGridData() {
 
                 })
 
+                Object.entries(data.prediction).forEach(function([dataSource, values]) {
+                    // for each data source
+                    Object.entries(values).forEach(function([date, count]) {
+                        value["state-model-sum"] += count
+                    })
+                })
+
+                gridItem.append("g").append("text")
+                    .attr("class", "grid-item-value-label")
+                    .attr("x", (xScale.range()[1] + gridItemWidth)/2)
+                    .attr("y", yScale(value[gridDataSourceSortSelector.value]))
+                    .attr("font-size", "var(--sl-font-size-x-small)")
+                    .attr("text-anchor", "middle")
+                    .text(parseInt(value[gridDataSourceSortSelector.value]))
 
                 // Object.entries(data.prediction).forEach(function([dataSource, values]) {
                 //     // for each data source
