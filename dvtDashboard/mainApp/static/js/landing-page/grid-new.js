@@ -208,7 +208,7 @@ function updateGridData() {
 
 function sortGrid() {
     scheme = d3.schemeReds[9]
-    indices = [2, 4, 6, 8]
+    indices = [1, 2, 3, 4]
     colors = indices.map(i => scheme[i])
 
     gridColor = d3.scaleQuantile()

@@ -137,6 +137,7 @@ function setZctaInteractions(zcta) {
             })}).then((result) => {
                 mapTooltipWidth = Math.max(500, width * .3)
                 mapTooltipHeight = mapTooltipWidth * .65
+                mapTooltipLegendTop = mapTooltipHeight - 2.5*em
 
                 ttp = d3.select(mapTooltip)
                 ttp.style("display", "block").style("z-index", 1)
@@ -164,8 +165,8 @@ function setZctaInteractions(zcta) {
                 // figure out how much space is needed for the y-axis text
                 temp = ttpSVG.append("text").text(yScale.domain()[1]).attr("x", 0).attr("y", 0)
                 ttpMargins = {
-                    "top": 3*em, 
-                    "bottom": 2.5*em,
+                    "top": 1*em, 
+                    "bottom": 2.5*em + 3*em,
                     "left": temp.node().getBBox().width + 2*em,
                     "right": em,
                 }
@@ -198,7 +199,7 @@ function setZctaInteractions(zcta) {
                 ttpLegend = ttpSVG.append("g").attr("id", "tooltip-legend")
                 ttpLegend.append("rect")
                     .attr("x", .5*em)
-                    .attr("y", 0)
+                    .attr("y", mapTooltipLegendTop)
                     .attr("height", 2.5*em)
                     .attr("width", mapTooltipWidth-em)
                     .attr("fill", "var(--sl-color-gray-300)")
@@ -246,15 +247,15 @@ function setZctaInteractions(zcta) {
                     // labelGroupBackground = labelGroup.append("rect") 
                     labelGroup.append("line")
                         .attr("x1", 1*em + ((mapTooltipWidth-2*em)/3 * (i%2)))
-                        .attr("y1", .75*em + em * parseInt(i/2))
+                        .attr("y1", mapTooltipLegendTop + .75*em + em * parseInt(i/2))
                         .attr("x2", 2.25*em + ((mapTooltipWidth-2*em)/3 * (i%2)))
-                        .attr("y2", .75*em + em * parseInt(i/2))
+                        .attr("y2", mapTooltipLegendTop + .75*em + em * parseInt(i/2))
                         .style("stroke-dasharray", dataSourceLineStyle[dataSource])
                         .attr("stroke", dataSourceColorMap[dataSource])
                     labelText = labelGroup.append("text")
                         .attr("class", "tooltip-label")
                         .attr("x", 2.5*em + ((mapTooltipWidth-2*em)/3 * (i%2)))
-                        .attr("y", em + em * parseInt(i/2))
+                        .attr("y", mapTooltipLegendTop + em + em * parseInt(i/2))
                         .attr("fill", dataSourceColorMap[dataSource])
                         .attr("font-size", "var(--sl-font-size-small)")
                         .text(dataSourceDisplayName[dataSource])
@@ -362,14 +363,14 @@ function setZctaInteractions(zcta) {
                     // labelGroupBackground = labelGroup.append("rect")
                     labelGroup.append("line")
                         .attr("x1", 2.5*em + ((mapTooltipWidth-2*em)/3 * 2))
-                        .attr("y1", .75*em + em*.5)
+                        .attr("y1", mapTooltipLegendTop + .75*em + em*.5)
                         .attr("x2", 3.75*em + ((mapTooltipWidth-2*em)/3 * 2))
-                        .attr("y2", .75*em + em*.5)
+                        .attr("y2", mapTooltipLegendTop + .75*em + em*.5)
                         .attr("stroke", dataSourceColorMap["prediction"])
                     labelText = labelGroup.append("text")
                         .attr("class", "tooltip-label")
                         .attr("x", 4*em + ((mapTooltipWidth-2*em)/3 * 2))
-                        .attr("y", em + em *.5)
+                        .attr("y", mapTooltipLegendTop + em + em *.5)
                         .attr("fill", dataSourceColorMap["prediction"])
                         .attr("font-size", "var(--sl-font-size-small)")
                         .text(dataSourceDisplayName["prediction"])

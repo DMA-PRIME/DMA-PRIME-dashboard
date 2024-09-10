@@ -26,6 +26,7 @@ function setGridTooltip(gridTooltip) {
         })}).then((result) => {
             gridTooltipWidth = Math.max(500, width * .3)
             gridTooltipHeight = gridTooltipWidth * .65
+            gridTooltipLegendTop = gridTooltipHeight - 2.5*em
 
             ttp = d3.select(this)
                 .style("--max-width", gridTooltipWidth*1.2)
@@ -53,9 +54,9 @@ function setGridTooltip(gridTooltip) {
             // figure out how much space is needed for the y-axis text
             temp = ttpSVG.append("text").text(yScale.domain()[1]).attr("x", 0).attr("y", 0)
             ttpMargins = {
-                "top": 3*em, 
-                "bottom": 2.5*em,
-                "left": temp.node().getBBox().width + em,
+                "top": 1*em, 
+                "bottom": 2.5*em + 3*em,
+                "left": temp.node().getBBox().width + 2*em,
                 "right": em,
             }
             temp.remove()
@@ -87,7 +88,7 @@ function setGridTooltip(gridTooltip) {
             ttpLegend = ttpSVG.append("g").attr("class", "grid-tooltip-legend")
             ttpLegend.append("rect")
                 .attr("x", .5*em)
-                .attr("y", 0)
+                .attr("y", gridTooltipLegendTop)
                 .attr("height", 2.5*em)
                 .attr("width", gridTooltipWidth-em)
                 .attr("fill", "var(--sl-color-gray-300)")
@@ -141,15 +142,15 @@ function setGridTooltip(gridTooltip) {
                     // labelGroupBackground = labelGroup.append("rect") 
                     labelGroup.append("line")
                         .attr("x1", 1*em + ((gridTooltipWidth-2*em)/3 * (i%2)))
-                        .attr("y1", .75*em + em * parseInt(i/2))
+                        .attr("y1", gridTooltipLegendTop + .75*em + em * parseInt(i/2))
                         .attr("x2", 2.25*em + ((gridTooltipWidth-2*em)/3 * (i%2)))
-                        .attr("y2", .75*em + em * parseInt(i/2))
+                        .attr("y2", gridTooltipLegendTop + .75*em + em * parseInt(i/2))
                         .style("stroke-dasharray", dataSourceLineStyle[dataSource])
                         .attr("stroke", dataSourceColorMap[dataSource])
                     labelText = labelGroup.append("text")
                         .attr("class", "tooltip-label")
                         .attr("x", 2.5*em + ((gridTooltipWidth-2*em)/3 * (i%2)))
-                        .attr("y", em + em * parseInt(i/2))
+                        .attr("y", gridTooltipLegendTop + em + em * parseInt(i/2))
                         .attr("fill", dataSourceColorMap[dataSource])
                         .attr("font-size", "var(--sl-font-size-small)")
                         .text(dataSourceDisplayName[dataSource])
@@ -242,14 +243,14 @@ function setGridTooltip(gridTooltip) {
                 // labelGroupBackground = labelGroup.append("rect")
                 labelGroup.append("line")
                     .attr("x1", 2.5*em + ((gridTooltipWidth-2*em)/3 * 2))
-                    .attr("y1", .75*em + em*.5)
+                    .attr("y1", gridTooltipLegendTop + .75*em + em*.5)
                     .attr("x2", 3.75*em + ((gridTooltipWidth-2*em)/3 * 2))
-                    .attr("y2", .75*em + em*.5)
+                    .attr("y2", gridTooltipLegendTop + .75*em + em*.5)
                     .attr("stroke", dataSourceColorMap["prediction"])
                 labelText = labelGroup.append("text")
                     .attr("class", "tooltip-label")
                     .attr("x", 4*em + ((gridTooltipWidth-2*em)/3 * 2))
-                    .attr("y", em + em *.5)
+                    .attr("y", gridTooltipLegendTop + em + em *.5)
                     .attr("fill", dataSourceColorMap["prediction"])
                     .attr("font-size", "var(--sl-font-size-small)")
                     .text(dataSourceDisplayName["prediction"])
@@ -322,7 +323,15 @@ function setGridTooltip(gridTooltip) {
                 .attr("transform", "rotate(-40)");
 
             // display y-axis on the left
-            ttpSVG.append("g")
+            yAxis = ttpSVG.append("g")
+            yAxis.append("text")
+                    .attr("transform", `translate(${1.5*em},${yScale(d3.mean(yScale.domain()))})rotate(-90)`)
+                    .attr("text-anchor", "middle")
+                    .attr("fill", "currentColor")
+                    .attr("font-size", "var(--sl-font-size-small)")
+                    .text("Hospitalizations")
+            
+            yAxis.append("g")
                 .attr("transform", `translate(${ttpMargins.left},0)`)
                 .call(d3.axisLeft(yScale).ticks(5).tickSize(4))
                 .selectAll("text")
