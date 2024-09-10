@@ -136,7 +136,7 @@ function setZctaInteractions(zcta) {
                 "rate": mapRateSwitch.value == "rate"
             })}).then((result) => {
                 mapTooltipWidth = Math.max(500, width * .3)
-                mapTooltipHeight = mapTooltipWidth * .55
+                mapTooltipHeight = mapTooltipWidth * .65
 
                 ttp = d3.select(mapTooltip)
                 ttp.style("display", "block").style("z-index", 1)
@@ -164,7 +164,7 @@ function setZctaInteractions(zcta) {
                 // figure out how much space is needed for the y-axis text
                 temp = ttpSVG.append("text").text(yScale.domain()[1]).attr("x", 0).attr("y", 0)
                 ttpMargins = {
-                    "top": em, 
+                    "top": 3*em, 
                     "bottom": 2.5*em,
                     "left": temp.node().getBBox().width + 2*em,
                     "right": em,
@@ -196,7 +196,13 @@ function setZctaInteractions(zcta) {
 
                 // eww legend
                 ttpLegend = ttpSVG.append("g").attr("id", "tooltip-legend")
-                
+                ttpLegend.append("rect")
+                    .attr("x", .5*em)
+                    .attr("y", 0)
+                    .attr("height", 2.5*em)
+                    .attr("width", mapTooltipWidth-em)
+                    .attr("fill", "var(--sl-color-gray-300)")
+                    .attr("opacity", .5)
                 // holds lines of linechart
                 graphSVG = ttpSVG.append("svg")
                     .attr("id", "graph-svg")
@@ -235,26 +241,32 @@ function setZctaInteractions(zcta) {
 
                     labelBasis =  historicalData[parseInt((historicalData.length-1)*dataSourceLabelPlacement[dataSource])]
 
-                    labelGroup = historicalGroup.append("g")
+                    labelGroup = ttpLegend.append("g")
                         .attr("class", "tooltip-label-group")
-                    labelGroupBackground = labelGroup.append("rect") 
-                    // labelGroup.append("line")
+                    // labelGroupBackground = labelGroup.append("rect") 
+                    labelGroup.append("line")
+                        .attr("x1", 1*em + ((mapTooltipWidth-2*em)/3 * (i%2)))
+                        .attr("y1", .75*em + em * parseInt(i/2))
+                        .attr("x2", 2.25*em + ((mapTooltipWidth-2*em)/3 * (i%2)))
+                        .attr("y2", .75*em + em * parseInt(i/2))
+                        .style("stroke-dasharray", dataSourceLineStyle[dataSource])
+                        .attr("stroke", dataSourceColorMap[dataSource])
                     labelText = labelGroup.append("text")
                         .attr("class", "tooltip-label")
-                        .attr("x", xScaleHistorical(labelBasis.date))
-                        .attr("y", Math.max(yScale(yScale.domain()[1])+em, yScale(labelBasis.count) - (i%2+1)*em))
+                        .attr("x", 2.5*em + ((mapTooltipWidth-2*em)/3 * (i%2)))
+                        .attr("y", em + em * parseInt(i/2))
                         .attr("fill", dataSourceColorMap[dataSource])
                         .attr("font-size", "var(--sl-font-size-small)")
                         .text(dataSourceDisplayName[dataSource])
-                    labelBBox = labelText.node().getBBox()
+                    // labelBBox = labelText.node().getBBox()
 
-                    labelGroupBackground
-                        .attr("height", labelBBox.height)
-                        .attr("width", labelBBox.width)
-                        .attr("x", labelBBox.x)
-                        .attr("y", labelBBox.y)
-                        .attr("fill", "var(--sl-color-gray-300)")
-                        .attr("opacity", .5)
+                    // labelGroupBackground
+                    //     .attr("height", labelBBox.height)
+                    //     .attr("width", labelBBox.width)
+                    //     .attr("x", labelBBox.x)
+                    //     .attr("y", labelBBox.y)
+                    //     .attr("fill", "var(--sl-color-gray-300)")
+                    //     .attr("opacity", .5)
                 })
 
                 
@@ -321,54 +333,69 @@ function setZctaInteractions(zcta) {
                         .attr("y2", mapTooltipHeight - ttpMargins.bottom)
 
                     
-                    labelBasis = predictiveData[parseInt((predictiveData.length-1))]
-                    fiveWeekLabelGroup = predictiveGroup.append("g")
-                        .attr("class", "tooltip-label-group")
-                    fiveWeekTextPosition = yScale(labelBasis.count) - em
-                    if (yScale(yScale.domain()[1]) > fiveWeekTextPosition - em) {
-                        fiveWeekTextPosition = yScale(yScale.domain()[1]) + 1*em
-                    }
-                    fiveWeekLabel = fiveWeekLabelGroup.append("text")
-                        .attr("class", "tooltip-label")
-                        .attr("x", xScalePrediction(labelBasis.date))
-                        .attr("y", fiveWeekTextPosition)
-                        .attr("text-anchor", "end")
-                        .attr("font-size", "var(--sl-font-size-small)")
-                        .attr("text-decoration", "underline")
-                        .text("5 Week Prediction")
+                    // labelBasis = predictiveData[parseInt((predictiveData.length-1))]
+                    // fiveWeekLabelGroup = predictiveGroup.append("g")
+                    //     .attr("class", "tooltip-label-group")
+                    // fiveWeekTextPosition = yScale(labelBasis.count) - em
+                    // if (yScale(yScale.domain()[1]) > fiveWeekTextPosition - em) {
+                    //     fiveWeekTextPosition = yScale(yScale.domain()[1]) + 1*em
+                    // }
+                    // fiveWeekLabel = fiveWeekLabelGroup.append("text")
+                    //     .attr("class", "tooltip-label")
+                    //     .attr("x", xScalePrediction(labelBasis.date))
+                    //     .attr("y", fiveWeekTextPosition)
+                    //     .attr("text-anchor", "end")
+                    //     .attr("font-size", "var(--sl-font-size-small)")
+                    //     .attr("text-decoration", "underline")
+                    //     .text("5 Week Prediction")
 
-                    fiveWeekLabelBBox = fiveWeekLabel.node().getBBox()
-                    fiveWeekLabelGroup.append("line")
-                        .attr("x1", fiveWeekLabelBBox.width/2 + fiveWeekLabelBBox.x)
-                        .attr("y1", fiveWeekLabelBBox.height + fiveWeekLabelBBox.y)
-                        .attr("x2", xScalePrediction(labelBasis.date))
-                        .attr("y2", yScale(labelBasis.count))
-                        .attr("stroke", "black")
+                    // fiveWeekLabelBBox = fiveWeekLabel.node().getBBox()
+                    // fiveWeekLabelGroup.append("line")
+                    //     .attr("x1", fiveWeekLabelBBox.width/2 + fiveWeekLabelBBox.x)
+                    //     .attr("y1", fiveWeekLabelBBox.height + fiveWeekLabelBBox.y)
+                    //     .attr("x2", xScalePrediction(labelBasis.date))
+                    //     .attr("y2", yScale(labelBasis.count))
+                    //     .attr("stroke", "black")
 
-                    labelGroup = predictiveGroup.append("g")
+                    labelGroup = ttpLegend.append("g")
                         .attr("class", "tooltip-label-group")
-                    labelGroupBackground = labelGroup.append("rect")
-                    predictionTextPosition = yScale(yScale.domain()[1]) + em
-                    if (yScale(labelBasis.count) <= predictionTextPosition + em) {
-                        predictionTextPosition = yScale(0) - .5*em
-                    }
+                    // labelGroupBackground = labelGroup.append("rect")
+                    labelGroup.append("line")
+                        .attr("x1", 2.5*em + ((mapTooltipWidth-2*em)/3 * 2))
+                        .attr("y1", .75*em + em*.5)
+                        .attr("x2", 3.75*em + ((mapTooltipWidth-2*em)/3 * 2))
+                        .attr("y2", .75*em + em*.5)
+                        .attr("stroke", dataSourceColorMap["prediction"])
                     labelText = labelGroup.append("text")
                         .attr("class", "tooltip-label")
-                        .attr("x", xScalePrediction(d3.mean(xScalePrediction.domain())))
-                        .attr("y", predictionTextPosition)
+                        .attr("x", 4*em + ((mapTooltipWidth-2*em)/3 * 2))
+                        .attr("y", em + em *.5)
                         .attr("fill", dataSourceColorMap["prediction"])
                         .attr("font-size", "var(--sl-font-size-small)")
-                        .attr("text-anchor", "middle")
                         .text(dataSourceDisplayName["prediction"])
 
-                    labelBBox = labelText.node().getBBox()
-                    labelGroupBackground
-                        .attr("height", labelBBox.height)
-                        .attr("width", labelBBox.width)
-                        .attr("x", labelBBox.x)
-                        .attr("y", labelBBox.y)
-                        .attr("fill", "var(--sl-color-gray-300)")
-                        .attr("opacity", .5)
+
+                    // predictionTextPosition = yScale(yScale.domain()[1]) + em
+                    // if (yScale(labelBasis.count) <= predictionTextPosition + em) {
+                    //     predictionTextPosition = yScale(0) - .5*em
+                    // }
+                    // labelText = labelGroup.append("text")
+                    //     .attr("class", "tooltip-label")
+                    //     .attr("x", xScalePrediction(d3.mean(xScalePrediction.domain())))
+                    //     .attr("y", predictionTextPosition)
+                    //     .attr("fill", dataSourceColorMap["prediction"])
+                    //     .attr("font-size", "var(--sl-font-size-small)")
+                    //     .attr("text-anchor", "middle")
+                    //     .text(dataSourceDisplayName["prediction"])
+
+                    // labelBBox = labelText.node().getBBox()
+                    // labelGroupBackground
+                    //     .attr("height", labelBBox.height)
+                    //     .attr("width", labelBBox.width)
+                    //     .attr("x", labelBBox.x)
+                    //     .attr("y", labelBBox.y)
+                    //     .attr("fill", "var(--sl-color-gray-300)")
+                    //     .attr("opacity", .5)
                 }
 
                 // display x-axis on the bottom
