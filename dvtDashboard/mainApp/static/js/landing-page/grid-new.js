@@ -45,7 +45,7 @@ function gridInitialVisualization() {
 
             gridSVG.append("rect")
                 .attr("class", "grid-background")
-                .style("fill", "grey")
+                .style("fill", "var(--sl-color-gray-600)")
 
             // title
             gridSVG.append("text")
@@ -107,6 +107,9 @@ function updateGridData() {
                 
                 stats.date.min = parseDate(stats.date.min)
                 stats.date.max = parseDate(stats.date.max)
+
+                gridStartDate.html(d3.utcFormat("%B %d, %Y")(parseDate(result.stats.date.min)))
+                gridEndDate.html(d3.utcFormat("%B %d, %Y")(parseDate(result.stats.date.max)))
                 
                 value = {
                     "state-model": 0,
