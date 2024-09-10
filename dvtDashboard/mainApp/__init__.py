@@ -107,7 +107,11 @@ def create_app():
         elif mapType == 'hospitals':
             mapDataDict = json.load(open(f'{main_dir}/static/data/Hospitals.geojson'))
         else:
-            mapDataDict = json.load(open(f'{main_dir}/static/data/tl_2023_sc_{mapType}_trimmed.json'))
+            if mapType == 'zcta':
+                mapDataDict = json.load(open(f'{main_dir}/static/data/tl_2023_sc_{mapType}_trimmed_simplified_ogr2ogr_.0001.json'))
+                # mapDataDict = json.load(open(f'{main_dir}/static/data/tl_2023_sc_{mapType}_trimmed_simplified.json'))
+            else:
+                mapDataDict = json.load(open(f'{main_dir}/static/data/tl_2023_sc_{mapType}_trimmed.json'))
         return mapDataDict
     
     @app.route('/hospitalizations/<disease>/<dataSource>', methods=['GET', 'POST'])

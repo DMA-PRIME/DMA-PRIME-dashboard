@@ -166,7 +166,7 @@ function setZctaInteractions(zcta) {
                 ttpMargins = {
                     "top": em, 
                     "bottom": 2.5*em,
-                    "left": temp.node().getBBox().width + em,
+                    "left": temp.node().getBBox().width + 2*em,
                     "right": em,
                 }
                 temp.remove()
@@ -193,6 +193,9 @@ function setZctaInteractions(zcta) {
 
                 // line to delineate prediction and historical data
                 ttpSVG.append("line").attr("id", "tooltip-prediction-separator")
+
+                // eww legend
+                ttpLegend = ttpSVG.append("g").attr("id", "tooltip-legend")
                 
                 // holds lines of linechart
                 graphSVG = ttpSVG.append("svg")
@@ -235,13 +238,14 @@ function setZctaInteractions(zcta) {
                     labelGroup = historicalGroup.append("g")
                         .attr("class", "tooltip-label-group")
                     labelGroupBackground = labelGroup.append("rect") 
+                    // labelGroup.append("line")
                     labelText = labelGroup.append("text")
                         .attr("class", "tooltip-label")
                         .attr("x", xScaleHistorical(labelBasis.date))
                         .attr("y", Math.max(yScale(yScale.domain()[1])+em, yScale(labelBasis.count) - (i%2+1)*em))
                         .attr("fill", dataSourceColorMap[dataSource])
                         .attr("font-size", "var(--sl-font-size-small)")
-                        .text(dataSource)
+                        .text(dataSourceDisplayName[dataSource])
                     labelBBox = labelText.node().getBBox()
 
                     labelGroupBackground
@@ -249,7 +253,7 @@ function setZctaInteractions(zcta) {
                         .attr("width", labelBBox.width)
                         .attr("x", labelBBox.x)
                         .attr("y", labelBBox.y)
-                        .attr("fill", "var(--sl-color-gray-600)")
+                        .attr("fill", "var(--sl-color-gray-300)")
                         .attr("opacity", .5)
                 })
 
@@ -355,7 +359,7 @@ function setZctaInteractions(zcta) {
                         .attr("fill", dataSourceColorMap["prediction"])
                         .attr("font-size", "var(--sl-font-size-small)")
                         .attr("text-anchor", "middle")
-                        .text("prediction")
+                        .text(dataSourceDisplayName["prediction"])
 
                     labelBBox = labelText.node().getBBox()
                     labelGroupBackground
@@ -363,7 +367,7 @@ function setZctaInteractions(zcta) {
                         .attr("width", labelBBox.width)
                         .attr("x", labelBBox.x)
                         .attr("y", labelBBox.y)
-                        .attr("fill", "var(--sl-color-gray-600)")
+                        .attr("fill", "var(--sl-color-gray-300)")
                         .attr("opacity", .5)
                 }
 
@@ -385,7 +389,15 @@ function setZctaInteractions(zcta) {
                     .attr("transform", "rotate(-40)");
     
                 // display y-axis on the left
-                ttpSVG.append("g")
+                yAxis = ttpSVG.append("g")
+                yAxis.append("text")
+                    .attr("transform", `translate(${1.5*em},${yScale(d3.mean(yScale.domain()))})rotate(-90)`)
+                    .attr("text-anchor", "middle")
+                    .attr("fill", "currentColor")
+                    .attr("font-size", "var(--sl-font-size-small)")
+                    .text("Hospitalizations")
+
+                yAxis.append("g")
                     .attr("transform", `translate(${ttpMargins.left},0)`)
                     .call(d3.axisLeft(yScale).ticks(5).tickSize(4))
                     .selectAll("text")

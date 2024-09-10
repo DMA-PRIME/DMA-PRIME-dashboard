@@ -127,8 +127,6 @@ function updateGridData() {
                     .y((d) => yScale(d.count))
                     .curve(d3.curveMonotoneX)
 
-                color = d3.scaleOrdinal(d3.schemeAccent).domain(Object.keys(data.historical))
-
                 Object.entries(data.historical).forEach(function([dataSource, values]) {
                     // for each data source
                     historicalData = []
@@ -209,14 +207,15 @@ function updateGridData() {
 }
 
 function sortGrid() {
-    color = d3.color(dataSourceColorMap[gridDataSourceSortSelector.value])
-    color.opacity = .75
+    scheme = d3.schemeReds[9]
+    indices = [2, 4, 6, 8]
+    colors = indices.map(i => scheme[i])
 
     gridColor = d3.scaleQuantile()
         .domain(d3.selectAll("div.grid-container").data()
             .map((d) => d[gridDataSourceSortSelector.value])
             .filter(function(d) {return d != 0}))
-        .range([color.brighter(2), color.brighter(1), color.brighter(.5), color])
+        .range(colors)
 
     d3.selectAll("div.grid-container").each(function(d, i, nodeList) {
         d3.select(this).select(".grid-background")
