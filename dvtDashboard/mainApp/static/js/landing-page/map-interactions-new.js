@@ -202,8 +202,8 @@ function setZctaInteractions(zcta) {
                     .attr("y", mapTooltipLegendTop)
                     .attr("height", 2.5*em)
                     .attr("width", mapTooltipWidth-em)
-                    .attr("fill", "var(--sl-color-gray-300)")
-                    .attr("opacity", .5)
+                    .attr("fill", "none")
+                    // .attr("opacity", .75)
                 // holds lines of linechart
                 graphSVG = ttpSVG.append("svg")
                     .attr("id", "graph-svg")
@@ -293,6 +293,7 @@ function setZctaInteractions(zcta) {
                         .attr("stroke", dataSourceColorMap["prediction"])
                         .attr("fill", "none")
                         .attr("stroke-width", 2)
+                        .style("stroke-dasharray", dataSourceLineStyle["prediction"])
     
                     // marks each datapoint on prediction line
                     predictiveGroup.selectAll("circle").data(predictiveData)
@@ -302,6 +303,7 @@ function setZctaInteractions(zcta) {
                         .attr("cx", (d) =>  xScalePrediction(d.date))
                         .attr("cy", (d) => yScale(d.count))
                         .attr("stroke", dataSourceColorMap["prediction"])
+                        
                 })
 
                 // // Show confidence interval
@@ -363,14 +365,14 @@ function setZctaInteractions(zcta) {
                     // labelGroupBackground = labelGroup.append("rect")
                     labelGroup.append("line")
                         .attr("x1", 2.5*em + ((mapTooltipWidth-2*em)/3 * 2))
-                        .attr("y1", mapTooltipLegendTop + .75*em + em*.5)
+                        .attr("y1", mapTooltipLegendTop + .75*em + em)
                         .attr("x2", 3.75*em + ((mapTooltipWidth-2*em)/3 * 2))
-                        .attr("y2", mapTooltipLegendTop + .75*em + em*.5)
+                        .attr("y2", mapTooltipLegendTop + .75*em + em)
                         .attr("stroke", dataSourceColorMap["prediction"])
                     labelText = labelGroup.append("text")
                         .attr("class", "tooltip-label")
                         .attr("x", 4*em + ((mapTooltipWidth-2*em)/3 * 2))
-                        .attr("y", mapTooltipLegendTop + em + em *.5)
+                        .attr("y", mapTooltipLegendTop + em + em)
                         .attr("fill", dataSourceColorMap["prediction"])
                         .attr("font-size", "var(--sl-font-size-small)")
                         .text(dataSourceDisplayName["prediction"])

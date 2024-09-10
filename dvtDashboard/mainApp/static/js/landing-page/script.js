@@ -7,12 +7,12 @@ var diseaseIndexing = { "covid-19": 1, "influenza": 2, "rsv": 3 }
 var diseaseColorMap = d3.scaleOrdinal().domain(Object.keys(diseaseIndexing)).unknown("var(--sl-color-gray-600").range(d3.schemeSet1)
 
 var dataSourceColorMap = {
-    "health-system": "#648FFF",
-    "state-data": "#785EF0",
-    "state-train": "#FFB000",
-    "state-post-train": "#FFB000",
+    "health-system": "#44AA99",
+    "state-data": "#88CCEE",
+    "state-train": "#DDCC77",
+    "state-post-train": "#CC6677",
     "state-model": "#FFB000",
-    "prediction": "#FE6100",
+    "prediction": "#CC6677",
     "state": "#FFB000",
 }
 
@@ -29,14 +29,14 @@ var dataSourceDisplayName = {
     "state-data": "State Data",
     "state-train": "Prediction (training)",
     "state-post-train": "Prediction (test)",
-    "prediction": "Future Prediction",
+    "prediction": "Forecast",
 }
 
 var dataSourceLineStyle = {
     "health-system": null,
     "state-data": null,
     "state-train": "5,5",
-    "state-post-train": null,
+    "state-post-train": "5,5",
     "prediction": null,
 }
 
