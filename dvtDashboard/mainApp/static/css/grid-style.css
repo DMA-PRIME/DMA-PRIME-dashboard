@@ -78,6 +78,11 @@ sl-tooltip {
   stroke-dasharray: 5, 5;
 }
 
+#grid-container div[slot="content"] {
+  background-color: rgba(0,0,0,.85);
+  color: white
+ }
+
 /* below is text in grid item, I think this is already handled by d3 in grid.js */
 /* .quandrant text {
   font-size: var(--sl-font-size-x-small)
