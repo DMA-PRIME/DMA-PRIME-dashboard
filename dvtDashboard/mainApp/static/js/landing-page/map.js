@@ -27,10 +27,10 @@ function mapInitialVisualization() {
 
 
 
-        // // add group for hospital icons
-        // hospitals = mapSVG.append("g")
-        //     .attr("id", "map-hospitals")
-        //     .style("pointer-events", "none")
+        // add group for hospital icons
+        hospitals = mapSVG.append("g")
+            .attr("id", "map-hospitals")
+            .style("pointer-events", "none")
 
         // add group for map legends
         legendsGroup = mapSVG.append("g")
@@ -60,24 +60,25 @@ function mapInitialVisualization() {
                 .call(updateMapData)
         })})
 
-        // // draw hospital icons
-        // hospSize = Math.max(16, Math.min(width, height) * 0.015)
-        // d3.json("/map-data/hospitals").then( async function(hospdata){
-        //       hospitals.selectAll("svg")
-        //       .data(hospdata.features)
-        //       .enter()
-        //       .append("svg")
-        //       .attr("class", "hospital")
-        //       .attr("id", d => "map-"+fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
-        //       .attr("viewBox", "0 0 16 16")
-        //       .attr("x", d => mapProjection(d.geometry.coordinates)[0]*zoom + xSkew - hospSize/2)
-        //       .attr("y", d => mapProjection(d.geometry.coordinates)[1]*zoom + ySkew - hospSize/2)
-        //       .attr("width", hospSize)
-        //       .attr("height", hospSize)
-        //       .each(function(d) {
-        //         this.innerHTML = makeHospital(fixName(d.properties.webdbINFOHEALTHFACILITYLF_NAME))
-        //       })
-        // })
+        // draw hospital icons
+        hospSize = Math.max(16, Math.min(width, height) * 0.015)
+        d3.csv("../../static/data/hospitals-list.csv").then(function(hospdata){
+            console.log(hospdata)
+            hospitals.selectAll("svg")
+              .data(hospdata)
+              .enter()
+              .append("svg")
+              .attr("class", "hospital")
+              .attr("id", d => "map-"+fixName(d["Name of Facility"]))
+              .attr("viewBox", "0 0 16 16")
+              .attr("x", d => mapProjection([d.X, d.Y])[0]*zoom + xSkew - hospSize/2)
+              .attr("y", d => mapProjection([d.X, d.Y])[1]*zoom + ySkew - hospSize/2)
+              .attr("width", hospSize)
+              .attr("height", hospSize)
+              .each(function(d) {
+                this.innerHTML = makeHospital(fixName(d["Name of Facility"]))
+              })
+        })
 
         choroplethColorMap = d3.scaleLinear()
             .domain([0, 0])
