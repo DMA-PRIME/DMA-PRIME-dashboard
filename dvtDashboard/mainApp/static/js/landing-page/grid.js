@@ -81,7 +81,8 @@ function gridInitialVisualization() {
                     .attr("class", "grid-background")
                     .attr("width", gridItemWidth)
                     .attr("height", gridItemHeight)
-                    .style("fill", d[gridDataSourceSortSelector.value].data.length > 0 ? gridColor(d[gridDataSourceSortSelector.value].data.at(-1)) : "var(--sl-color-gray-600)")
+                    // .attr("opacity", d[gridDataSourceSortSelector.value].data.length > 0 ? 1 : 0.7)
+                    .style("fill", d[gridDataSourceSortSelector.value].data.length > 0 ? gridColor(d[gridDataSourceSortSelector.value].data.at(-1)) : "var(--sl-color-gray-200)")
 
                 // title
                 gridSVG.append("text")
