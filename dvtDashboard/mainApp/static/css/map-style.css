@@ -79,6 +79,7 @@ path.map-zcta {
     border-width: var(--sl-border-radius-small);
     border-style: solid;
     border-radius: .25em;
+    background-color: rgba(0, 0, 0, 0.75);
 }
 
 p.tooltip {
@@ -99,8 +100,8 @@ p.tooltip {
 
 #tooltip-prediction-separator {
     /* line indicating the difference between prediction and reality */
-    stroke-width: 1;
-    stroke: black;
+    stroke-width: 1.5;
+    stroke: white;
 }
 
 #tooltip-prediction-highlighter {

@@ -42,8 +42,8 @@
 
 .grid-prediction-separator {
   /* line indicating the difference between prediction and reality */
-  stroke-width: 1;
-  stroke: black;
+  stroke-width: 1.5;
+  stroke: white;
 }
 
 .grid-prediction-highlighter {
@@ -77,6 +77,11 @@ sl-tooltip {
 #grid-legend-state-model-line {
   stroke-dasharray: 5, 5;
 }
+
+#grid-container div[slot="content"] {
+  background-color: rgba(0,0,0,.85);
+  color: white
+ }
 
 /* below is text in grid item, I think this is already handled by d3 in grid.js */
 /* .quandrant text {
