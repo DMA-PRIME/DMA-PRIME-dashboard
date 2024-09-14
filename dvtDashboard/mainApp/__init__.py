@@ -31,7 +31,6 @@ def create_app():
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
         SECRET_KEY='***REMOVED***',
-        DATABASE= main_dir+'/mainApp.sqlite',
     )
     app.wsgi_app = ProxyFix( # allows a reverse proxy
         app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
