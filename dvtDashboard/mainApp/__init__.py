@@ -39,7 +39,7 @@ def create_app():
     app.config.from_pyfile('config.py', silent=True)
 
     from . import db
-    # db.init_app(app)
+    db.init_app(app)
     
     # ensure the instance folder exists
     try:
@@ -56,7 +56,7 @@ def create_app():
 
     # landing page
     @app.route('/')
-    #@login_required
+    @login_required
     def index():
         panels = [
             {
@@ -106,12 +106,12 @@ def create_app():
 
     # Simply for my own convenience
     @app.route('/testing')
-    #@login_required
+    @login_required
     def testing():
         return render_template('testing-vis.html')
     
     @app.route('/map-data/<mapType>', methods=['GET', 'POST'])
-    #@login_required
+    @login_required
     def mapData(mapType):
         if mapType == 'zcta_county_crosswalk':
             mapDataDict = json.load(open(f'{main_dir}/static/data/zcta_county_crosswalk.json'))
@@ -126,7 +126,7 @@ def create_app():
         return mapDataDict
 
     @app.route('/hospitalization-grid/<disease>', methods=['GET', 'POST'])
-    #@login_required
+    @login_required
     def getHospitalizations(disease='covid-19'):
         return json.load(open(f'{main_dir}/static/data/{disease}_zcta_hospitalization_data.json'))
 
