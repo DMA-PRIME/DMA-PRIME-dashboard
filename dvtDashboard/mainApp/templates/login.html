@@ -33,8 +33,22 @@
         font-family: var(--sl-font-sans); 
     }
 
-    #form-div sl-input{
-      margin-bottom: var(--sl-spacing-large);
+    #login-title {
+      margin-bottom: var(--sl-spacing-2x-large)
+    }
+
+    #username {
+      margin-bottom: var(--sl-spacing-small)
+    }
+
+    #password {
+      margin-bottom: var(--sl-spacing-2x-small)
+    }
+
+    #login-error {
+      height: 1em;
+      margin-top: 0;
+      margin-bottom: var(--sl-spacing-x-large)
     }
 
   </style>
@@ -50,15 +64,20 @@
 
 
   <div id="form-div">
-    <h1>Log In</h1>
-    <form method="post" id="login-form">
-      <sl-input label="Username" id="username" name="username" required></sl-input>
-      <sl-input label="Password" type="password" name="password" id="password-input" password-toggle required></sl-input>
-      <sl-button type="submit" variant="primary">Submit</sl-button>
-    </form>
+    <h1 id="login-title">Log In</h1>
     {% for message in get_flashed_messages() %}
       <div class="flash">{{ message }}</div>
     {% endfor %}
+    <form method="post" id="login-form">
+      <sl-input label="Username" id="username" name="username" required></sl-input>
+      <sl-input label="Password" type="password" name="password" id="password-input" password-toggle required></sl-input>
+      <p id="login-error"> 
+        {% for message in get_flashed_messages() %}
+        <text>{{ message }}</text>
+        {% endfor %}
+      </p>
+      <sl-button type="submit" variant="primary">Submit</sl-button>
+    </form>
   </div>
 
 
