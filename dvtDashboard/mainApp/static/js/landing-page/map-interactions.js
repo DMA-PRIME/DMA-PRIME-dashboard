@@ -55,6 +55,9 @@ communityPartnerIconsToggle.addEventListener("sl-change", () => {
 resetButton.addEventListener("click", () => {
     // reset map's zoom and pan
     focusCounty = null
+    focusZCTA = null
+    mapSVG.select("#map-tooltip-fo").select("div")
+        .style("display", "none")
     mapUnzoom()
     mapClearCountyHighlight()
 })

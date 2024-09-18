@@ -617,8 +617,8 @@ function drawTooltip(d, div, ttpHeight, ttpWidth) {
         historicalLabels = graphSVG.append("g")
 
         thisStartDate = dayjs.tz(thisData["start-date"], "YYYY-MM-DD", "America/New_York").toDate()
-        thisEndDate = new Date(startDate);
-        thisEndDate.setDate(endDate.getDate() + thisData.data.length*7);
+        thisEndDate = new Date(thisStartDate);
+        thisEndDate.setDate(thisEndDate.getDate() + thisData.data.length*7);
         datesReconstructed = d3.timeMonday.range(thisStartDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 1)
 
         refDate = new Date(thisWeekMonday)
