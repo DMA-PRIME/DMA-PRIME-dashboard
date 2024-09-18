@@ -22,6 +22,24 @@ gridDataSourceSortSelector.addEventListener("sl-change", (event) => {
     updateGridData()    
 })
 
+gridTextFilter.addEventListener("sl-input", function(event) {
+    diseaseData = zctaData[gridDiseaseSelector.value]
+
+    matchingGridItems = diseaseData.filter(function(d) {
+        countyMatch = d.county.toLowerCase().includes(gridTextFilter.value.toLowerCase())
+        zctaMatch = d.zcta.toString().toLowerCase().includes(gridTextFilter.value.toLowerCase())
+        return countyMatch || zctaMatch
+    })
+
+    objs = d3.select(gridContainer).selectAll("div.grid-container")
+        .data(matchingGridItems, function(d) {
+            return d.zcta
+        })
+    objs.style("display", "initial")
+    objs.exit()
+        .style("display", "none")
+})
+
 function setGridTooltip(gridTooltip) {
     gridTooltip.on("sl-show", function(event) {        
         gridTooltipWidth = Math.max(500, width * .3)

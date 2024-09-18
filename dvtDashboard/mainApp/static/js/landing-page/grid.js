@@ -18,7 +18,7 @@ function gridInitialVisualization() {
 
     diseaseData = zctaData[gridDiseaseSelector.value]
     gridColor = d3.scaleQuantile()
-        .domain(getDataAsArray(gridDiseaseSelector.value, gridDataSourceSortSelector.value, gridRateSwitch =="rate")
+        .domain(getDataAsArray(gridDiseaseSelector.value, gridDataSourceSortSelector.value, gridRateSwitch.value =="rate")
             .filter(function(d) {return d != 0}))
         .range(gridBackgroundColors)
 
@@ -123,7 +123,7 @@ function updateGridData() {
     diseaseData = zctaData[gridDiseaseSelector.value]
 
     gridColor = d3.scaleQuantile()
-    .domain(getDataAsArray(gridDiseaseSelector.value, gridDataSourceSortSelector.value, gridRateSwitch =="rate")
+    .domain(getDataAsArray(gridDiseaseSelector.value, gridDataSourceSortSelector.value, gridRateSwitch.value == "rate")
         .filter(function(d) {return d != 0}))
     .range(gridBackgroundColors)
 

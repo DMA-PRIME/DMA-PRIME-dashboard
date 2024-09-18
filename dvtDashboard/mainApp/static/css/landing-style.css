@@ -67,6 +67,7 @@ sl-tab-panel::part(base) {
   display: flex;
   flex-direction: column;
   justify-content: space-between;
+  overflow: hidden;
 }
 
 .options-divider {

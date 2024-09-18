@@ -33,6 +33,10 @@
     <sl-option value="alphabetical-high">Alphanumerical 9-0-Z-A </sl-option>
   </sl-select>
 
+  <sl-input id="grid-text-filter" clearable>
+    <p slot="label">Filter by ZCTA or County</p>
+  </sl-input>
+
   <p id="grid-summary" class="panel-summary center-self">
     Weekly count of hospitalizations due to covid-19, influenza, and respiratory syncytial virus (RSV) from <text id="grid-start-date"></text> to <text id="grid-end-date"></text>.
     <br/>
@@ -96,6 +100,7 @@
   var gridDiseaseSelector = document.getElementById("grid-disease-selector")
   var gridDataSourceSortSelector = document.getElementById("grid-data-source-sort-selector")
   var gridSort = document.getElementById("grid-sort")
+  var gridTextFilter = document.getElementById("grid-text-filter")
 
   // aggregation visualization elements
   var jsgridAggregationDonutSvg = document.getElementById("grid-aggregation-donut-svg")
