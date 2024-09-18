@@ -343,8 +343,8 @@ function updateMapData() {
                 d3.select(`path#map-${d.zcta}`)
                     .style("fill", choroplethColorMap(value))
             } else {
-                d3.select(this).select("path")
-                    .attr("fill", choroplethColorMap(NaN))
+                d3.select(`path#map-${d.zcta}`)
+                    .style("fill", choroplethColorMap(NaN))
             }
         })  
 

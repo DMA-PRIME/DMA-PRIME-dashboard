@@ -2,7 +2,7 @@
 
 from flask import Flask, jsonify, render_template, request
 from werkzeug.middleware.proxy_fix import ProxyFix
-from werkzeug.security import check_password_hash, generate_password_hash
+import logging
 
 import os
 import pandas as pd
@@ -31,6 +31,9 @@ def create_app():
     )
 
     app.config.from_pyfile('config.py', silent=True)
+
+    logger = logging.getLogger()
+    logging.basicConfig(filename=main_dir+'logs.log', format='%(levelname)s:%(name)%:%(message)s')
 
     from . import db
     db.init_app(app)
