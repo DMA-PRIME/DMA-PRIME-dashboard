@@ -20,6 +20,8 @@ from .auth import login_required
 #        past, current, prediction
 #            prediction history vs actual
 
+logging.basicConfig(filename=main_dir+'/logs.log', format='%(levelname)s:%(name)%:%(message)s')
+
 def create_app():
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
@@ -33,7 +35,6 @@ def create_app():
     app.config.from_pyfile('config.py', silent=True)
 
     logger = logging.getLogger()
-    logging.basicConfig(filename=main_dir+'logs.log', format='%(levelname)s:%(name)%:%(message)s')
 
     from . import db
     db.init_app(app)
