@@ -5,11 +5,17 @@ function gridInitialVisualization() {
     gridStartDate.html(d3.utcFormat("%B %d, %Y")(historicalDates[0]))
     gridEndDate.html(d3.utcFormat("%B %d, %Y")(thisWeekMonday))
 
-    gridHeight = gridContainer.clientHeight
-    gridWidth = gridContainer.clientWidth
+    gridHeight = gridContent.clientHeight
+    gridWidth = gridContent.clientWidth
 
-    gridItemWidth = Math.max((gridWidth/8) - .5*em, 150)
-    gridItemHeight = Math.max((gridHeight/6) - 1, 100)
+    adjustedHeight = gridHeight - 1*em
+    adjustedWidth = gridWidth - 1*em
+
+    colItems = Math.min(6, Math.max(Math.floor(adjustedHeight/(120-.25*em)), 1))
+    rowItems = Math.min(8, Math.max(Math.floor(adjustedWidth/(150-.25*em)), 1))
+
+    gridItemHeight = d3.max([(adjustedHeight-((colItems)*.25*em))/colItems, (120-.125*em)])
+    gridItemWidth = d3.max([(adjustedWidth-((rowItems)*.25*em))/rowItems, (150-.125*em)])
 
     xScale = d3.scaleUtc()
                 .domain([historicalDates[0], historicalDates.at(-1)])
@@ -114,11 +120,17 @@ function updateGridData() {
     gridStartDate.html(d3.utcFormat("%B %d, %Y")(historicalDates[0]))
     gridEndDate.html(d3.utcFormat("%B %d, %Y")(thisWeekMonday))
 
-    gridHeight = gridContainer.clientHeight
-    gridWidth = gridContainer.clientWidth
+    gridHeight = gridContent.clientHeight
+    gridWidth = gridContent.clientWidth
 
-    gridItemWidth = Math.max((gridWidth/8) - .5*em, 150)
-    gridItemHeight = Math.max((gridHeight/6) - 1, 100)
+    adjustedHeight = gridHeight - 1*em
+    adjustedWidth = gridWidth - 1*em
+
+    colItems = Math.min(6, Math.max(Math.floor(adjustedHeight/(120-.25*em)), 1))
+    rowItems = Math.min(8, Math.max(Math.floor(adjustedWidth/(150-.25*em)), 1))
+
+    gridItemHeight = d3.max([(adjustedHeight-((colItems)*.25*em))/colItems, (120-.125*em)])
+    gridItemWidth = d3.max([(adjustedWidth-((rowItems)*.25*em))/rowItems, (150-.125*em)])
 
     diseaseData = zctaData[gridDiseaseSelector.value]
 
