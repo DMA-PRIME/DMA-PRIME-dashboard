@@ -575,7 +575,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
             .attr("r", 3)
             .attr("cx", (_, i) =>  xScalePrediction(predictionDates[i]))
             .attr("cy", (d) => yScale(d))
-            .attr("stroke", dataSourceColorMap["prediction"])
+            .attr("stroke", dataSourceColorMap["state-prediction"])
 
             // highlights predictive data
         graphSVG.select(".tooltip-prediction-highlighter")
