@@ -26,21 +26,23 @@ function mapInitialVisualization() {
               .attr("d", d => pathGenerator(d))
               .style("fill-opacity", 0)
 
-        // add group for hospital icons
-        hospitals = mapSVG.append("g")
-            .attr("id", "map-hospitals")
+        icons = mapSVG.append("g")
+            .attr("id", "map-icons")
             .style("pointer-events", "none")
+
+        // add group for hospital icons
+        hospitals = icons.append("g")
+            .attr("id", "map-hospitals")
             .style("display", hospitalIconsToggle.checked ? "initial" : "none")
 
-        // add group for hospital icons
-        mobileClinics = mapSVG.append("g")
+        // add group for mobile clinic icons
+        mobileClinics = icons.append("g")
             .attr("id", "map-mobile-clinics")
-            .style("pointer-events", "none")
             .style("display", mobileClinicIconsToggle.checked ? "initial" : "none")
 
-        communityPartners = mapSVG.append("g")
+        // add group for community partner icons
+        communityPartners = icons.append("g")
             .attr("id", "map-community-partners")
-            .style("pointer-events", "none")
             .style("display", communityPartnerIconsToggle.checked ? "initial" : "none")
 
         // add group for map legends
