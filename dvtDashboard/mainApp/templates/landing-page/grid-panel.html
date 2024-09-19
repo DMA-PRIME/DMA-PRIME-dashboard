@@ -37,6 +37,8 @@
     <p slot="label">Filter by ZCTA or County</p>
   </sl-input>
 
+  <sl-checkbox id="grid-include-imputations" checked>Include imputated data</sl-checkbox>
+
   <p id="grid-summary" class="panel-summary center-self">
     Weekly count of hospitalizations due to covid-19, influenza, and respiratory syncytial virus (RSV) from <text id="grid-start-date"></text> to <text id="grid-end-date"></text>.
     <br/>
@@ -102,6 +104,7 @@
   var gridDataSourceSortSelector = document.getElementById("grid-data-source-sort-selector")
   var gridSort = document.getElementById("grid-sort")
   var gridTextFilter = document.getElementById("grid-text-filter")
+  var gridIncludeImputations = document.getElementById("grid-include-imputations")
 
   // aggregation visualization elements
   var jsgridAggregationDonutSvg = document.getElementById("grid-aggregation-donut-svg")

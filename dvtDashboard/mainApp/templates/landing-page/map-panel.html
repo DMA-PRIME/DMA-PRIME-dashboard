@@ -27,15 +27,18 @@
     <sl-option value="health-system-data">Health System</sl-option>
   </sl-select>
   
+  <sl-checkbox id="map-include-imputations" checked>Include imputated data</sl-checkbox>
+
+  <sl-divider class="options-divider"></sl-divider>
+  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle" style="display: initial;">Hospitals</sl-checkbox>
+  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle" style="display: initial;">Mobile Health Clinics</sl-checkbox>
+  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-icons-toggle" style="display: initial;">Community Partners</sl-checkbox>
+  
   <p id="map-summary" class="panel-summary center-self">
     Weekly <text>count</text> of hospitalizations due to <text>covid-19, influenza, and respiratory syncytial virus (RSV)</text>.
     <br/>
     Hospitalization cases are aggregated by zip code tabulation area (zcta).
   </p>
-  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle" style="display: initial;">Hospitals</sl-checkbox>
-  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle" style="display: initial;">Mobile Health Clinics</sl-checkbox>
-  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-icons-toggle" style="display: initial;">Community Partners</sl-checkbox>
-
   </div>
 </div>
 
@@ -87,6 +90,7 @@
   var hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
   var mobileClinicIconsToggle = document.getElementById("map-options-mobile-clinic-icons-toggle")
   var communityPartnerIconsToggle = document.getElementById("map-options-community-partner-icons-toggle")
+  var mapIncludeImputations = document.getElementById("map-include-imputations")
 
   // aggregation visualization elements
   var jsmapAggregationDonutSvg = document.getElementById("map-aggregation-donut-svg")

@@ -133,11 +133,14 @@ def create_app():
 
 def load_data():
     load_zcta_hospitalization()
+    pass
 
 def load_zcta_hospitalization():
     files = {
         # 'covid-19': main_dir+'/static/data/covid_cdc_site_visit.csv',
-        'covid-19': [main_dir+'/static/data/Data file for CDC site visit v1.csv', main_dir+'/static/data/Data file for CDC site visit_TA.csv'],
+        # 'covid-19': [main_dir+'/static/data/Data file for CDC site visit v1.csv', main_dir+'/static/data/Data file for CDC site visit_TA.csv'],
+        'covid-19': [{'file': main_dir+'/static/data/Data file for CDC site visit v1.csv', 'imputation': False},
+                     {'file': main_dir+'/static/data/Data file for CDC site visit_TA.csv', 'imputation': True}],
     }
     index_names = ['zcta', 'date']
 
@@ -167,9 +170,12 @@ def load_zcta_hospitalization():
         df = pd.DataFrame()
         if isinstance(file, list):
             for f in file:
-                df = pd.concat([df, pd.read_csv(f)])
+                temp = pd.read_csv(f['file'])
+                temp['imputation'] = f['imputation']
+                df = pd.concat([df, temp])
         else:
             df = pd.read_csv(file)
+            df['imputation'] = False
 
         df.rename({'Zip code': 'zcta', 'Date': 'date'}, axis=1, inplace=True)
         df['date'] = pd.to_datetime(df['date'])
@@ -215,6 +221,11 @@ def load_zcta_hospitalization():
                         'start-date': date.strftime("%Y-%m-%d"),
                         'data': [],
                     } 
+                
+            try:
+                zcta_dict['imputation'] = int(df.xs(zcta, axis=0)['imputation'].any())
+            except KeyError:
+                zcta_dict['imputation'] = 0
 
             if len(zcta_dict['state-testing']['data']) > 0:
                 zcta_dict['state-training']['data'].append(zcta_dict['state-testing']['data'][0])

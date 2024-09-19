@@ -8,7 +8,6 @@ gridRateSwitch.addEventListener("sl-change", (event) => {
 
   d3.select(gridContainer).selectAll("sl-tooltip[open]")
         .each(function(d, i) {
-            console.log(d3.select(this.parentNode).datum().zcta)
             slTTP = d3.select(this)
             gridTooltipWidth = Math.max(500, width * .3)
             gridTooltipHeight = gridTooltipWidth * .65
@@ -31,13 +30,33 @@ gridTextFilter.addEventListener("sl-input", function(event) {
         return countyMatch || zctaMatch
     })
 
-    objs = d3.select(gridContainer).selectAll("div.grid-container")
+    if (!gridIncludeImputations.checked) {
+        matchingGridItems = matchingGridItems.filter(function(d) {
+            return !d.imputation
+        })
+    }
+
+    objs = d3.selectAll("div.grid-container")
         .data(matchingGridItems, function(d) {
             return d.zcta
         })
     objs.style("display", "initial")
     objs.exit()
         .style("display", "none")
+})
+
+gridIncludeImputations.addEventListener("sl-change", () => {
+    if (gridIncludeImputations.checked) {
+        d3.selectAll("div.grid-container")
+            .style("display", "initial")
+    } else {
+        d3.selectAll("div.grid-container")
+            .filter(function(d) {
+                return d.imputation
+            })
+            .style("display", "none")
+    }
+    updateGridData()
 })
 
 function setGridTooltip(gridTooltip) {

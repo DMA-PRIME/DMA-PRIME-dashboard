@@ -98,8 +98,8 @@ function mapInitialVisualization() {
 
                 index = datesReconstructed.findIndex((d) => d.getTime() == thisWeekMonday.getTime())
                 
-                value = NaN
-                if (index > -1) {
+                value = NaN                
+                if (index > -1 && (!mapIncludeImputations.checked || !thisData.imputation)) {
                     value = thisData.at(index)
                     if (mapRateSwitch.value == "rate") {
                         value /= element.population / 1000
@@ -313,7 +313,7 @@ function updateMapData() {
     diseaseData = zctaData[mapDiseaseSelector.value]
 
     choroplethColorMap = d3.scaleLinear()
-        .domain([0, d3.max(getDataAsArray(mapDiseaseSelector.value, mapDataSourceSelector.value, mapRateSwitch.value == "rate"))])
+        .domain([0, d3.max(getDataAsArray(mapDiseaseSelector.value, mapDataSourceSelector.value, mapRateSwitch.value == "rate", mapIncludeImputations.checked))])
         .range(["white", dataSourceColorMap[mapDataSourceSelector.value]])
         .unknown("var(--sl-color-gray-600)").nice()
 
@@ -336,8 +336,7 @@ function updateMapData() {
             datesReconstructed = d3.timeMonday.range(thisStartDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 1)
     
             index = datesReconstructed.findIndex((d) => d.getTime() == thisWeekMonday.getTime())
-            
-            if (index > -1) {
+            if (index > -1 && (mapIncludeImputations.checked || !d.imputation)) {
                 value = thisData.at(index)
                 if (mapRateSwitch.value == "rate") {
                     value /= d.population / 1000

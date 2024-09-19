@@ -24,6 +24,20 @@ mapDiseaseSelector.addEventListener("sl-change", (event) => {
     updateMapData()
 })
 
+mapIncludeImputations.addEventListener("sl-change", () => {
+    if (mapIncludeImputations.checked) {
+        mapSVG.selectAll(".map-zcta-container")
+            .attr("pointer-events", "initial")
+    } else {
+        mapSVG.selectAll(".map-zcta-container")
+            .filter(function(d) {
+                return d.imputation
+            })
+            .attr("pointer-events", "none")
+    }
+    updateMapData()
+})
+
 hospitalIconsToggle.addEventListener("sl-change", () => {
     // toggle hospital icons
     if (hospitalIconsToggle.checked) {

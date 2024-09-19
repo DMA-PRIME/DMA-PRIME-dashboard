@@ -69,11 +69,11 @@ function getZCTAData(disease) {
     }
 }
 
-function getDataAsArray(disease, dataSource, rate) {
+function getDataAsArray(disease, dataSource, rate, imputations=true) {
     data = zctaData[disease]
 
     arr = data.map((d) => {
-        if (d[dataSource].data.length > 0) {
+        if (d[dataSource].data.length > 0 && (imputations || !d.imputation)) {
             if (rate) {
                 return d[dataSource].data.at(-1) / d.population * 1000
             } else {

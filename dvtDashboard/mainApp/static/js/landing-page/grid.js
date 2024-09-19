@@ -24,7 +24,7 @@ function gridInitialVisualization() {
 
     diseaseData = zctaData[gridDiseaseSelector.value]
     gridColor = d3.scaleQuantile()
-        .domain(getDataAsArray(gridDiseaseSelector.value, gridDataSourceSortSelector.value, gridRateSwitch.value =="rate")
+        .domain(getDataAsArray(gridDiseaseSelector.value, gridDataSourceSortSelector.value, gridRateSwitch.value =="rate", gridIncludeImputations.checked)
             .filter(function(d) {return d != 0}))
         .range(gridBackgroundColors)
 
@@ -135,7 +135,7 @@ function updateGridData() {
     diseaseData = zctaData[gridDiseaseSelector.value]
 
     gridColor = d3.scaleQuantile()
-    .domain(getDataAsArray(gridDiseaseSelector.value, gridDataSourceSortSelector.value, gridRateSwitch.value == "rate")
+    .domain(getDataAsArray(gridDiseaseSelector.value, gridDataSourceSortSelector.value, gridRateSwitch.value == "rate", gridIncludeImputations.checked)
         .filter(function(d) {return d != 0}))
     .range(gridBackgroundColors)
 
@@ -165,6 +165,10 @@ function updateGridData() {
                 data[gridDataSourceSortSelector.value].data = d[gridDataSourceSortSelector.value].data.map(function(item) { return item/d.population * 1000} )
             }
 
+            value = NaN
+            if (data[gridDataSourceSortSelector.value].data.length > 0 && (gridIncludeImputations.checked || !d.imputation)) {
+                value = data[gridDataSourceSortSelector.value].data.at(-1)
+            }
 
             // main visualization
             gridSVG = d3.select(`#grid-${zcta}-svg`)
@@ -176,7 +180,7 @@ function updateGridData() {
                 .duration(1000)
                 .attr("width", gridItemWidth)
                 .attr("height", gridItemHeight)
-                .style("fill", data[gridDataSourceSortSelector.value].data.length > 0 ? gridColor(data[gridDataSourceSortSelector.value].data.at(-1)) : "var(--sl-color-gray-600)")
+                .style("fill", gridColor(value))
 
             yScale = d3.scaleLinear()
                 .domain([0, thisCountMax])        
