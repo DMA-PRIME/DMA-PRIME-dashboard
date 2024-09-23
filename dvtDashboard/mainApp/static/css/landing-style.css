@@ -147,15 +147,6 @@ p.tooltip-title {
   fill: var(--sl-color-gray-600);
 }
 
-/* Graveyard */
-/* .options-header { This is not in use anymore, but may be in the future?
-  font-size: var(--sl-font-size-large);
-  margin-top: 0;
-  margin-bottom: .5rem;
-} */
-
-
-
 /* The following is from  https://dev.to/lennythedev/css-gotcha-how-to-fill-page-with-a-div-270j*/
 /* override browser default */
 html,
