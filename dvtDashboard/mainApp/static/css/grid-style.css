@@ -1,6 +1,6 @@
-
+/* grid item container */
 #grid-container {
-  /* div containing all the grid item counties */
+  /* div containing all the grid items */
   display: flex;
   flex-wrap: wrap;
   max-height: 100%;
@@ -13,30 +13,10 @@
   padding-right: .25em;
 }
 
-.grid-item {
-  display:block;
-}
 
-.grid-title {
-  fill: black;
-  font-size: var(--sl-font-size-x-small);
-}
-
-.grid-subtitle {
-  fill: black;
-  font-size: var(--sl-font-size-2x-small);
-}
-
-.grid-value {
-  fill: black;
-  font-size: var(--sl-font-size-x-small);
-}
-
-sl-tooltip {
-  --max-width: 800px;
-}
-
+/* grid legend */
 #grid-legend {
+  /* div that contains the grid legend (line meanings) */
   background-color: var(--sl-color-gray-900);
   opacity: .75;
   display: block;
@@ -46,11 +26,13 @@ sl-tooltip {
 }
 
 #grid-legend-svg {
+  /* svg for grid legend */
   height: 3em;
   width: 200px;
 }
 
 #grid-legend-svg > line {
+  /* lines in grid legend */
   stroke: black;
 }
 
@@ -58,7 +40,38 @@ sl-tooltip {
   stroke-dasharray: 5, 5;
 }
 
+/* grid item */
+.grid-item {
+  /* svg for each grid item */
+  display:block;
+}
+
+.grid-title {
+  /* name of grid item (zcta) */
+  fill: black;
+  font-size: var(--sl-font-size-x-small);
+}
+
+.grid-subtitle {
+  /* grid item subtitle (county zcta "belongs" to) */
+  fill: black;
+  font-size: var(--sl-font-size-2x-small);
+}
+
+.grid-value {
+  /* text displaying value of grid item */
+  fill: black;
+  font-size: var(--sl-font-size-x-small);
+}
+
+/* grid tooltip */
+#grid-container sl-tooltip {
+  /* makes sure sl-tooltip doesn't cut off tooltip contents */
+  --max-width: 800px;
+}
+
 #grid-container div[slot="content"] {
+  /* tooltip div background and text color set */
   background-color: rgba(0,0,0,.85);
   color: white
  }

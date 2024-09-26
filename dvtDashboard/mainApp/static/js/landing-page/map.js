@@ -187,6 +187,7 @@ function mapInitialVisualization() {
         legendWidth = Math.max(width/3, 300)
         colorLegend = mapSVG.select("#map-legends").append("g")
             .attr("id", "map-color-legend")
+            .attr("class", "map-legend")
 
         // create gradient that goes from white to color... like the choropleth coloring
         colorLegendDefs = colorLegend.append("defs")

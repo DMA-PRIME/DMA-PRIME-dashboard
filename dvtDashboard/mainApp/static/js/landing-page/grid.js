@@ -11,38 +11,43 @@ function gridInitialVisualization() {
     adjustedHeight = gridHeight - 1*em
     adjustedWidth = gridWidth - 1*em
 
+    // calculate how many row and column items of at least specified width/height would fit in the grid container
     colItems = Math.min(6, Math.max(Math.floor(adjustedHeight/(120-.25*em)), 1))
     rowItems = Math.min(8, Math.max(Math.floor(adjustedWidth/(150-.25*em)), 1))
 
+    // calculate height and width based on that
     gridItemHeight = (adjustedHeight-((colItems-1)*.25*em))/colItems
     gridItemWidth = (adjustedWidth-((rowItems-1)*.25*em))/rowItems
 
+    // create x scale and color scale
     xScale = d3.scaleUtc()
                 .domain([historicalDates[0], historicalDates.at(-1)])
                 .range([0, gridItemWidth*.75]) 
 
-
     diseaseData = zctaData[gridDiseaseSelector.value]
     gridColor = d3.scaleQuantile()
         .domain(getDataAsArray(gridDiseaseSelector.value, gridDataSourceSortSelector.value, gridRateSwitch.value =="rate", gridIncludeImputations.checked)
-            .filter(function(d) {return d != 0}))
+            .filter(function(d) {return d != 0})) // TODO : if we decide to leave na values as na, this filter may need to be omited
         .range(gridBackgroundColors)
         .unknown("var(--sl-color-gray-600)")
 
+    // create grid item elements
     gridContainerD3.selectAll("div")
         .data(diseaseData)
         .enter()
-        .append("div")
+        .append("div") // data is attached here
         .attr("class", "grid-container")
-        .each(function(d, i, dom) {
+        .each(function(d) {
             zcta = d.zcta
             county = d.county
             gridItemContainer = d3.select(this)
-                        
+            
+            // using sl-tooltip to use shoelace's built in functionality
             gridTTPContainer = gridItemContainer.append("sl-tooltip")
                 .attr("trigger", "click")
                 .attr("hoist", "")
 
+            // set grid tooltip interaction - this happens when grid item is clicked
             setGridTooltip(gridTTPContainer)
 
             // tooltip
@@ -50,7 +55,7 @@ function gridInitialVisualization() {
                 .attr("slot", "content")
                 .attr("id", `grid-${zcta}-tooltip`)
 
-            ttpTitle = gridTTP.append("p")
+            ttpTitle = gridTTP.append("p") // tooltip title
                 .attr("class", "tooltip-title")
             ttpTitle.append("span")
                 .attr("class", "tooltip-title")
@@ -58,7 +63,7 @@ function gridInitialVisualization() {
             ttpTitle.append("span")
                 .attr("class", "tooltip-subtitle")
 
-            gridTTP.append("svg")
+            gridTTP.append("svg") // tooltip graph in svg
                 .attr("id", `grid-${zcta}-tooltip-svg`)
                 .attr("class", `tooltip-outer-svg`)
 
@@ -77,7 +82,7 @@ function gridInitialVisualization() {
                 .attr("width", gridItemWidth)
                 .attr("height", gridItemHeight)
 
-            gridSVG.append("rect")
+            gridSVG.append("rect") // background
                 .attr("class", "grid-background")
                 .attr("width", gridItemWidth)
                 .attr("height", gridItemHeight)
@@ -93,27 +98,28 @@ function gridInitialVisualization() {
                 .attr("class", "grid-subtitle")
                 .html(` (${county.toUpperCase()})`)
 
+            // add each line object
             gridItemDataSources.forEach(function(dataSource) {
                 // draw historical line chart
                 historicalGroup = gridSVG.append("g")
                     .attr("class", dataSource)
                 historicalGroup.append("path")
-                    // .attr("d", line(d[dataSource]))
                     .attr("stroke", "black")
                     .attr("stroke-dasharray", dataSourceLineStyle[dataSource])
                     .attr("fill", "none")
                     .attr("stroke-width", 1.5)
             })
 
-            lastDot = gridSVG.append("g") 
-                    .attr("class", "grid-item-value")
-            lastDot.append("line")
+            // add value label and dot
+            valueLabel = gridSVG.append("g") 
+                .attr("class", "grid-item-value")
+            valueLabel.append("line")
                 .attr("stroke", "black")
                 .attr("stroke-width", 1)
                 .attr("stroke-dasharray", "5,5")
-            lastDot.append("circle")
+            valueLabel.append("circle")
                 .attr("r", 3)
-            lastDot.append("text")
+            valueLabel.append("text")
                 .attr("font-size", "var(--sl-font-size-x-small)")
                 .attr("text-anchor", gridDataSourceSortSelector.value == "state-prediction" ? "end" : "start")
         })
@@ -139,6 +145,7 @@ function updateGridData() {
 
     diseaseData = zctaData[gridDiseaseSelector.value]
 
+    // create scales
     gridColor = d3.scaleQuantile()
         .domain(getDataAsArray(gridDiseaseSelector.value, gridDataSourceSortSelector.value, gridRateSwitch.value == "rate", gridIncludeImputations.checked)
             .filter(function(d) {return d != 0}))
@@ -149,115 +156,125 @@ function updateGridData() {
                 .domain([historicalDates[0], historicalDates.at(-1)])
                 .range([0, gridItemWidth*.75]) 
 
-    gridContainerD3.selectAll("div.grid-container")
-        .each(function(d, i, dom) {
-            zcta = d.zcta
-            county = d.county
+    // draw grid graph
+    gridContainerD3.selectAll("div.grid-container").each(function(d, i, dom) {
+        zcta = d.zcta
+        county = d.county
 
-            data = JSON.parse(JSON.stringify(d))
+        data = JSON.parse(JSON.stringify(d))
 
-            thisCountMax = 0
+        thisCountMax = 0
 
-            gridItemDataSources.forEach(function(dataSource) {
-                if (gridRateSwitch.value == "rate") {
-                    data[dataSource].data = d[dataSource].data.map(function(item) { return item/d.population * 1000} )
-                }
-                if (data[dataSource].data.length) {
-                    thisCountMax = Math.max(d3.max(data[dataSource].data), thisCountMax)
-                }
-            })
+        // if not including imputations, skip if data is imputated
+        if (!gridIncludeImputations.checked && d.imputation) {
+            return
+        }
 
+        // process data
+        gridItemDataSources.forEach(function(dataSource) {
             if (gridRateSwitch.value == "rate") {
-                data[gridDataSourceSortSelector.value].data = d[gridDataSourceSortSelector.value].data.map(function(item) { return item/d.population * 1000} )
+                data[dataSource].data = d[dataSource].data.map(function(item) { return item/d.population * 1000} )
             }
-
-            value = NaN
-            if (data[gridDataSourceSortSelector.value].data.length > 0 && (gridIncludeImputations.checked || !d.imputation)) {
-                value = data[gridDataSourceSortSelector.value].data.at(-1)
+            if (data[dataSource].data.length) {
+                thisCountMax = Math.max(d3.max(data[dataSource].data), thisCountMax)
             }
+        })
 
-            // main visualization
-            gridSVG = d3.select(`#grid-${zcta}-svg`)
-                .attr("width", gridItemWidth)
-                .attr("height", gridItemHeight)
+        if (gridRateSwitch.value == "rate") {
+            data[gridDataSourceSortSelector.value].data = d[gridDataSourceSortSelector.value].data.map(function(item) { return item/d.population * 1000} )
+        }
 
-            gridSVG.select(".grid-background")
+        value = NaN
+        if (data[gridDataSourceSortSelector.value].data.length > 0) {
+            value = data[gridDataSourceSortSelector.value].data.at(-1)
+        }
+
+        // update the heights/widths of things
+        gridSVG = d3.select(`#grid-${zcta}-svg`)
+            .attr("width", gridItemWidth)
+            .attr("height", gridItemHeight)
+
+        gridSVG.select(".grid-background")
+            .transition()
+            .duration(1000)
+            .attr("width", gridItemWidth)
+            .attr("height", gridItemHeight)
+            .style("fill", gridColor(value))
+
+        // create yscale
+        yScale = d3.scaleLinear()
+            .domain([0, thisCountMax])        
+            .nice()
+            .range([gridItemHeight-2, margin.top])
+            
+        // create the line creation function
+        line = function(data) {
+            startDate = d3.timeMonday.round(new Date(data["start-date"]))
+            startIndex = historicalDates.findIndex((d) => d.getTime() == startDate.getTime())
+            
+            return d3.line()
+                .x((_, i) => xScale(historicalDates[i+startIndex]))
+                .y((d, i) => yScale(d))
+                .curve(d3.curveMonotoneX)(data.data)
+        }
+
+        // draw the lines!
+        gridItemDataSources.forEach(function(dataSource) {
+            // draw historical line chart
+            historicalGroup = gridSVG.select("g."+dataSource)
+            historicalGroup.select("path")
                 .transition()
                 .duration(1000)
-                .attr("width", gridItemWidth)
-                .attr("height", gridItemHeight)
-                .style("fill", gridColor(value))
-
-            yScale = d3.scaleLinear()
-                .domain([0, thisCountMax])        
-                .nice()
-                .range([gridItemHeight-2, margin.top])
-                
-            line = function(data) {
-                startDate = d3.timeMonday.round(new Date(data["start-date"]))
-                startIndex = historicalDates.findIndex((d) => d.getTime() == startDate.getTime())
-                
-                return d3.line()
-                    .x((_, i) => xScale(historicalDates[i+startIndex]))
-                    .y((d, i) => yScale(d))
-                    .curve(d3.curveMonotoneX)(data.data)
-            }
-
-            gridItemDataSources.forEach(function(dataSource) {
-                // draw historical line chart
-                historicalGroup = gridSVG.select("g."+dataSource)
-                historicalGroup.select("path")
-                    .transition()
-                    .duration(1000)
-                    .attr("d", line(data[dataSource]))
-                    .attr("stroke", "black")
-                    .attr("stroke-dasharray", dataSourceLineStyle[dataSource])
-                    .attr("fill", "none")
-                    .attr("stroke-width", 1.5)
-            })
-
-            valueData = data[gridDataSourceSortSelector.value].data
-
-            dotPlacementX = gridDataSourceSortSelector.value == "state-prediction" ? gridItemWidth - 3 : xScale.range()[1]
-            valuePlacementX = gridDataSourceSortSelector.value == "state-prediction" ? dotPlacementX : dotPlacementX + 4
-            if (valueData.length > 0) {
-                dotPlacementY = Math.max(yScale(valueData.at(-1)), 0)
-                if (gridDataSourceSortSelector.value == "state-prediction") {
-                    if (data["state-testing"].data.at(-1) < valueData.at(-1)) {
-                        valuePlacementY = Math.max(dotPlacementY - 6, em)
-                    } else{
-                        valuePlacementY = Math.min(dotPlacementY + em, gridItemHeight - 3)
-                    }
-                } else {
-                    valuePlacementY = Math.min(Math.max(dotPlacementY + 6, em), gridItemHeight - 3)
-                }
-                lastDot = gridSVG.select(".grid-item-value") //TODO: rename this, my brain is tired
-
-                lastDot.select("text")
-                    .attr("x", valuePlacementX)
-                    .attr("y", valuePlacementY)
-                    .attr("text-anchor", gridDataSourceSortSelector.value == "state-prediction" ? "end" : "start")
-                    .text(valueData.at(-1).toFixed(1))
-
-                lastDot.select("circle")
-                    .attr("cx", dotPlacementX)
-                    .attr("cy", dotPlacementY)
-
-                lastDot.select("line")
-                    .attr("display", gridDataSourceSortSelector.value == "state-prediction" ? "initial" : "none")
-
-                if (gridDataSourceSortSelector.value == "state-prediction") {
-                    lastDot.select("line")
-                        .attr("display", "initial")
-                        .attr("x1", xScale.range()[1])
-                        .attr("y1", yScale(data["state-testing"].data.at(-1)))
-                        .attr("x2", dotPlacementX)
-                        .attr("y2", dotPlacementY)
-                }
-                
-            }
-
+                .attr("d", line(data[dataSource]))
+                .attr("stroke", "black")
+                .attr("stroke-dasharray", dataSourceLineStyle[dataSource])
+                .attr("fill", "none")
+                .attr("stroke-width", 1.5)
         })
+
+        // place value label and dot 
+        valueData = data[gridDataSourceSortSelector.value].data
+
+        dotPlacementX = gridDataSourceSortSelector.value == "state-prediction" ? gridItemWidth - 3 : xScale.range()[1]
+        valuePlacementX = gridDataSourceSortSelector.value == "state-prediction" ? dotPlacementX : dotPlacementX + 4
+        if (valueData.length > 0) {
+            dotPlacementY = Math.max(yScale(valueData.at(-1)), 0)
+            if (gridDataSourceSortSelector.value == "state-prediction") {
+                if (data["state-testing"].data.at(-1) < valueData.at(-1)) {
+                    valuePlacementY = Math.max(dotPlacementY - 6, em)
+                } else{
+                    valuePlacementY = Math.min(dotPlacementY + em, gridItemHeight - 3)
+                }
+            } else {
+                valuePlacementY = Math.min(Math.max(dotPlacementY + 6, em), gridItemHeight - 3)
+            }
+            lastDot = gridSVG.select(".grid-item-value") //TODO: rename this, my brain is tired
+
+            lastDot.select("text")
+                .attr("x", valuePlacementX)
+                .attr("y", valuePlacementY)
+                .attr("text-anchor", gridDataSourceSortSelector.value == "state-prediction" ? "end" : "start")
+                .text(valueData.at(-1).toFixed(1))
+
+            lastDot.select("circle")
+                .attr("cx", dotPlacementX)
+                .attr("cy", dotPlacementY)
+
+            lastDot.select("line")
+                .attr("display", gridDataSourceSortSelector.value == "state-prediction" ? "initial" : "none")
+
+            if (gridDataSourceSortSelector.value == "state-prediction") {
+                lastDot.select("line")
+                    .attr("display", "initial")
+                    .attr("x1", xScale.range()[1])
+                    .attr("y1", yScale(data["state-testing"].data.at(-1)))
+                    .attr("x2", dotPlacementX)
+                    .attr("y2", dotPlacementY)
+            }
+            
+        }
+
+    })
 
     sortGrid()
     
@@ -265,7 +282,7 @@ function updateGridData() {
 
 function sortGrid() {        
     switch (gridSort.value) {
-        case "value-high":
+        case "value-high": // sort value high-low
             d3.selectAll("div.grid-container")
                 .sort((a, b) => {
                     aValue = a[gridDataSourceSortSelector.value].data.length > 0 ? a[gridDataSourceSortSelector.value].data.at(-1) : 0
@@ -278,7 +295,7 @@ function sortGrid() {
                     return bValue - aValue
                 })
             break;
-        case "value-low": 
+        case "value-low": // sort value low-high
             d3.selectAll("div.grid-container")
             .sort((a, b) => {
                 aValue = a[gridDataSourceSortSelector.value].data.length > 0 ? a[gridDataSourceSortSelector.value].data.at(-1) : 0
@@ -291,15 +308,15 @@ function sortGrid() {
                 return aValue - bValue
             })
             break;
-        case "alphabetical-low":
+        case "alphabetical-low": // sort value a-z-0-9
             d3.selectAll("div.grid-container")
                 .sort((a, b) => a.zcta - b.zcta)
             break;
-        case "alphabetical-high":
+        case "alphabetical-high": // sort value 9-0-a-z
             d3.selectAll("div.grid-container")
                 .sort((a, b) => b.zcta - a.zcta)
             break;
-        default:
+        default: // sort value high-low
             d3.selectAll("div.grid-container")
                 .sort((a, b) => {
                     aValue = a[gridDataSourceSortSelector.value].data.length > 0 ? a[gridDataSourceSortSelector.value].data.at(-1) : 0

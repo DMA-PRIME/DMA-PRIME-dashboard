@@ -1,3 +1,4 @@
+
 gridSort.addEventListener("sl-change", (event) => {
     sortGrid()
 })
@@ -24,46 +25,54 @@ gridDataSourceSortSelector.addEventListener("sl-change", (event) => {
 gridTextFilter.addEventListener("sl-input", filterZCTAByText)
 
 function filterZCTAByText(event) {
+    // get filtration value
     diseaseData = zctaData[gridDiseaseSelector.value]
 
-    matchingGridItems = diseaseData.filter(function(d) {
+    // get all zcta that partially match (case ignored) either zip code or county
+    matchingZCTAData = diseaseData.filter(function(d) {
         countyMatch = d.county.toLowerCase().includes(gridTextFilter.value.toLowerCase())
         zctaMatch = d.zcta.toString().toLowerCase().includes(gridTextFilter.value.toLowerCase())
         return countyMatch || zctaMatch
     })
 
+    // if we're not including imputations, then filter them out so they don't show
     if (!gridIncludeImputations.checked) {
-        matchingGridItems = matchingGridItems.filter(function(d) {
+        matchingZCTAData = matchingGridItems.filter(function(d) {
             return !d.imputation
         })
     }
 
+    // get all grid items corresponding to the selected zcta 
     objs = d3.selectAll("div.grid-container")
-        .data(matchingGridItems, function(d) {
+        .data(matchingZCTAData, function(d) {
             return d.zcta
         })
-    objs.style("display", "initial")
+    objs.style("display", "initial") // show ones that match
     objs.exit()
-        .style("display", "none")
+        .style("display", "none") // hide ones that don't
 }
 
 gridIncludeImputations.addEventListener("sl-change", () => {
     if (gridIncludeImputations.checked) {
+        // include all zcta including imputations
         d3.selectAll("div.grid-container")
             .style("display", "initial")
     } else {
+        // hide imputed zcta
         d3.selectAll("div.grid-container")
             .filter(function(d) {
                 return d.imputation
             })
             .style("display", "none")
     }
-    updateGridData()
-    filterZCTAByText()
+    updateGridData() // update display since the min and max values will change
+    filterZCTAByText() // filter again since the if else statement didn't account for that
 })
 
 function setGridTooltip(gridTooltip) {
-    gridTooltip.on("sl-show", function(event) {        
+    // draw the tooltip for each grid item
+    gridTooltip.on("sl-show", function(event) {
+        // get data/parameters together for drawing the tooltip         
         gridTooltipWidth = Math.max(500, width * .3)
         gridTooltipHeight = gridTooltipWidth * .65
 
@@ -72,6 +81,7 @@ function setGridTooltip(gridTooltip) {
             .style("--max-width", gridTooltipWidth*1.2)
         thisGridContainer = d3.select(slTTPDOM.parentNode)
 
+        // actually draw tooltip
         drawTooltip(thisGridContainer.datum(), slTTP.select("div[slot='content']"), gridTooltipHeight, gridTooltipWidth, gridRateSwitch.value == "rate")
     })
     

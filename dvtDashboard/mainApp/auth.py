@@ -19,9 +19,7 @@ def login():
         password = request.form["password"]
         db = get_db()
         error = None
-        db.execute(
-            'SELECT * FROM user WHERE username = %s', [username]
-        )
+        db.execute('SELECT * FROM user WHERE username = %s', [username])
         user = db.fetchone()
 
         if user is None:
@@ -51,9 +49,7 @@ def load_logged_in_user():
         g.user = None
     else:
         db = get_db()
-        db.execute(
-            'SELECT * FROM user WHERE id = %s', [user_id]
-        )
+        db.execute('SELECT * FROM user WHERE id = %s', [user_id])
         g.user = db.fetchone()
 
 def login_required(view):

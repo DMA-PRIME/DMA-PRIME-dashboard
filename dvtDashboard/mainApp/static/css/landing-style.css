@@ -18,20 +18,13 @@
   overflow-y: scroll;
 }
 
-.centering-container {
-  display: flex;
-  justify-content: center;
-}
-
 .center-self {
   justify-self: center;
 }
 
 /* Specifics */
-
 p,
-text, 
-text.tooltip-label {
+text {
   /* Set font family for entire website */
   font-family: var(--sl-font-sans);
   margin: 0;
@@ -53,7 +46,7 @@ sl-tab-panel::part(base) {
 }
 
 #prediction-modelling-button-link {
-  /* Styling for link to the prediction modelling part of the site
+  /* Styling for link to the prediction modeling part of the site
     The link is floating on the right side of the navbar
   */
   margin: auto var(--sl-spacing-small) auto auto;
@@ -85,6 +78,11 @@ sl-tab-panel::part(base) {
   padding: var(--sl-spacing-large);
 }
 
+.hidden-children > * {
+  /* Mainly used for the sidebar when closed */
+  display: none;
+}
+
 .hide-sidebar-button {
   /* The button that opens/closes the sidebar */
   font-size: var(--sl-font-size-large);
@@ -93,49 +91,24 @@ sl-tab-panel::part(base) {
 }
 
 .main-content-split-panel::part(divider) {
+  /* Vertical bar that splits the panel into sidebar and content */
   cursor: unset;
 }
 
-.hidden-children > * {
-  /* Mainly used for the sidebar when closed */
-  display: none;
-}
-
-.aggregation-vis {
-  width: 100%;
-  overflow: hidden;
-  padding: var(--sl-spacing-x-small);
-  display: none;
-  /* display: flex; */
-  flex-direction: column;
-}
-
-svg.aggregation-donut {
-  aspect-ratio: 50/20;
-}
-
-.aggregation-svg {
-  aspect-ratio: 50/35;
-}
-
-.aggregation-graph-title {
-  margin: 0;
-  font-size: var(--sl-font-size-x-small);
-}
-
-
 p.tooltip-title {
-  /* tooltip label */
+  /* tooltip title object as a whole */
   margin: 0;
   padding-top: var(--sl-spacing-x-small);
   text-align: center;
 }
 
 .tooltip-title {
+  /* title span */
   font-size: var(--sl-font-size-small);
 }
 
 .tooltip-subtitle {
+  /* subtitle span */
   font-size: var(--sl-font-size-x-small);
 }
 
@@ -179,3 +152,29 @@ body {
 * {
   box-sizing: border-box;
 }
+
+
+
+
+
+/* Graveyard... */
+/* .aggregation-vis {
+  width: 100%;
+  overflow: hidden;
+  padding: var(--sl-spacing-x-small);
+  display: none;
+  flex-direction: column;
+}
+
+svg.aggregation-donut {
+  aspect-ratio: 50/20;
+}
+
+.aggregation-svg {
+  aspect-ratio: 50/35;
+}
+
+.aggregation-graph-title {
+  margin: 0;
+  font-size: var(--sl-font-size-x-small);
+} */

@@ -57,7 +57,7 @@
             d3.select("#{{panel.name}}-sidebar").classed("hidden-children", false)
         } else {
             {{panel.name}}SidebarHider.name = "chevron-compact-right"
-            d3.select("#{{panel.name}}-sidebar").classed("hidden-children", "true")
+            d3.select("#{{panel.name}}-sidebar").classed("hidden-children", true)
         }
         set{{panel.name}}Panel()
     });
