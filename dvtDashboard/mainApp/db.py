@@ -6,7 +6,7 @@ from flask_bcrypt import Bcrypt
 import MySQLdb
 
 def get_db():
-
+    # create connection to database if it doesn't exist
     if 'db' not in g:
         g.db = MySQLdb.connect(user="***REMOVED***", password="***REMOVED***", database="")
         g.db_cursor = g.db.cursor()

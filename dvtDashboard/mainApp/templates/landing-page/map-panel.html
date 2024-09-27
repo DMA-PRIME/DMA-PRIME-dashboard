@@ -2,9 +2,11 @@
 
 {% block options %}
 <div id="map-options" class="sidebar-container">
+  <!-- reset map button (zoom & zcta selection) -->
   <sl-button pill id="map-reset-button" class="center-self">Reset Map</sl-button>
   <sl-divider class="options-divider"></sl-divider>
 
+  <!-- count vs rate switch -->
   <sl-radio-group value="count" id="map-rate-switch" class="center-self" size="small">
     <sl-tooltip content="Count of hospitalizations">
       <sl-radio-button pill value="count">Count</sl-radio-button>
@@ -14,6 +16,7 @@
     </sl-tooltip>
   </sl-radio-group>
 
+  <!-- disease selector -->
   <sl-select value="covid-19" id="map-disease-selector" class="fill-width">
     <p slot="label">Select a disease or group of diseases</p>
     <sl-option value="respiratory-disease" disabled>Respiratory Diseases (COVID-19, Flu, RSV)</sl-option>
@@ -21,14 +24,17 @@
     <sl-option value="flu" disabled>Flu (Influenza)</sl-option>
   </sl-select>
 
+  <!-- data source/hospitalization level selector -->
   <sl-select value="state-testing" id="map-data-source-selector" class="fill-width">
     <p slot="label">Select hospitalization level</p>
     <sl-option value="state-testing" >State</sl-option>
     <sl-option value="health-system-data">Health System</sl-option>
   </sl-select>
   
+  <!-- imputation inclusion checkbox -->
   <sl-checkbox id="map-include-imputations" checked>Include imputated data</sl-checkbox>
 
+  <!-- map icon inclusion checkboxes (hospital, mobile health clinic, community partners) -->
   <sl-divider class="options-divider"></sl-divider>
   <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle" style="display: initial;">Hospitals</sl-checkbox>
   <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle" style="display: initial;">Mobile Health Clinics</sl-checkbox>
@@ -141,7 +147,6 @@
           mapAggregationDonutGroup
       )
   }
-
 
   set{{panel.name}}Panel()
 </script>

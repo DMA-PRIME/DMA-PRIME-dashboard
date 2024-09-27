@@ -61,6 +61,7 @@ sl-tab-panel::part(base) {
   flex-direction: column;
   justify-content: space-between;
   overflow: hidden;
+  overflow-y: auto;
 }
 
 .options-divider {
@@ -72,7 +73,6 @@ sl-tab-panel::part(base) {
   /* this contains all of the sidebar content (options and the aggregate graphs) and resides within the .sidebar*/
   height: max-content;
   overflow-wrap: normal;
-  overflow-y: auto;
   display: grid;
   row-gap: var(--sl-spacing-x-small);
   padding: var(--sl-spacing-large);
@@ -154,7 +154,9 @@ body {
 }
 
 
-
+.aggregation-vis {
+  display: none;
+}
 
 
 /* Graveyard... */

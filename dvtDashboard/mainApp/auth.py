@@ -9,7 +9,7 @@ from mainApp.db import get_db
 from flask_bcrypt import Bcrypt
 
 
-bp = Blueprint('auth', __name__, url_prefix='/auth')
+bp = Blueprint('auth', __name__, url_prefix='/auth') # allow __init__.py to import these routes
 
 @bp.route("/login", methods=("GET", "POST"))
 def login():
@@ -43,6 +43,7 @@ def login():
 
 @bp.before_app_request
 def load_logged_in_user():
+    # if user is logged in, store in python side of session
     user_id = session.get('user_id')
 
     if user_id is None:
@@ -55,6 +56,7 @@ def load_logged_in_user():
 def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
+        # if not in development mode, route page to login if not logged in
         if not current_app.config['DEVELOPMENT'] and g.user is None:
             return redirect(url_for('auth.login'))
 

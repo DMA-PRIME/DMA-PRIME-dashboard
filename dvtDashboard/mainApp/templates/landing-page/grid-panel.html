@@ -2,6 +2,7 @@
 
 {% block options %}
 <div id="grid-options" class="sidebar-container">
+  <!-- count vs rate switch -->
   <sl-radio-group value="count" id="{{panel.name}}-rate-switch" class="center-self" size="small">
     <sl-tooltip content="Count of hospitalizations">
       <sl-radio-button pill value="count">Count</sl-radio-button>
@@ -11,6 +12,7 @@
     </sl-tooltip>
   </sl-radio-group>
 
+  <!-- disease selector -->
   <sl-select value="covid-19" id="grid-disease-selector" class="fill-width ">
     <p slot="label">Select a disease or group of diseases</p>
     <sl-option value="respiratory-disease" disabled>Respiratory Diseases (COVID-19, Flu, RSV)</sl-option>
@@ -18,6 +20,7 @@
     <sl-option value="flu" disabled>Flu (Influenza)</sl-option>
   </sl-select>
 
+  <!-- data source/hospitalization level selector -->
   <sl-select value="state-testing" id="{{panel.name}}-data-source-sort-selector" class="fill-width ">
     <p slot="label">Select hospitalization level</p>
     <sl-option value="state-testing" >State (current week)</sl-option>
@@ -25,6 +28,7 @@
     <sl-option value="health-system-data">Health System</sl-option>
   </sl-select>
 
+  <!-- grid item sort selection -->
   <sl-select value="alphabetical-low" id="{{panel.name}}-sort" class="fill-width ">
     <p slot="label">Sort zctas</p>
     <sl-option value="value-high" >Value (count or rate) High-Low</sl-option>
@@ -33,10 +37,12 @@
     <sl-option value="alphabetical-high">Alphanumerical 9-0-Z-A </sl-option>
   </sl-select>
 
+  <!-- grid item filtration (text) -->
   <sl-input id="grid-text-filter" clearable>
     <p slot="label">Filter by ZCTA or County</p>
   </sl-input>
 
+  <!-- imputation inclusion checkbox -->
   <sl-checkbox id="grid-include-imputations" checked>Include imputated data</sl-checkbox>
 
   <p id="grid-summary" class="panel-summary center-self">
@@ -145,7 +151,7 @@
       )
   }
 
-  // set{{panel.name}}Panel()
+  set{{panel.name}}Panel()
 </script>
 
 <script src="{{ url_for('static', filename='js/landing-page/grid.js') }}"></script>

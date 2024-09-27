@@ -80,9 +80,9 @@ function mapInitialVisualization() {
             .range(["white", dataSourceColorMap[mapDataSourceSelector.value]])
             .unknown("var(--sl-color-gray-600)").nice()
 
-        // draw zcta map items
         diseaseData = zctaData[mapDiseaseSelector.value]
         
+        // draw zcta map items
         d3.json("/data/map/zcta").then(function(mapdata) {
             zctas.selectAll("g")
                 .data(diseaseData)
@@ -96,6 +96,7 @@ function mapInitialVisualization() {
                 element = group.datum()
                 thisData = element[mapDataSourceSelector.value].data
 
+                // find index of current date in data
                 thisStartDate = parseDate(element[mapDataSourceSelector.value]["start-date"])
                 thisEndDate = new Date(thisStartDate);
                 thisEndDate.setDate(thisEndDate.getDate() + thisData.length*7);
@@ -105,18 +106,20 @@ function mapInitialVisualization() {
                 
                 value = NaN                
                 if (index > -1 && (!mapIncludeImputations.checked || !thisData.imputation)) {
+                    // update value if current date in data
                     value = thisData.at(index)
                     if (mapRateSwitch.value == "rate") {
                         value /= element.population / 1000
                     }
                 }
 
+                // add path and color
                 group.append("path")
                     .datum(data)
                     .attr("id", "map-"+element.zcta)
                     .attr("class", "map-zcta")
                     .attr("county", element.county) // add primary county
-                    .attr("zcta", element.zcta) // add primary county
+                    .attr("zcta", element.zcta) // add primary zcta
                     .attr("d", d => pathGenerator(d))
                     .attr('fill', choroplethColorMap(value))
                     .each(function(zctaData) {
@@ -318,11 +321,13 @@ function resizeMap() {
 function updateMapData() {
     diseaseData = zctaData[mapDiseaseSelector.value]
 
+    // update colormap
     choroplethColorMap = d3.scaleLinear()
         .domain([0, d3.max(getDataAsArray(mapDiseaseSelector.value, mapDataSourceSelector.value, mapRateSwitch.value == "rate", mapIncludeImputations.checked))])
         .range(["white", dataSourceColorMap[mapDataSourceSelector.value]])
         .unknown("var(--sl-color-gray-600)").nice()
 
+    // update legend
     legendWidth = Math.max(width/3, 300)
     d3.select("#linear-gradient-stop-1")
         .attr("stop-color", dataSourceColorMap[mapDataSourceSelector.value])
@@ -333,30 +338,30 @@ function updateMapData() {
         .attr("transform", `translate(${2*em},${height - 3.5*em})`)
         .call(d3.axisBottom(d3.scaleLinear(choroplethColorMap.domain(), [0, legendWidth])).ticks(9))
 
-        d3.selectAll(".map-zcta-container").each(function(d) {
-            thisData = d[mapDataSourceSelector.value].data
-    
-            thisStartDate = parseDate(d[mapDataSourceSelector.value]["start-date"])
-            thisEndDate = new Date(thisStartDate);
-            thisEndDate.setDate(thisEndDate.getDate() + thisData.length*7);
-            datesReconstructed = d3.timeMonday.range(thisStartDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 1)
-    
-            index = datesReconstructed.findIndex((d) => d.getTime() == thisWeekMonday.getTime())
-            
-            if (index > -1 
-                && (mapIncludeImputations.checked || !d.imputation)
-                && (focusZCTA == null || focusZCTA == d.zcta)) {
-                value = thisData.at(index)
-                if (mapRateSwitch.value == "rate") {
-                    value /= d.population / 1000
-                }
-                d3.select(`path#map-${d.zcta}`)
-                    .style("fill", choroplethColorMap(value))
-            } else {
-                d3.select(`path#map-${d.zcta}`)
-                    .style("fill", choroplethColorMap(NaN))
+    d3.selectAll(".map-zcta-container").each(function(d) {
+        thisData = d[mapDataSourceSelector.value].data
+
+        // find index of current date in the data
+        thisStartDate = parseDate(d[mapDataSourceSelector.value]["start-date"])
+        thisEndDate = new Date(thisStartDate);
+        thisEndDate.setDate(thisEndDate.getDate() + thisData.length*7);
+        datesReconstructed = d3.timeMonday.range(thisStartDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 1)
+
+        index = datesReconstructed.findIndex((d) => d.getTime() == thisWeekMonday.getTime())
+        
+        value = NaN
+        if (index > -1 && // current date in data
+            (mapIncludeImputations.checked || !d.imputation) && // imputations included or data is not imputed
+            (focusZCTA == null || focusZCTA == d.zcta)) { // no focus zcta or this zcta IS the zcta
+            value = thisData.at(index)
+            if (mapRateSwitch.value == "rate") {
+                value /= d.population / 1000
             }
-        })  
+        }
+
+        d3.select(`path#map-${d.zcta}`)
+            .style("fill", choroplethColorMap(value))
+    })  
 
 }
 

@@ -15,18 +15,20 @@ from .auth import login_required
 @bp.route('/map/<type>', methods=['GET', 'POST'])
 @login_required
 def mapData(type):
+    # map geojson files
     return send_file(f'{main_dir}/static/data/tl_2023_sc_{type}_trimmed_simplified_ogr2ogr_.001.json')
 
 @bp.route('/icon/<type>', methods=['GET', 'POST'])
 @login_required
 def iconData(type):
+    # icon csv files
     return send_file(f'{main_dir}/static/data/{type}.csv')
 
 @bp.route('/hospitalizations/<disease>', methods=['GET', 'POST'])
 @login_required
 def getHospitalizations(disease='covid-19'):
-    return json.load(open(f'{main_dir}/static/data/{disease}_zcta_hospitalization_data.json'))
-
+    # hospitalization data based on disease
+    return send_file(f'{main_dir}/static/data/{disease}_zcta_hospitalization_data.json')
 
 def load_data():
     load_zcta_hospitalization()
@@ -34,8 +36,6 @@ def load_data():
 
 def load_zcta_hospitalization():
     files = {
-        # 'covid-19': main_dir+'/static/data/covid_cdc_site_visit.csv',
-        # 'covid-19': [main_dir+'/static/data/Data file for CDC site visit v1.csv', main_dir+'/static/data/Data file for CDC site visit_TA.csv'],
         'covid-19': [{'file': main_dir+'/static/data/Data file for CDC site visit v1.csv', 'imputation': False},
                      {'file': main_dir+'/static/data/Data file for CDC site visit_TA.csv', 'imputation': True}],
     }
@@ -51,6 +51,8 @@ def load_zcta_hospitalization():
     dataframes = {}
     max_date = pd.to_datetime(0)
 
+    # load data files, combine and mark imputed if necessary
+    # find max date across all diseases
     for disease, file in files.items():
         
         # grid view
@@ -72,6 +74,7 @@ def load_zcta_hospitalization():
         value_columns = df.columns.difference(index_names)
         dataframes[disease] = pd.pivot_table(df, values=value_columns, index=index_names)
 
+    # find display date and date arrays for historical and prediction data
     date = max_date - pd.DateOffset(weeks=5)
 
     start_date = date - pd.DateOffset(months=18)
@@ -82,12 +85,13 @@ def load_zcta_hospitalization():
     pred_dates = pd.date_range(start=date, end=end_date, freq='W-MON', inclusive='both')
     pred_dates = pred_dates.to_list()
 
-
+    # get zcta data
     zcta_data = pd.read_csv(main_dir+'/static/data/zcta_summary.csv', index_col=0)
     zctas = zcta_data['zcta'].unique()
 
     shaped_data = {}
 
+    # reshape data
     for disease, df in dataframes.items():
         zcta_list = []
 
@@ -104,6 +108,7 @@ def load_zcta_hospitalization():
                             'start-date': data.index[0].strftime("%Y-%m-%d"),
                             'data': data.to_list(),
                         }
+                # if data doesn't exist then add data source with empty array
                 except IndexError:
                     zcta_dict[name] = {
                             'start-date': date.strftime("%Y-%m-%d"),
@@ -131,6 +136,7 @@ def load_zcta_hospitalization():
             except KeyError:
                 zcta_dict['imputation'] = 0
 
+            # makes state testing and training look pretty and connect when plotted
             if len(zcta_dict['state-testing']['data']) > 0:
                 zcta_dict['state-training']['data'].append(zcta_dict['state-testing']['data'][0])
             
@@ -138,6 +144,7 @@ def load_zcta_hospitalization():
         
         shaped_data[disease] = zcta_list
 
+    # add date information and save to respective files
     for disease, zcta_list in shaped_data.items():
         data = {
             'metadata': {

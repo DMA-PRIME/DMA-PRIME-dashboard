@@ -160,10 +160,12 @@ function setZctaInteractions(zcta) {
             .style("display", "none")
 
         if (focusZCTA == zctaName) {
+            // unfocus from zip code and hide tooltip
             focusZCTA = null
             focusCounty = null
             resetButton.click()
         } else {
+            // focus on zip code and display tooltip
             focusZCTA = zctaName
             focusCounty = countyName
             Promise.allSettled(mapHighlightMapItem(zctaPath)).then(() => {

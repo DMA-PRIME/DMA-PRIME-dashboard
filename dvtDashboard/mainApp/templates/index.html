@@ -42,7 +42,7 @@
 {% block bodyScripts %}
 
 <script type="module">
-    await Promise.allSettled([
+    await Promise.allSettled([ // wait for following to be defined/load in
         customElements.whenDefined('sl-checkbox'),
         customElements.whenDefined('sl-select'),
         customElements.whenDefined('sl-tab-group'),
@@ -59,8 +59,9 @@
         // customElements.whenDefined('sl-tab'),
     ])
 
+    // get zcta data, then visualize for each panel
     getZCTAData(mapDiseaseSelector.value).then(mapInitialVisualization)
-    "grid", getZCTAData(gridDiseaseSelector.value).then(() => {
+    getZCTAData(gridDiseaseSelector.value).then(() => {
         gridInitialVisualization() 
         gridContainerResizer.addEventListener("sl-resize", () => {
             updateGridData()
@@ -75,6 +76,7 @@
         }
     })
 
+    // toggle tooltip labels
     document.addEventListener("keyup", function(e) {
         if (e.key == "l") {
             d3.selectAll(".tooltip-label-group")
