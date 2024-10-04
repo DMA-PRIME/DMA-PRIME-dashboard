@@ -1,0 +1,15 @@
+[project]
+name = "mainApp"
+version = "1.3.0"
+description = "DMA-PRIME October 2024"
+dependencies = [
+    "flask<2.4",
+    "flask-bcrypt",
+    "pandas",
+    "numpy",
+    "mysqlclient",
+]
+
+[build-system]
+requires = ["flit_core<4"]
+build-backend = "flit_core.buildapi"

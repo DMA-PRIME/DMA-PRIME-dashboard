@@ -1,10 +1,11 @@
 # This is where the main flask code should lie
 
-from flask import Flask, render_template
+from flask import Flask, render_template, request
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
 
 import os
+import subprocess
 import pandas as pd
 import numpy as np
 import pandas as pd
@@ -85,6 +86,18 @@ def create_app(development=False, updatedData=True):
             # }
         ]
         return render_template('index.html', panels=panels)
+    
+    @app.route('/update', methods=['POST', 'GET'])
+    def webhook():
+        script = ""+main_dir+"/update.cmd"
+        print(script)
+        import sys
+        # subprocess.run(["git", "checkout", "main", "&&", "git", "pull"], shell=True)
+        subprocess.call(script, shell=True)
+        # data = request.get_json()
+        # if data['ref'] == 'refs/heads/main':
+        #     subprocess.run([main_dir+"/update.sh"])
+        return '', 200
 
     if development:
         # Simply for my own convenience
