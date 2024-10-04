@@ -7,11 +7,11 @@ git pull
 
 @REM build new wheel and move it for safe keeping
 python -m build --wheel
-move C:\DMA-PRIME-dashboard\dvtDashboard\dist\*.whl C:\DMA-PRIME\wheels /y
+move /Y C:\DMA-PRIME-dashboard\dvtDashboard\dist\*.whl C:\DMA-PRIME\wheels 
 
 @REM activate the python virtual environment and update the web application
 cd C:\DMA-PRIME
-source venv\Scripts\activate
+call .venv\Scripts\activate
 cd C:\DMA-PRIME\wheels
 for /f %%i in ('dir /b/a-d/od/t:c') do set LAST=%%i
 pip install %LAST% --force-reinstall
