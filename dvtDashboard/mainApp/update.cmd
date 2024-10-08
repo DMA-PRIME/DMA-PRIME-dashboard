@@ -4,7 +4,7 @@
 cd C:\DMA-PRIME-dashboard\dvtDashboard
 git checkout main
 start "PullMain" /d "C:\DMA-PRIME-dashboard" git pull
-timeout 30
+timeout 15
 taskkill /f /fi "WindowTitle eq PullMain"
 taskkill /f /fi "ImageName eq git.exe"
 
