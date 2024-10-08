@@ -3,8 +3,8 @@
 @REM pull new code from git
 cd C:\DMA-PRIME-dashboard\dvtDashboard
 git checkout main
-start "PullMain" git pull
-timeout 10
+start "PullMain" /d "C:\DMA-PRIME-dashboard" git pull
+timeout 30
 taskkill /f /fi "WindowTitle eq PullMain"
 taskkill /f /fi "ImageName eq git.exe"
 
