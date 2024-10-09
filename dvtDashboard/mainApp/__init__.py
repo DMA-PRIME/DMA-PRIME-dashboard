@@ -85,14 +85,16 @@ def create_app(development=False, updatedData=True):
     
     @app.route('/update', methods=['POST', 'GET'])
     def webhook():
-        script = ""+main_dir+"/update.ps1"
+        script = ""+main_dir+"/update.cmd"
         if(request.is_json):
             data = request.get_json()
             if data['ref'] == 'refs/heads/main':
                 subprocess.call(script, shell=True, timeout=300)
-
+                subprocess.call(["powershell.exe", "Restart-Computer -Force"], shell=True, timeout=300)
         else:
-            subprocess.call(["powershell.exe", script], shell=True, timeout=300)
+            subprocess.call(script, shell=True, timeout=300)
+            subprocess.call(["powershell.exe", "Restart-Computer -Force"], shell=True, timeout=300)
+            
             pass
 
         return '', 200

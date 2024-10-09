@@ -18,6 +18,3 @@ call .venv\Scripts\activate
 cd C:\DMA-PRIME\wheels
 for /f %%i in ('dir /b/a-d/od/t:c') do set LAST=%%i
 pip install %LAST% --force-reinstall
-
-@REM restart the server so the updated website is served
-shutdown /r /soft
