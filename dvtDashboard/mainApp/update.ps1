@@ -3,7 +3,8 @@
 # pull new code from git main branch
 cd C:\DMA-PRIME-dashboard\dvtDashboard
 git checkout main
-Start-Job -ScriptBlock { cd C:\DMA-PRIME-dashboard; git pull } | Receive-Job -AutoRemoveJob -Wait
+git pull
+
 # build new wheel and move it for safe keeping
 python -m build --wheel
 Move-Item -Path "C:\DMA-PRIME-dashboard\dvtDashboard\dist\*.whl" -Destination "C:\DMA-PRIME\wheels" -Force
