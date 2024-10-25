@@ -570,7 +570,9 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
     })
 
     stateCurrentLabelPositionAbove = null
+    console.log(d)
     if (data["state-prediction"].data.length) {
+        console.log("yes")
         graphSVG.append("rect")
             .attr("class", "tooltip-prediction-highlighter")
 

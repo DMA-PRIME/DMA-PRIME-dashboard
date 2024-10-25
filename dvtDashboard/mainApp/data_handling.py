@@ -120,6 +120,13 @@ def load_zcta_hospitalization():
                             'data': [],
                         }
             try:
+                if zcta == 29006:
+                    print(df.xs(zcta, axis=0))
+                    print(pred_dates)
+                    print(tuple(pred_dates))
+                    print(df.xs(zcta, axis=0).xs(pred_dates[3], axis=0))
+                    # print(df.xs(zcta, axis=0).xs(tuple(pred_dates), axis=0))
+                    # print(df.xs(zcta, axis=0).xs(pred_dates)['Projected Cases(post training)'])
                 data = df.xs(zcta, axis=0).loc[pred_dates, 'Projected Cases(post training)'].dropna()
                 zcta_dict['state-prediction'] = {
                         'start-date': data.index[0].strftime("%Y-%m-%d"),
