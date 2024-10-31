@@ -2,6 +2,14 @@ import pandas as pd
 
 main_dir = "/".join(__file__.split("\\")[:-1])
 
+files = {
+    'covid-19': [{'file': main_dir+'/static/data/Data file for CDC site visit v1.csv', 'imputation': False},
+                    {'file': main_dir+'/static/data/Data file for CDC site visit_TA.csv', 'imputation': True}],
+    'influenza': [{'file': main_dir+'/static/data/Flu_Data_from_signal.csv', 'imputation': False},
+                    # {'file': main_dir+'/static/data/Flu_Data_Imputation.csv', 'imputation': True}
+                    ],
+}
+
 counties = [
     'abbeville',
     'aiken',

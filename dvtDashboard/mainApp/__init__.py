@@ -81,7 +81,7 @@ def create_app(development=False, updatedData=True):
             #     'html': 'landing-page/comparison-panel.html'
             # }
         ]
-        return render_template('index.html', panels=panels)
+        return render_template('index.html', panels=panels, diseases=list(files.keys()))
     
     @app.route('/modeling')
     @login_required

@@ -60,7 +60,7 @@ predictionDates = d3.timeMonday.range(thisWeekMonday, new Date(endDate).setDate(
 // data fetching
 function getZCTAData(disease) {
     if (disease in zctaData) {
-        return Promise.resolve(data[disease])
+        return Promise.resolve(zctaData[disease])
     } else {
         return d3.json(`/data/hospitalizations/${disease}`).then(function(data) {
             startDate = parseDate(data["metadata"]["start_date"])
@@ -570,9 +570,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
     })
 
     stateCurrentLabelPositionAbove = null
-    console.log(d)
     if (data["state-prediction"].data.length) {
-        console.log("yes")
         graphSVG.append("rect")
             .attr("class", "tooltip-prediction-highlighter")
 

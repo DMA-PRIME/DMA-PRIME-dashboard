@@ -156,8 +156,8 @@ function updateGridData() {
                 .domain([historicalDates[0], historicalDates.at(-1)])
                 .range([0, gridItemWidth*.75]) 
 
-    // draw grid graph
-    gridContainerD3.selectAll("div.grid-container").each(function(d, i, dom) {
+    // draw grid graph        
+    gridContainerD3.selectAll("div.grid-container").data(diseaseData).each(function(d, i, dom) {
         zcta = d.zcta
         county = d.county
 
@@ -186,7 +186,23 @@ function updateGridData() {
 
         value = NaN
         if (data[gridDataSourceSortSelector.value].data.length > 0) {
-            value = data[gridDataSourceSortSelector.value].data.at(-1)
+            if (gridDataSourceSortSelector.value == "state-prediction") {
+                switch(gridDiseaseSelector.value) {
+                    case "covid-19":
+                        value = data[gridDataSourceSortSelector.value].data.at(5)
+                        break
+                    case "influenza":
+                        value = data[gridDataSourceSortSelector.value].data.at(1)
+                        break
+                    default:
+                        value = data[gridDataSourceSortSelector.value].data.at(5)
+                }
+                if (typeof value == "undefined") {
+                    value = NaN
+                }
+            } else {
+                value = data[gridDataSourceSortSelector.value].data.at(-1)
+            }
         }
 
         // update the heights/widths of things
@@ -233,14 +249,14 @@ function updateGridData() {
         })
 
         // place value label and dot 
-        valueData = data[gridDataSourceSortSelector.value].data
-
+        lastDot = gridSVG.select(".grid-item-value") //TODO: rename this, my brain is tired
         dotPlacementX = gridDataSourceSortSelector.value == "state-prediction" ? gridItemWidth - 3 : xScale.range()[1]
         valuePlacementX = gridDataSourceSortSelector.value == "state-prediction" ? dotPlacementX : dotPlacementX + 4
-        if (valueData.length > 0) {
-            dotPlacementY = Math.max(yScale(valueData.at(-1)), 0)
+        if (!isNaN(value)) {
+            lastDot.attr("opacity", 1)
+            dotPlacementY = Math.max(yScale(value), 0)
             if (gridDataSourceSortSelector.value == "state-prediction") {
-                if (data["state-testing"].data.at(-1) < valueData.at(-1)) {
+                if (data["state-testing"].data.at(-1) < value) {
                     valuePlacementY = Math.max(dotPlacementY - 6, em)
                 } else{
                     valuePlacementY = Math.min(dotPlacementY + em, gridItemHeight - 3)
@@ -248,13 +264,12 @@ function updateGridData() {
             } else {
                 valuePlacementY = Math.min(Math.max(dotPlacementY + 6, em), gridItemHeight - 3)
             }
-            lastDot = gridSVG.select(".grid-item-value") //TODO: rename this, my brain is tired
 
             lastDot.select("text")
                 .attr("x", valuePlacementX)
                 .attr("y", valuePlacementY)
                 .attr("text-anchor", gridDataSourceSortSelector.value == "state-prediction" ? "end" : "start")
-                .text(valueData.at(-1).toFixed(1))
+                .text(value.toFixed(1))
 
             lastDot.select("circle")
                 .attr("cx", dotPlacementX)
@@ -272,6 +287,8 @@ function updateGridData() {
                     .attr("y2", dotPlacementY)
             }
             
+        } else {
+            lastDot.attr("opacity", 0)
         }
 
     })

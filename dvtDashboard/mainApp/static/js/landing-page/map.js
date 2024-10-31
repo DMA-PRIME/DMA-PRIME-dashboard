@@ -337,8 +337,8 @@ function updateMapData() {
     colorLegendAxis
         .attr("transform", `translate(${2*em},${height - 3.5*em})`)
         .call(d3.axisBottom(d3.scaleLinear(choroplethColorMap.domain(), [0, legendWidth])).ticks(9))
-
-    d3.selectAll(".map-zcta-container").each(function(d) {
+    
+    d3.selectAll(".map-zcta-container").data(diseaseData).each(function(d) {
         thisData = d[mapDataSourceSelector.value].data
 
         // find index of current date in the data

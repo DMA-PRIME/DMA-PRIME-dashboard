@@ -6,7 +6,7 @@
   max-height: 100%;
   height: fit-content;
   max-width: calc(100%-em);
-  width: fit-content;
+  width: 100%;
   overflow-y: auto;
   gap: .25em .25em; 
   padding: .5em;

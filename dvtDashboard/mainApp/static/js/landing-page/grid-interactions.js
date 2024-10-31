@@ -22,6 +22,20 @@ gridDataSourceSortSelector.addEventListener("sl-change", (event) => {
     updateGridData()    
 })
 
+gridDiseaseSelector.addEventListener("sl-change", (event) => {
+    switch(gridDiseaseSelector.value) {
+        case "covid-19":
+            gridStatePredictionOption.innerHTML = "State (5th week prediction)"
+            break
+        case "influenza":
+            gridStatePredictionOption.innerHTML = "State (1st week prediction)"
+            break
+        default:
+            gridStatePredictionOption.innerHTML = "State (5th week prediction)"
+    }
+    updateGridData()
+})
+
 gridTextFilter.addEventListener("sl-input", filterZCTAByText)
 
 function filterZCTAByText(event) {
@@ -37,7 +51,7 @@ function filterZCTAByText(event) {
 
     // if we're not including imputations, then filter them out so they don't show
     if (!gridIncludeImputations.checked) {
-        matchingZCTAData = matchingGridItems.filter(function(d) {
+        matchingZCTAData = matchingZCTAData.filter(function(d) {
             return !d.imputation
         })
     }

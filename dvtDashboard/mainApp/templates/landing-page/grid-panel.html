@@ -17,14 +17,14 @@
     <p slot="label">Select a disease or group of diseases</p>
     <sl-option value="respiratory-disease" disabled>Respiratory Diseases (COVID-19, Flu, RSV)</sl-option>
     <sl-option value="covid-19">COVID-19</sl-option>
-    <sl-option value="flu" disabled>Flu (Influenza)</sl-option>
+    <sl-option value="influenza">Flu (Influenza)</sl-option>
   </sl-select>
 
   <!-- data source/hospitalization level selector -->
   <sl-select value="state-testing" id="{{panel.name}}-data-source-sort-selector" class="fill-width ">
     <p slot="label">Select hospitalization level</p>
     <sl-option value="state-testing" >State (current week)</sl-option>
-    <sl-option value="state-prediction" >State (5th week prediction)</sl-option>
+    <sl-option value="state-prediction" id="grid-state-prediction-option">State (5th week prediction)</sl-option>
     <sl-option value="health-system-data">Health System</sl-option>
   </sl-select>
 
@@ -108,6 +108,7 @@
   var gridRateSwitch = document.getElementById("grid-rate-switch")
   var gridDiseaseSelector = document.getElementById("grid-disease-selector")
   var gridDataSourceSortSelector = document.getElementById("grid-data-source-sort-selector")
+  var gridStatePredictionOption = document.getElementById("grid-state-prediction-option")
   var gridSort = document.getElementById("grid-sort")
   var gridTextFilter = document.getElementById("grid-text-filter")
   var gridIncludeImputations = document.getElementById("grid-include-imputations")

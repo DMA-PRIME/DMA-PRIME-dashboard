@@ -35,10 +35,6 @@ def load_data():
     pass
 
 def load_zcta_hospitalization():
-    files = {
-        'covid-19': [{'file': main_dir+'/static/data/Data file for CDC site visit v1.csv', 'imputation': False},
-                     {'file': main_dir+'/static/data/Data file for CDC site visit_TA.csv', 'imputation': True}],
-    }
     index_names = ['zcta', 'date']
 
     label_dict = {
@@ -120,23 +116,16 @@ def load_zcta_hospitalization():
                             'data': [],
                         }
             try:
-                if zcta == 29006:
-                    print(df.xs(zcta, axis=0))
-                    print(pred_dates)
-                    print(tuple(pred_dates))
-                    print(df.xs(zcta, axis=0).xs(pred_dates[3], axis=0))
-                    # print(df.xs(zcta, axis=0).xs(tuple(pred_dates), axis=0))
-                    # print(df.xs(zcta, axis=0).xs(pred_dates)['Projected Cases(post training)'])
-                data = df.xs(zcta, axis=0).loc[pred_dates, 'Projected Cases(post training)'].dropna()
+                data = df.xs(zcta, axis=0)['Projected Cases(post training)'].reindex(pred_dates).dropna()
                 zcta_dict['state-prediction'] = {
                         'start-date': data.index[0].strftime("%Y-%m-%d"),
                         'data': data.to_list(),
                     }
             except KeyError:
                 zcta_dict['state-prediction'] = {
-                        'start-date': date.strftime("%Y-%m-%d"),
-                        'data': [],
-                    } 
+                    'start-date': date.strftime("%Y-%m-%d"),
+                    'data': [],
+                } 
                 
             try:
                 zcta_dict['imputation'] = int(df.xs(zcta, axis=0)['imputation'].any())
