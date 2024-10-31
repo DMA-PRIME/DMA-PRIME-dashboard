@@ -95,9 +95,10 @@ function resetAddressInput() {
 
 // map functions
 function addMobileClinic(mobileClinic) {
-    mobileHealthClinics = mobileHealthClinics.concat([mobileClinic])
+    mobileHealthClinics = mobileHealthClinics.concat([{"coords": {"lat": mobileClinic.lat, "lon": mobileClinic.lon}, "osm": mobileClinic}])
     dataVersion++
     resetAddressInput()
+    updateMobileClinicInfoPanel()
     redraw()
 }
 
@@ -107,8 +108,8 @@ function addMobileClinic(mobileClinic) {
 
 
 function mobileClinicDrag(info, event) {
-    mobileHealthClinics[info.index].lon = info.coordinate[0]
-    mobileHealthClinics[info.index].lat = info.coordinate[1]
+    mobileHealthClinics[info.index].coords.lon = info.coordinate[0]
+    mobileHealthClinics[info.index].coords.lat = info.coordinate[1]
     dataVersion++
 
     return redraw()
@@ -117,10 +118,19 @@ function mobileClinicDrag(info, event) {
 function mobileClinicClick(index) {
     mapAndMinorSidebar.setAttribute("position", 80)
     mobileClinicInfoPanel.setAttribute("active", "")
-    displayedMobileClinic = {'data': mobileHealthClinics[index], 'index': index}
-    mobileClinicAddress.setAttribute("value", displayedMobileClinic.data.display_name) 
-    mobileClinicLat.setAttribute("value", displayedMobileClinic.data.lat)
-    mobileClinicLon.setAttribute("value", displayedMobileClinic.data.lon)
+    displayedMobileClinic = {"coords": {"lat": mobileHealthClinics[index].coords.lat, "lon": mobileHealthClinics[index].coords.lon}, 'osm': mobileHealthClinics[index].osm, 'index': index}
+    updateMobileClinicInfoPanel()
+}
+
+function updateMobileClinicInfoPanel() {
+    if (displayedMobileClinic == null && mobileHealthClinics.length) {
+        displayedMobileClinic = mobileHealthClinics.at(-1)
+    }
+    if (typeof displayedMobileClinic !== 'undefined' && displayedMobileClinic != null) {
+        mobileClinicAddress.setAttribute("value", displayedMobileClinic.osm.display_name) 
+        mobileClinicLat.setAttribute("value", displayedMobileClinic.coords.lat)
+        mobileClinicLon.setAttribute("value", displayedMobileClinic.coords.lon)
+    }
 }
 
 function updateLocationAddress(index, address) {
@@ -128,36 +138,36 @@ function updateLocationAddress(index, address) {
         potentialLocations = data
         if (index == -1) {
             if(data.length >= 1) {
-                mobileHealthClinics.push(data[0])
+                mobileHealthClinics.push({"coords": {"lat": data[0].lat, "lon": data[0].lon}, "osm": data[0]})
                 mobileClinicClick(mobileHealthClinics.length - 1)
             }
         } else {
             if (data.length >= 1) {
-                mobileHealthClinics[index] = data[0]
+                mobileHealthClinics[index] = {"coords": {"lat": data[0].lat, "lon": data[0].lon}, "osm": data[0]}
                 mobileClinicClick(index)
-            } else {
-                mobileClinicAddress.setAttribute("value", mobileHealthClinics[index].display_name) 
             }
         }
+        updateMobileClinicInfoPanel()
         dataVersion++
         redraw()
     })
 }
 
 function updateLocationCoords(index, lat, lon) {
+    mobileHealthClinics[index].coords = {"lat": lat, "lon": lon}
     fetch(`https://geocode.maps.co/reverse?lat=${lat}&lon=${lon}&api_key=***REMOVED***`).then(response => response.json()).then(function(data) {
         if (index == -1) {
-            mobileHealthClinics.push(data)
+            mobileHealthClinics.push({"coords": {"lat": lat, "lon": lon}, "osm": data})
             mobileClinicClick(mobileHealthClinics.length - 1)
         } else {
-            mobileHealthClinics[index] = data
+            if(data.display_name != mobileHealthClinics[index].osm.display_name) {
+                mobileHealthClinics[index].osm = data
+            }
             mobileClinicClick(index)
         }
+        updateMobileClinicInfoPanel()
         dataVersion++
         redraw()
-        mobileClinicAddress.setAttribute("value", data.display_name) 
-        mobileClinicLat.setAttribute("value", data.lat)
-        mobileClinicLon.setAttribute("value", data.lon)
     })
 }
 

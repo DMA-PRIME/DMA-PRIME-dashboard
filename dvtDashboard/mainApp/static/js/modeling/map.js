@@ -1,7 +1,6 @@
 const {DeckGL, IconLayer, FlyToInterpolator} = deck;
 
 var mobileHealthClinics = [
-  {'lat': 34, 'lon': -81, 'display_name': 'South Carolina'}
 ]
 
 let dataVersion = 0
@@ -28,7 +27,7 @@ function redraw() {
       data: mobileHealthClinics,
       iconAtlas: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.png',
       iconMapping: 'https://raw.githubusercontent.com/visgl/deck.gl-data/master/website/icon-atlas.json',
-      getPosition: d => [+d.lon, +d.lat],
+      getPosition: d => [+d.coords.lon, +d.coords.lat],
       getColor: [255, 0, 0],
       getIcon: d => 'marker',
       sizeScale: 15,
@@ -42,7 +41,7 @@ function redraw() {
       onDrag: mobileClinicDrag,
       onDragEnd: (info, event) => { 
         deckgl.setProps({controller: true}); 
-        updateLocationCoords(info.index, lat=mobileHealthClinics[info.index].lat, lon=mobileHealthClinics[info.index].lon) },
+        updateLocationCoords(info.index, lat=mobileHealthClinics[info.index].coords.lat, lon=mobileHealthClinics[info.index].coords.lon) },
       onClick: (info, event) => mobileClinicClick(info.index),
       updateTriggers: {
         getPosition: {dataVersion}
