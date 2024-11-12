@@ -55,15 +55,18 @@ def load_zcta_hospitalization():
         df = pd.DataFrame()
         if isinstance(file, list):
             for f in file:
-                temp = pd.read_csv(f['file'])
+                print(f)
+                print(f['date_format'])
+                temp = pd.read_csv(f['file'], date_format=f['date_format'], parse_dates=['Date'])
                 temp['imputation'] = f['imputation']
+                temp.rename({'Zip code': 'zcta', 'Date': 'date'}, axis=1, inplace=True)
+                print(temp.dtypes)
+                temp['date'] = pd.to_datetime(temp['date'], format=f['date_format']) + pd.Timedelta(days=7)
                 df = pd.concat([df, temp])
         else:
             df = pd.read_csv(file)
             df['imputation'] = False
 
-        df.rename({'Zip code': 'zcta', 'Date': 'date'}, axis=1, inplace=True)
-        df['date'] = pd.to_datetime(df['date']) + pd.Timedelta(days=7)
         max_date = max(max_date, df['date'].max())
 
         df['Health System hospitalizations'] = df['Health System hospitalizations'] #.fillna(value=0)

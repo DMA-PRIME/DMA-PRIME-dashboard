@@ -3,11 +3,11 @@ import pandas as pd
 main_dir = "/".join(__file__.split("\\")[:-1])
 
 files = {
-    'covid-19': [{'file': main_dir+'/static/data/covid-19_zcta_data_11_11_24.csv', 'imputation': False},
-                    #{'file': main_dir+'/static/data/Data file for CDC site visit_TA.csv', 'imputation': True}
+    'covid-19': [{'file': main_dir+'/static/data/covid-19_zcta_data_11_11_24.csv', 'imputation': False, 'date_format': "%Y-%m-%d"},
+                    {'file': main_dir+'/static/data/covid-19_zcta_data_imputation_11_11_24.csv', 'imputation': True, 'date_format': "%d/%m/%y"}
                     ],
-    'influenza-1': [{'file': main_dir+'/static/data/influenza-1.1_zcta_data_11_11_24.csv', 'imputation': False},
-                    # {'file': main_dir+'/static/data/Flu_Data_Imputation.csv', 'imputation': True}
+    'influenza-1': [{'file': main_dir+'/static/data/influenza-1.1_zcta_data_11_11_24.csv', 'imputation': False, 'date_format': "%Y-%m-%d"},
+                    {'file': main_dir+'/static/data/influenza-1.1_zcta_data_imputation_11_11_24.csv', 'imputation': True, 'date_format': "%d/%m/%y"}
                     ],
 }
 
