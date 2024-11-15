@@ -1,0 +1,61 @@
+{% extends "subtemplates/panel.html" %}
+
+{% block options %}
+<div id="map-options" class="sidebar-container">
+    <!-- reset zoom and location -->
+    <sl-button pill id="map-reset-button" class="center-self">Reset Map</sl-button>
+    <sl-divider class="options-divider"></sl-divider>
+
+    <!-- Select year of analysis -->
+    <sl-select id="map-year-selector" value="2020">
+        <p slot="label">Select a year</p>
+        <sl-option value="2020">2020</sl-option>
+        <sl-option value="2021">2021</sl-option>
+        <sl-option value="2022">2022</sl-option>
+        <sl-option value="2023">2023</sl-option>
+        <sl-option value="2024" disabled>2024</sl-option>
+        <sl-option value="2025">2025</sl-option>
+    </sl-select>
+
+    <!-- Select variables -->
+    <sl-select id="map-variable-1-selector" value="hospitalizations">
+        <p slot="label">Variable 1</p>
+        <sl-option value="hospitalizations">Hospitalizations</sl-option>
+        <sl-option value="deaths">Deaths</sl-option>
+    </sl-select>
+
+    <sl-select id="map-variable-2-selector" value="deaths">
+        <p slot="label">Variable 2</p>
+        <sl-option value="hospitalizations">Hospitalizations</sl-option>
+        <sl-option value="deaths">Deaths</sl-option>
+    </sl-select>
+</div>
+
+{% endblock %}
+
+{% block contents %}
+<div class="fill-width fill-height" id="map-div">
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    zctaData = undefined
+    
+    mapResetButton = document.getElementById("map-reset-button")
+
+    mapYearSelector = document.getElementById("map-year-selector")
+    mapVariable1Selector = document.getElementById("map-variable-1-selector")
+    mapVariable2Selector = document.getElementById("map-variable-2-selector")
+
+    mapDiv = document.getElementById("map-div")
+
+    set{{panel.name}}Panel()
+</script>
+
+<script src="{{ url_for('static', filename='js/opioid/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/opioid/map.js') }}"></script>
+<script src="{{ url_for('static', filename='js/opioid/map-interactions.js') }}"></script>
+
+{% endblock %}

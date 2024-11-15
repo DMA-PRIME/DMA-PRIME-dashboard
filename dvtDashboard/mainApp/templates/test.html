@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+
+<html lang="en">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <style>
+        body {
+            margin: 30px;
+        }
+
+        h1 {
+            font-size: 72px;
+            font-family: sans-serif;
+        }
+
+        .parent {
+            display: grid;
+            grid-gap: 10px;
+            grid-template-columns: repeat(3, 150px);
+            grid-template-rows: repeat(3, 150px);
+        }
+
+        .parent>div {
+            padding: 10px;
+            border-radius: 5px;
+            display: grid;
+            place-items: center;
+        }
+
+        .parent>div {
+            font-family: sans-serif;
+            font-size: 24px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>A 3x3 Grid</h1>
+    <div class="parent">
+        <div id="a0">0</div>
+        <div id="a1">1</div>
+        <div id="a2">2</div>
+        <div id="a3">3</div>
+        <div id="a4">4</div>
+        <div id="a5">5</div>
+        <div id="a6">6</div>
+        <div id="a7">7</div>
+        <div id="a8">8</div>
+    </div>
+</body>
+
+<script>
+    var mainColor = d3.scaleLinear().domain([0, 1, 2]).range([d3.hsl(200, .7, .3), d3.hsl(290, .7, .3), d3.hsl(0, .7, .3)])
+    var range = []
+    for (var hue = 0; hue < 3; hue++) {
+        var innerRange = []
+        for (var sat = -1; sat < 2; sat++) {
+            var color = d3.hsl(mainColor(hue))
+            color.l = .4
+            color.s -= .3 * sat
+            color.l += .2 * sat
+            innerRange.push(color)
+        }
+        range.push(d3.scaleThreshold().domain([.5, 1.5]).range(innerRange.reverse()))
+    }
+    var bivariateColormap = d3.scaleThreshold().domain([.5, 1.5]).range(range)
+
+    for (i = 0; i < 3; i++) {
+        // console.log(mainColor(i))
+        for (j = 0; j < 3; j++) {
+            console.log(bivariateColormap(i)(j).hex())
+            d3.select(`#a${i*3+j}`)
+                .style("background-color", bivariateColormap(i)(j))
+        }
+    }
+
+</script>
+
+</html>

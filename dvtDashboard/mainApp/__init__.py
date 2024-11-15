@@ -105,6 +105,23 @@ def create_app(development=False, updatedData=True):
         ]
         return render_template('modeling/modeling-base.html', panels=panels)
     
+    @app.route('/opioid')
+    @login_required
+    def opioid():
+        panels = [
+            {
+                'name': 'main',
+                'displayName': 'DMA-PRIME',
+            },
+            {
+                'name': 'map',
+                'displayName': 'Map View',
+                'active': True,
+                'html': 'opioid/opioid-map-panel.html'
+            },
+        ]
+        return render_template('opioid/opioid-base.html', panels=panels)
+    
     @app.route('/update', methods=['POST', 'GET'])
     def webhook():
         script = ""+main_dir+"/update.cmd"
