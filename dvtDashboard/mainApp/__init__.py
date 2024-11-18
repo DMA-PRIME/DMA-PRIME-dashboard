@@ -128,11 +128,11 @@ def create_app(development=False, updatedData=True):
         if(request.is_json):
             data = request.get_json()
             if data['ref'] == 'refs/heads/main':
-                subprocess.call(script, shell=True, timeout=300)
-                subprocess.call(["powershell.exe", "Restart-Computer -Force"], shell=True, timeout=300)
+                subprocess.call(script, shell=True, timeout=3600)
+                subprocess.call(["powershell.exe", "Restart-Computer -Force"], shell=True, timeout=3600)
         else:
-            subprocess.call(script, shell=True, timeout=300)
-            subprocess.call(["powershell.exe", "Restart-Computer -Force"], shell=True, timeout=300)
+            subprocess.call(script, shell=True, timeout=3600)
+            subprocess.call(["powershell.exe", "Restart-Computer -Force"], shell=True, timeout=3600)
             
             pass
 
