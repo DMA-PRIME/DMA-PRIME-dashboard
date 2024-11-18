@@ -132,7 +132,7 @@ function drawLegend(primaryMin = 0, primaryMax = 3, secondaryMin = 0, secondaryM
             .attr("font-size", 10)
             .attr("fill", "black")
             .attr("transform", "scale(1 -1)")
-            .text(d3.format(".2f")(bivariateColormap.thresholds()[i-1]))
+            .text(d3.format(".0f")(bivariateColormap.thresholds()[i-1]))
     }
 
     legendCountAxis = legend.append("g")
