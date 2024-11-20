@@ -4,6 +4,8 @@ import numpy as np
 import math
 import json
 import geojson
+import requests
+import time
 
 from .utility import * 
 
@@ -32,9 +34,16 @@ def getHospitalizations(disease='covid-19'):
     # hospitalization data based on disease
     return send_file(f'{main_dir}/static/data/{disease}_zcta_hospitalization_data.json')
 
+@bp.route('/mobile-health-clinic-events', methods=['GET', 'POST'])
+@login_required
+def getMobileHealthClinicEvents():
+    # hospitalization data based on disease
+    return send_file(f'{main_dir}/static/data/clemson_rural_health_event_data.json')
+
 def load_data():
     load_zcta_respiratory_hospitalizations()
     load_zcta_opioid()
+    load_mobile_health_clinic_events()
     pass
 
 def load_zcta_opioid():
@@ -94,6 +103,65 @@ def load_zcta_opioid():
         with open(f'{main_dir}/static/data/opioid_zcta_hospitalization_data.json', 'w') as f:
             geojson.dump(gj, f)
 
+def load_mobile_health_clinic_events():
+    def process_addresses(addresses):
+        def geocode(address):
+            info = requests.get(f'https://geocode.maps.co/search?q=${address}&api_key=***REMOVED***')
+            while not info.ok:
+                time.sleep(5)
+                info = requests.get(f'https://geocode.maps.co/search?q=${address}&api_key=***REMOVED***')
+            time.sleep(1.5) # to stay within API usage rules
+            infoJson = info.json()
+            for entry in infoJson:
+                if 'South Carolina' in entry['display_name']:
+                    return entry
+            return None
+
+        locations = map(geocode, addresses)
+        data = dict(zip(addresses, locations))
+
+        with open(main_dir+'/static/data/mobile_health_clinic_address_translation.json', 'w') as f:
+            json.dump(data, f)
+        
+        return data
+    
+    df = pd.read_excel(main_dir+'/static/data/Clemson Rural Health Outreach.xlsx')
+    
+    df.rename({'Timestamp': 'form_entry_time', 'Date of Event': 'event_date', 
+               'County': 'county', 'Organization Name': 'org_name', 
+               'Organization Address': 'org_address', 'Type': 'type',
+               'Point of Contact Name': 'POC_name', 'POC Contact Information': 'POC_contact_info',
+               'Number of patients (documented in Epic)': 'num_epic_patients', 'Number of People Attended (non-clinical)': 'num_non-clinical_attendees',
+               'Staff Members Present': 'staff_members_present', 'Site Address (If Different)': 'site_address',
+               'Report Submitted By:': 'report_author', 'Notes': 'notes'}, axis=1, inplace=True)
+    
+    df['form_entry_time'] = df['form_entry_time'].astype(str)
+    df['event_date'] = df['event_date'].astype(str)
+    df.fillna({'org_address': '', 'POC_name': '', 'POC_contact_info': '', 
+               'num_epic_patients': 0, 'staff_members_present': '', 
+               'num_non-clinical_attendees': 0, 'report_author': '', 'notes': ''}, inplace=True)
+
+    df.replace('na', None, inplace=True)
+    df.apply(lambda x: x.str.replace(u'\xa0', u' ').replace(u'·', u' ').replace(u'  ', u' ').str.strip() if x.dtype == 'object' else x)
+
+    altSite = df['site_address'].notna()
+    orgSite = ~altSite
+
+    df.loc[orgSite, 'site_address'] = df.loc[orgSite, 'org_address']
+
+    try:
+        with open(main_dir+'/static/data/mobile_health_clinic_address_translation.json') as f:
+            data = json.load(f)
+    except OSError:
+        data = process_addresses(df['site_address'])
+
+    df['site_osm_address'] = df['site_address'].apply(lambda addr: data[addr]['display_name'] if addr in data and data[addr] else None)
+    df['site_lat'] = df['site_address'].apply(lambda addr: data[addr]['lat']  if addr in data and data[addr] else None)
+    df['site_lon'] = df['site_address'].apply(lambda addr: data[addr]['lon']  if addr in data and data[addr] else None)
+
+    with open(main_dir+'/static/data/clemson_rural_health_event_data.json', 'w') as f:
+        json.dump(list(df.to_dict(orient='index').values()), f)
+    # df.to_json(main_dir+'/static/data/clemson_rural_health_event_data.json', orient='index')
 
 def load_zcta_respiratory_hospitalizations():
     index_names = ['zcta', 'date']

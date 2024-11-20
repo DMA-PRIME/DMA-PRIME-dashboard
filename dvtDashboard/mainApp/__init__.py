@@ -83,6 +83,28 @@ def create_app(development=False, updatedData=True):
         ]
         return render_template('index.html', panels=panels, diseases=list(files.keys()))
     
+    @app.route('/health-partners')
+    @login_required
+    def health_partners():
+        panels = [
+            {
+                'name': 'main',
+                'displayName': 'DMA-PRIME',
+            },
+            {
+                'name': 'map',
+                'displayName': 'Map View',
+                'active': True,
+                'html': 'health-partners/map-panel.html'
+            },
+            # {
+            #     'name': 'comparison',
+            #     'displayName': 'Map Comparison View',
+            #     'html': 'landing-page/comparison-panel.html'
+            # }
+        ]
+        return render_template('health-partners/health-partners-base.html', panels=panels)
+
     @app.route('/modeling')
     @login_required
     def modeling():
