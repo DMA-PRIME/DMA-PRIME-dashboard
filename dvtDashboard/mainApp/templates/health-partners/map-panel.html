@@ -22,19 +22,29 @@
             <sl-icon-button slot="nav" name="x-lg" id="map-secondary-sidebar-close"></sl-icon-button>
             <sl-tab-panel id="secondary-sidebar-blank-panel" name="blank"></sl-tab-panel>
             <sl-tab-panel id="mobile-clinic-info-panel" name="info">
-                <sl-input id="mobile-clinic-address">
-                    <p slot="label">Address</p>
-                </sl-input>
-                <!-- <sl-textarea id="mobile-clinic-address">
-                    <p slot="label">Address</p>
-                </sl-textarea> -->
-                <sl-input id="mobile-clinic-lat" type="number" step="0.0000001">
-                    <p slot="label">Latitude</p>
-                </sl-input>
-                <sl-input id="mobile-clinic-lon" type="number" step="0.0000001">
-                    <p slot="label">Longitude</p>
-                </sl-input>
-                <sl-button id="mobile-clinic-remove"><p>Remove Mobile Clinic</p></sl-button>
+                <p id="map-secondary-sidebar-org-name"></p>
+                <sl-divider></sl-divider>
+                <p class="map-secondary-sidebar-label"><u>Date</u></p>
+                <p id="map-secondary-sidebar-event-date" class="map-secondary-sidebar-value"></p>
+                <p class="map-secondary-sidebar-label"><u>Event Address</u></p>
+                <p id="map-secondary-sidebar-event-address" class="map-secondary-sidebar-value"></p>
+                <sl-divider></sl-divider>
+                <p class="map-secondary-sidebar-label"><u>Event Type</u></p>
+                <p id="map-secondary-sidebar-event-type" class="map-secondary-sidebar-value"></p>
+                <p class="map-secondary-sidebar-label"><u>Number of Patients in Epic</u></p>
+                <p id="map-secondary-sidebar-event-patients" class="map-secondary-sidebar-value"></p>
+                <p class="map-secondary-sidebar-label"><u>Non-clinical Attendees</u></p>
+                <p id="map-secondary-sidebar-event-non-clinical-attendants" class="map-secondary-sidebar-value"></p>
+                <p class="map-secondary-sidebar-label"><u>Staff Members Present</u></p>
+                <p id="map-secondary-sidebar-event-staff" class="map-secondary-sidebar-value"></p>
+                <p class="map-secondary-sidebar-label"><u>Notes</u></p>
+                <p id="map-secondary-sidebar-event-notes" class="map-secondary-sidebar-value"></p>
+                <sl-divider></sl-divider>
+                <p class="map-secondary-sidebar-label"><u>Point of Contact (POC)</u></p>
+                <p id="map-secondary-sidebar-event-POC" class="map-secondary-sidebar-value"></p>
+                <p class="map-secondary-sidebar-label"><u>POC Contact Information</u></p>
+                <p id="map-secondary-sidebar-event-POC-contact" class="map-secondary-sidebar-value"></p>
+                
             </sl-tab-panel>
         </sl-tab-group>
     </div>
@@ -51,16 +61,20 @@
     mapSecondarySidebarGroup = document.getElementById("map-secondary-sidebar-group")
     mapSecondarySidebarClose = document.getElementById("map-secondary-sidebar-close")
     mobileClinicInfoPanel = document.getElementById("mobile-clinic-info-panel")
-    mobileClinicAddress = document.getElementById("mobile-clinic-address")
-    mobileClinicLat = document.getElementById("mobile-clinic-lat")
-    mobileClinicLon = document.getElementById("mobile-clinic-lon")
-    mobileClinicRemove = document.getElementById("mobile-clinic-remove")
 
+    mapSecondarySidebarOrgName = document.getElementById("map-secondary-sidebar-org-name")
+    mapSecondarySidebarEventDate = document.getElementById("map-secondary-sidebar-event-date")
+    mapSecondarySidebarEventAddress = document.getElementById("map-secondary-sidebar-event-address")
+    mapSecondarySidebarEventType = document.getElementById("map-secondary-sidebar-event-type")
+    mapSecondarySidebarEventPatients = document.getElementById("map-secondary-sidebar-event-patients")
+    mapSecondarySidebarEventNonClinicalAttendants = document.getElementById("map-secondary-sidebar-event-non-clinical-attendants")
+    mapSecondarySidebarEventStaff = document.getElementById("map-secondary-sidebar-event-staff")
+    mapSecondarySidebarEventNotes = document.getElementById("map-secondary-sidebar-event-notes")
+    mapSecondarySidebarEventPOC = document.getElementById("map-secondary-sidebar-event-POC")
+    mapSecondarySidebarEventPOCContact = document.getElementById("map-secondary-sidebar-event-POC-contact")
+    
     displayedMobileClinic = null
-    // const data = [
-    // //   [7.7405,46.0125]
-    //     // {position: [-122.45, 37.8], color: [255, 0, 0], radius: 100},
-    // ]
+    
     set{{panel.name}}Panel()
 </script>
 
@@ -71,7 +85,7 @@
     mobileClinicAddress.shadowRoot.querySelector("textarea").removeAttribute("rows")
 </script> -->
 
-<!-- <script src="{{ url_for('static', filename='js/health-partners/map-interactions.js') }}"></script> -->
+<script src="{{ url_for('static', filename='js/health-partners/map-interactions.js') }}"></script>
 <script src="{{ url_for('static', filename='js/health-partners/map.js') }}"></script>
 
 {% endblock %}

@@ -20,16 +20,25 @@ const deckgl = new DeckGL({
 redraw();
 
 function redraw() {
-  console.log("help")
-  d3.json('/data/mobile-health-clinic-events').then(data => console.log(data))
   deckgl.setProps({
     layers: [
     new IconLayer({
       id: 'mobile-health-clinic',
-      data: d3.json('/data/mobile-health-clinic-events'),
+      data: d3.json('/data/mobile-health-clinic-events').then(data => {
+        data.forEach((datum, index) => {
+          try {
+            if (data[index].event_date.length >= 10) {
+              data[index].event_date = dayjs.tz(data[index].event_date, "America/New_York") 
+            }
+          } catch (RangeError) {
+            console.log(data[index].event_date, "was not able to be parsed")
+          }  
+        })
+        return data
+      }),
       iconAtlas: '/icon-pack/png',
       iconMapping: '/icon-pack/json',
-      getPosition: d => {console.log(d); return [+d.site_lon, +d.site_lat]},
+      getPosition: d => {return [+d.site_lon, +d.site_lat]},
       getColor: [255, 0, 0],
       getIcon: d => 'mobile_health_clinic',
       sizeScale: 15,
@@ -44,7 +53,7 @@ function redraw() {
       // onDragEnd: (info, event) => { 
       //   deckgl.setProps({controller: true}); 
       //   updateLocationCoords(info.index, lat=mobileHealthClinics[info.index].coords.lat, lon=mobileHealthClinics[info.index].coords.lon) },
-      // onClick: (info, event) => mobileClinicClick(info.index),
+      onClick: (info, event) => mobileClinicClick(info.object),
       updateTriggers: {
         getPosition: {dataVersion}
       },

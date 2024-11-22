@@ -104,20 +104,22 @@ def load_zcta_opioid():
             geojson.dump(gj, f)
 
 def load_mobile_health_clinic_events():
-    def process_addresses(addresses):
-        def geocode(address):
-            info = requests.get(f'https://geocode.maps.co/search?q=${address}&api_key=***REMOVED***')
+    def process_addresses(addresses, counties):
+        def geocode(addr_county):
+            address, county = addr_county
+            new_addr = address
+            info = requests.get(f'https://geocode.maps.co/search?q=${new_addr}&api_key=***REMOVED***')
             while not info.ok:
                 time.sleep(5)
-                info = requests.get(f'https://geocode.maps.co/search?q=${address}&api_key=***REMOVED***')
-            time.sleep(1.5) # to stay within API usage rules
+                info = requests.get(f'https://geocode.maps.co/search?q=${new_addr}&api_key=***REMOVED***')
+            time.sleep(1.1) # to stay within API usage rules
             infoJson = info.json()
             for entry in infoJson:
                 if 'South Carolina' in entry['display_name']:
                     return entry
             return None
 
-        locations = map(geocode, addresses)
+        locations = map(geocode, zip(addresses, counties))
         data = dict(zip(addresses, locations))
 
         with open(main_dir+'/static/data/mobile_health_clinic_address_translation.json', 'w') as f:
@@ -141,8 +143,16 @@ def load_mobile_health_clinic_events():
                'num_epic_patients': 0, 'staff_members_present': '', 
                'num_non-clinical_attendees': 0, 'report_author': '', 'notes': ''}, inplace=True)
 
+    def clean_strings(string):
+        new_string = string.replace(u'\xa0', u' ')
+        new_string = new_string.replace(u'\u00b7', u' ')
+        new_string = new_string.replace(u'\u00a0', u' ')
+        new_string = new_string.replace(u'\u00e1', u'a')
+        new_string = new_string.strip()
+        return new_string
+    
     df.replace('na', None, inplace=True)
-    df.apply(lambda x: x.str.replace(u'\xa0', u' ').replace(u'·', u' ').replace(u'  ', u' ').str.strip() if x.dtype == 'object' else x)
+    df = df.map(lambda x: clean_strings(x) if isinstance(x, str) else x)
 
     altSite = df['site_address'].notna()
     orgSite = ~altSite
@@ -161,7 +171,6 @@ def load_mobile_health_clinic_events():
 
     with open(main_dir+'/static/data/clemson_rural_health_event_data.json', 'w') as f:
         json.dump(list(df.to_dict(orient='index').values()), f)
-    # df.to_json(main_dir+'/static/data/clemson_rural_health_event_data.json', orient='index')
 
 def load_zcta_respiratory_hospitalizations():
     index_names = ['zcta', 'date']
