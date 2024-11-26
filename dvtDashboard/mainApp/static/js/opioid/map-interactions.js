@@ -12,9 +12,18 @@ mapResetButton.addEventListener("click", () => {
     
 })
 
+mapFilterResetButton.addEventListener("click", () => {
+    Object.entries(brushes).forEach(brush => {
+        column = brush[0]
+        d3.select(`#map-${column}-filter-brush`).call(brush[1].clear)
+        thresholds[column] = xScales[column].domain()
+    })
+})
 
 mapYearSelector.addEventListener("sl-change", function(event) {
     dataVersion++
+    updateHistogram("hospitalizations")
+    updateHistogram("deaths")
     redraw()
 })
 

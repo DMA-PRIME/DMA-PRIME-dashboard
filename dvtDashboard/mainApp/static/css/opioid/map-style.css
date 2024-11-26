@@ -1,3 +1,42 @@
 #map-content {
     position: relative;
 }
+
+#choropleth-legend-svg text {
+    fill: black
+}
+
+#choropleth-legend-svg line,path {
+    stroke: black
+}
+
+#map-filters-container {
+    max-height: 550px;
+}
+
+#map-filters-container[open=""]::part(header){
+    padding-bottom:var(--sl-spacing-2x-small);
+}
+
+#map-filters-container::part(content) {
+    overflow-x: scroll;
+    max-height: 500px;
+    padding: var(--sl-spacing-x-small);
+    display: grid;
+}
+
+#map-filter-reset-button {
+    width: fit-content;
+}
+
+.map-histogram-filter {
+    width: 100%;
+    height: 100px;
+    border: 1px solid currentcolor;
+    margin: var(--sl-spacing-3x-small);
+}
+
+.map-filter-end-text {
+    fill: currentColor;
+    font-size: var(--sl-font-size-2x-small);
+}

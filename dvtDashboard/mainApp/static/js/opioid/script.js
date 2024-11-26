@@ -10,9 +10,16 @@ var mainColor = [d3.hsl(200, .7, .3), // cyan
 d3.hsl(290, .7, .3), // magenta
 d3.hsl(0, .7, .3)] //red
 
+var unknownColor = d3.hsl("#7F7F7F")
+
 var bivariateColormap = createBivariateColormap()
+var univariateColormap = createUnivariateColormap()
 
 let dataVersion = 0
+
+function createUnivariateColormap(primaryMin = 0, primaryMax = 3) {
+    return d3.scaleLinear().domain([primaryMin, (primaryMin+primaryMax)/2, primaryMax]).range(mainColor).unknown(unknownColor)
+}
 
 function createBivariateColormap(primaryMin = 0, primaryMax = 3, secondaryMin = 0, secondaryMax = 3) {
     var range = []
@@ -27,24 +34,8 @@ function createBivariateColormap(primaryMin = 0, primaryMax = 3, secondaryMin = 
         }
         range.push(d3.scaleQuantize().domain([secondaryMin, secondaryMax]).range(innerRange.reverse()))
     }
-    return d3.scaleQuantize().domain([primaryMin, primaryMax]).range(range).unknown((val) => d3.hsl("#888888"))
+    return d3.scaleQuantize().domain([primaryMin, primaryMax]).range(range).unknown((val) => unknownColor)
 }
-
-// data fetching
-async function processZctaData() {
-    if (typeof zctaData == "undefined") {
-        await d3.json(`/data/hospitalizations/opioid`).then((data) => zctaData = data)
-    }
-    features = zctaData.features
-
-    features.forEach((feature, index) => {
-        features[index][mapVariable1Selector.value] = feature.properties.data[mapYearSelector.value][mapVariable1Selector.value]
-        features[index][mapVariable2Selector.value] = feature.properties.data[mapYearSelector.value][mapVariable2Selector.value]
-    })
-
-    return true
-}
-
 
 class D3Anchor {
     static #count = 0;

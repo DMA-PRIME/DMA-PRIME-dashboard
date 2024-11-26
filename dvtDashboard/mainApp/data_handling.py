@@ -67,7 +67,9 @@ def load_zcta_opioid():
 
     zcta_data = pd.read_csv(main_dir+'/static/data/zcta_summary.csv', index_col=0)
 
-    zcta_list = []
+    zcta_socio_demographics = pd.read_csv(main_dir+'/static/data/zcta_socio_demographics.csv', index_col=0)
+    zcta_socio_demographics.rename({'prop.Uninsured': 'proportion_uninsured', 'Median.Income': 'median_income'}, axis=1, inplace=True)
+
     with open(f'{main_dir}/static/data/tl_2023_sc_zcta_trimmed_simplified_ogr2ogr_.001.json') as f:
         gj = geojson.load(f)
 
@@ -81,22 +83,34 @@ def load_zcta_opioid():
                 thing.properties['population'] = 'NaN'
                 thing.properties['county'] = 'NaN'
             
-            zcta_opioid_data = {
-                'cumulative': {'hospitalizations': 0, 'deaths': 0}
-            }
+            zcta_opioid_data = {}
 
-            for year in years:
-                zcta_opioid_data[year] = {}
+            for col in ['hospitalizations', 'deaths']:
+                zcta_opioid_data[col] = {'cumulative': 0}
 
-                for col in ['hospitalizations', 'deaths']:
+                for year in years:
                     try:
-                        zcta_opioid_data[year][col] = float(pivot_df.loc[int(zcta), year][col])
-                        if math.isnan(zcta_opioid_data[year][col]): 
-                            zcta_opioid_data[year][col] = 'NaN'
+                        value = float(pivot_df.loc[int(zcta), year][col])
+                        if math.isnan(value): 
+                            zcta_opioid_data[col][year] = 'NaN'
                         else:
-                            zcta_opioid_data['cumulative'][col] += zcta_opioid_data[year][col]
+                            zcta_opioid_data[col][year] = value
+                            zcta_opioid_data[col]['cumulative'] += zcta_opioid_data[col][year]
                     except KeyError:
-                        zcta_opioid_data[year][col] = 'NaN'
+                        zcta_opioid_data[col][year] = 'NaN'
+
+            for col in ['SVI', 'proportion_uninsured', 'median_income']:
+                try:
+                    value = float(zcta_socio_demographics.loc()[int(zcta), col])
+                    if math.isnan(value):
+                        zcta_opioid_data[col][year] = {year: 'NaN' for year in years}
+                        zcta_opioid_data[col]['cumulative'] = 'NaN'
+                    else:
+                        zcta_opioid_data[col] = {year: value for year in years}
+                        zcta_opioid_data[col]['cumulative'] = value
+                except (KeyError, ValueError):
+                    zcta_opioid_data[col] = {year: 'NaN' for year in years}
+                    zcta_opioid_data[col]['cumulative'] = 'NaN'
 
             thing.properties['data'] = zcta_opioid_data
 
