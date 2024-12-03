@@ -13,12 +13,6 @@ from .utility import *
 from .data_handling import load_data
 from .auth import login_required
 
-# TODO: update below
-# Data:
-#    map, county, zip code
-#        past, current, prediction
-#            prediction history vs actual
-
 logging.basicConfig(filename=main_dir+'/logs.log',level=logging.DEBUG)
 def create_app(development=False, updatedData=True):
     # create and configure the app
@@ -33,6 +27,7 @@ def create_app(development=False, updatedData=True):
 
     app.config.from_pyfile('config.py', silent=True)
 
+    # ignores login requirements
     if not development:
         from . import db
         db.init_app(app)
@@ -43,6 +38,7 @@ def create_app(development=False, updatedData=True):
     except OSError:
         pass
 
+    # if latest data files are created, run app w/out recreating data - good for computers with minimal resources
     if updatedData:
         load_data()
 
@@ -54,7 +50,7 @@ def create_app(development=False, updatedData=True):
     from . import data_handling
     app.register_blueprint(data_handling.bp)
     
-    # landing page
+    # landing page, though now respiratory
     @app.route('/')
     @login_required
     def index():
@@ -67,17 +63,17 @@ def create_app(development=False, updatedData=True):
                 'name': 'map',
                 'displayName': 'Map View',
                 'active': True,
-                'html': 'landing-page/map-panel.html'
+                'html': 'respiratory/map-panel.html'
             },
             {
                 'name': 'grid',
                 'displayName': 'Grid View',
-                'html': 'landing-page/grid-panel.html'
+                'html': 'respiratory/grid-panel.html'
             },
             # {
             #     'name': 'comparison',
             #     'displayName': 'Map Comparison View',
-            #     'html': 'landing-page/comparison-panel.html'
+            #     'html': 'respiratory/comparison-panel.html'
             # }
         ]
         return render_template('index.html', panels=panels, diseases=list(files.keys()))
@@ -96,11 +92,6 @@ def create_app(development=False, updatedData=True):
                 'active': True,
                 'html': 'health-partners/map-panel.html'
             },
-            # {
-            #     'name': 'comparison',
-            #     'displayName': 'Map Comparison View',
-            #     'html': 'landing-page/comparison-panel.html'
-            # }
         ]
         return render_template('health-partners/health-partners-base.html', panels=panels)
 
@@ -118,11 +109,6 @@ def create_app(development=False, updatedData=True):
                 'active': True,
                 'html': 'modeling/map-panel.html'
             },
-            # {
-            #     'name': 'comparison',
-            #     'displayName': 'Map Comparison View',
-            #     'html': 'landing-page/comparison-panel.html'
-            # }
         ]
         return render_template('modeling/modeling-base.html', panels=panels)
     
@@ -149,6 +135,8 @@ def create_app(development=False, updatedData=True):
         # icon csv files
         return send_file(f'{main_dir}/static/data/raw/icon-pack.{type}')
     
+    # supposedly should update and restart computer but doesn't seem to. Gets caught on pull?
+    # TODO figure out why this isn't working and fix it
     @app.route('/update', methods=['POST', 'GET'])
     def webhook():
         script = ""+main_dir+"/update.cmd"
