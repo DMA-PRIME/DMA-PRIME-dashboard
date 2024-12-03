@@ -3,6 +3,7 @@ name = "mainApp"
 version = "1.3.5"
 description = "DMA-PRIME October 2024"
 dependencies = [
+    "waitress",
     "flask<2.4",
     "flask-bcrypt",
 
