@@ -27,17 +27,17 @@ mapYearSelector.addEventListener("sl-change", function(event) {
     if (selectedZCTA) {
         mobileClinicClick(selectedZCTA)
     }
-    redraw()
+    redraw(null)
 })
 
 mapVariable1Selector.addEventListener("sl-change", function(event) {
     dataVersion++
-    redraw()
+    redraw(null)
 })
 
 mapVariable2Selector.addEventListener("sl-change", function(event) {
     dataVersion++
-    redraw()
+    redraw(null)
 })
 
 hospitalIconsToggle.addEventListener("sl-change", () => {
@@ -48,7 +48,7 @@ hospitalIconsToggle.addEventListener("sl-change", () => {
         checked = checked.filter(check => check !== "hospital")
     }
     dataVersion++
-    redraw()
+    redraw(null)
 })
 cdapIconsToggle.addEventListener("sl-change", () => {
     // toggle cdap icons
@@ -58,7 +58,7 @@ cdapIconsToggle.addEventListener("sl-change", () => {
         checked = checked.filter(check => check !== "CDAP")
     }
     dataVersion++
-    redraw()
+    redraw(null)
 })
 mobileClinicIconsToggle.addEventListener("sl-change", () => {
     // toggle mhc icons
@@ -68,7 +68,7 @@ mobileClinicIconsToggle.addEventListener("sl-change", () => {
         checked = checked.filter(check => check !== "community_partner")
     }
     dataVersion++
-    redraw()
+    redraw(null)
 })
 communityPartnerIconsToggle.addEventListener("sl-change", () => {
     // toggle community partner icons
@@ -78,13 +78,14 @@ communityPartnerIconsToggle.addEventListener("sl-change", () => {
         checked = checked.filter(check => check !== "mobile_health_clinic")
     }
     dataVersion++
-    redraw()
+    redraw(null)
 })
 
 mapSecondarySidebarClose.addEventListener("sl-focus", function(event) {
     mapAndMinorSidebar.setAttribute("position", 100)
     mobileClinicInfoPanel.removeAttribute("active")
     selectedZCTA = undefined
+    redraw()
 })
 
 function mobileClinicClick(object) {

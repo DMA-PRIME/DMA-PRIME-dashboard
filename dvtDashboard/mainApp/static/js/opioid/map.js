@@ -56,7 +56,8 @@ function mapSetup() {
     redraw();
 }
 
-function redraw() {
+function redraw(highlightIndex=-1) {
+    hIndex = highlightIndex == null ? deckgl.layerManager.layers[0].props.highlightedObjectIndex : highlightIndex
     d3.json(`/data/hospitalizations/opioid`).then(function (zctaData) {
         features = zctaData.features
 
@@ -80,12 +81,13 @@ function redraw() {
                     filled: true,
                     pointType: 'circle+text',
                     pickable: true,
-                    onClick: function(info, event) {mobileClinicClick(info.object)},
+                    onClick: function(info, event) {redraw(info.index); mobileClinicClick(info.object)},
                     getFillColor: d => getColor(d),
-                    getStrokeColor: [0, 0, 0],
-                    getLineColor: [0, 0, 0],
+                    highlightedObjectIndex: hIndex,
+                    highlightColor: [255, 255, 255, 0],
                     lineWidthMinPixels: .5,
-                    getLineWidth: 20,
+                    getLineWidth: (d, i) => {return 20 * (i.index == hIndex ? 50 :1)},
+                    getLineColor: (d, i) => i.index == hIndex ? [255, 255, 255] : [0, 0, 0],
                     getPointRadius: 4,
                     getTextSize: 12,
                     updateTriggers: {
@@ -340,7 +342,7 @@ function updateHistogram(column) {
             d3.select(`#map-${column}-filter-right`).text("")
         }
         dataVersion++
-        redraw()
+        redraw(null)
     })
     svg.append("g").attr("id", `map-${column}-filter-brush`).call(brush)
 
