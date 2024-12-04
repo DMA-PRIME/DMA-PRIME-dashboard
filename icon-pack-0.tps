@@ -50,7 +50,7 @@
         <key>dxtCompressionMode</key>
         <enum type="SettingsBase::DxtCompressionMode">DXT_PERCEPTUAL</enum>
         <key>ditherType</key>
-        <enum type="SettingsBase::DitherType">NearestNeighbour</enum>
+        <enum type="SettingsBase::DitherType">PngQuantLow</enum>
         <key>backgroundColor</key>
         <uint>0</uint>
         <key>libGdx</key>
@@ -173,6 +173,21 @@
         </struct>
         <key>individualSpriteSettings</key>
         <map type="IndividualSpriteSettingsMap">
+            <key type="filename">dvtDashboard/mainApp/static/data/raw/cdap.png</key>
+            <struct type="IndividualSpriteSettings">
+                <key>pivotPoint</key>
+                <point_f>0.5,0.5</point_f>
+                <key>spriteScale</key>
+                <double>1</double>
+                <key>scale9Enabled</key>
+                <false/>
+                <key>scale9Borders</key>
+                <rect>127,128,254,256</rect>
+                <key>scale9Paddings</key>
+                <rect>127,128,254,256</rect>
+                <key>scale9FromFile</key>
+                <false/>
+            </struct>
             <key type="filename">dvtDashboard/mainApp/static/data/raw/community_partner.svg</key>
             <struct type="IndividualSpriteSettings">
                 <key>pivotPoint</key>
@@ -228,6 +243,7 @@
                     <filename>dvtDashboard/mainApp/static/data/raw/mobile_health_clinic.svg</filename>
                     <filename>dvtDashboard/mainApp/static/data/raw/community_partner.svg</filename>
                     <filename>dvtDashboard/mainApp/static/data/raw/hospital_filled.png</filename>
+                    <filename>dvtDashboard/mainApp/static/data/raw/cdap.png</filename>
                 </array>
             </struct>
         </map>

@@ -562,7 +562,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
             .attr("y1", ttpLegendTop + .75*em + em * parseInt(i/2))
             .attr("x2", 2.25*em + ((ttpWidth-2*em)/3 * (i%2)))
             .attr("y2", ttpLegendTop + .75*em + em * parseInt(i/2))
-            .style("stroke-dasharray", dataSourceLineStyle[dataSource])
+            .style("stroke-dasharray", dataSourceLineStyle[`${dataSource}-tooltip`])
             .attr("stroke", dataSourceColorMap[dataSource])
         labelText = labelGroup.append("text")
             .attr("class", "tooltip-label")
