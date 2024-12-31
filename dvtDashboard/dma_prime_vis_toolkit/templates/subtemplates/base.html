@@ -32,7 +32,7 @@
     var em = parseFloat(getComputedStyle(document.head).fontSize)
   </script>
   <sl-tab-group id="nav-bar">
-    <sl-tab id="main-tab" slot="nav" panel="main">DMA-PRIME</sl-tab>
+    <sl-tab id="main-tab" slot="nav" panel="main" disabled><a href="{{ url_for('index') }}" id="main-tab-link">DMA-PRIME</a></sl-tab>
 
     <!-- Adding all the nav bar tabs and corresponding panels for this page -->
     {% for panel in panels %}

@@ -72,14 +72,6 @@
     gridContainerResizer.addEventListener("sl-resize", () => {
         updateGridData()
     })
-   
-    // Link the DMA-PRIME tab to map panel
-    var navBar = document.getElementById("nav-bar")
-    navBar.addEventListener("sl-tab-show", (event) => {
-        if (event.detail.name == "main") {
-            navBar.show("map")
-        }
-    })
 
     // toggle tooltip labels
     document.addEventListener("keyup", function(e) {

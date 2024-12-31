@@ -86,7 +86,22 @@
     /* Vertical bar that splits the panel into sidebar and content */
     cursor: unset;
   }
-  
+
+  /* For link to links page */
+  #main-tab::part(base) {
+    opacity: 1;
+    cursor: pointer;
+  }
+
+  #main-tab-link, #main-tab-link:visited {
+    text-decoration: none;
+    color: var(--sl-color-neutral-600);
+  }
+
+  #main-tab-link:hover {
+    text-decoration: none;
+    color: var(--sl-color-primary-600);
+  }
 
   /* The following is from  https://dev.to/lennythedev/css-gotcha-how-to-fill-page-with-a-div-270j*/
   /* override browser default */
