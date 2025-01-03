@@ -61,7 +61,8 @@ function mapInitialVisualization() {
                 .attr("pointer-events", "none")
             .append("xhtml:div")
             .attr("id", `map-tooltip-div`)
-
+            .attr("class", 'tooltip-div')
+            
         ttpTitle = ttpDiv.append("p")
             .attr("class", "tooltip-title")
         ttpTitle.append("span")
@@ -364,4 +365,3 @@ function updateMapData() {
     })  
 
 }
-

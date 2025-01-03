@@ -54,6 +54,7 @@ function gridInitialVisualization() {
             gridTTP = gridTTPContainer.append("div")
                 .attr("slot", "content")
                 .attr("id", `grid-${zcta}-tooltip`)
+                .attr("class", `tooltip-div`)
 
             ttpTitle = gridTTP.append("p") // tooltip title
                 .attr("class", "tooltip-title")

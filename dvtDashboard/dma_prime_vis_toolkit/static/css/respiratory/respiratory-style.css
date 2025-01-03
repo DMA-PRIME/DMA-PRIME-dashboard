@@ -34,13 +34,13 @@ p.tooltip-title {
 .tooltip-prediction-separator {
   /* line indicating the difference between prediction and reality */
   stroke-width: 1.5;
-  stroke: white;
+  stroke: var(--sl-color-neutral-1000);
 }
 
 .tooltip-prediction-highlighter {
   /* grey rectangle that highlights the prediction in the tooltip */
   opacity: .5;
-  fill: var(--sl-color-gray-600);
+  fill: var(--sl-color-neutral-600);
 }
 
 .aggregation-vis {

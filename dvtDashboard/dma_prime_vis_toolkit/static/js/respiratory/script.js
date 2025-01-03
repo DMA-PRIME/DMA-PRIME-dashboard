@@ -43,6 +43,39 @@ margins = {
 var ttpHistoryWidthPercentage = 3/4
 
 var styleSheet = new CSSStyleSheet()
+
+styleSheet.insertRule(`
+    .tooltip-div {
+        /* tooltip's containing div */
+        background-color: hsla(${getComputedStyle(document.head).getPropertyValue("--sl-color-neutral-0").replace("hsl(", "").replace(")", "")}, 0.925);
+    }`
+    ,0)   
+
+d3.selectAll('sl-tooltip').nodes().forEach((n, i) => {
+    d3.select(n.shadowRoot).select("div[part='body']")
+    .style('background-color', `hsla(${getComputedStyle(document.head).getPropertyValue("--sl-color-neutral-1000").replace("hsl(", "").replace(")", "")}, 0.925)`)
+})
+
+addEventListener("keydown", (event) => {
+if (event.key == "m") {
+    function waitForChange() {
+        if(changed != true) {
+            window.setTimeout(waitForChange, 10);
+        } else {
+            styleSheet.deleteRule(0)
+            styleSheet.insertRule(`
+                .tooltip-div {
+                    /* tooltip's containing div */
+                    background-color: hsla(${getComputedStyle(document.head).getPropertyValue("--sl-color-neutral-0").replace("hsl(", "").replace(")", "")}, 0.925);
+                }`
+                ,0)
+            changed = false
+        }
+    }
+    waitForChange()
+}
+});
+
 document.adoptedStyleSheets = [styleSheet]
 
 // other info
@@ -686,10 +719,13 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
     xAxisHistorical // historical
         .attr("transform", `translate(0,${ttpHeight - ttpMargins.bottom})`)
         .call(d3.axisBottom(xScaleHistorical).tickSize(4).tickFormat(d3.timeFormat("%b %Y")))
-        .selectAll("text")  
+        .selectAll("text") 
         .attr("class", "tooltip-label")
         .style("text-anchor", "end")
+        .attr("fill", "var(--sl-color-neutral-1000)")
         .attr("transform", "rotate(-40)");
+    xAxisHistorical.selectAll("path, line")
+        .attr("stroke", "var(--sl-color-neutral-1000)")
 
     xAxisPrediction //prediction
         .attr("transform", `translate(0,${ttpHeight - ttpMargins.bottom})`)
@@ -697,13 +733,16 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
         .selectAll("text")  
         .attr("class", "tooltip-label")
         .style("text-anchor", "end")
+        .attr("fill", "var(--sl-color-neutral-1000)")
         .attr("transform", "rotate(-40)");
+    xAxisPrediction.selectAll("path, line")
+        .attr("stroke", "var(--sl-color-neutral-1000)")
 
     // display y-axis on the left
     yAxis.append("text")
         .attr("transform", `translate(${1.5*em},${yScale(d3.mean(yScale.domain()))})rotate(-90)`)
         .attr("text-anchor", "middle")
-        .attr("fill", "currentColor")
+        .attr("fill", "var(--sl-color-neutral-1000)")
         .attr("font-size", "var(--sl-font-size-small)")
         .text("Hospitalizations")
 
@@ -712,6 +751,9 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
         .call(d3.axisLeft(yScale).ticks(5).tickSize(4))
         .selectAll("text")
         .attr("class", "tooltip-label")
+        .attr("fill", "var(--sl-color-neutral-1000)")
+    yAxis.selectAll("path, line")
+        .attr("stroke", "var(--sl-color-neutral-1000)")
 
     temp.remove()
 

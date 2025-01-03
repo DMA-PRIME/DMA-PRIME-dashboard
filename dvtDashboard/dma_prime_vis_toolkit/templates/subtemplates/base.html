@@ -8,9 +8,20 @@
   <title>{% block title %}DMA-PRIME{% endblock %}</title>
 
   <!-- Shoelace -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/light.css" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/dark.css" />
   <script type="module"
-    src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/shoelace-autoloader.js"></script>
+    src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/shoelace-autoloader.js">
+  </script>
+  <script>
+    document.documentElement.classList.remove('sl-theme-light')
+    document.documentElement.classList.remove('sl-theme-dark')
+    if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('sl-theme-dark')
+    } else {
+      document.documentElement.classList.add('sl-theme-light')
+    }
+  </script>
 
   <!-- D3 -->
   <script src="https://d3js.org/d3.v7.min.js"></script>
@@ -30,6 +41,19 @@
   <!-- Top nav bar -->
   <script>
     var em = parseFloat(getComputedStyle(document.head).fontSize)
+    var changed = false
+    addEventListener("keydown", (event) => {
+      if (event.key == "m") {
+        if (Array.from(document.documentElement.classList).includes('sl-theme-light')) {
+          document.documentElement.classList.remove('sl-theme-light')
+          document.documentElement.classList.add('sl-theme-dark')
+        } else {
+          document.documentElement.classList.remove('sl-theme-dark')
+          document.documentElement.classList.add('sl-theme-light')
+        }
+        changed = true
+      }
+    });
   </script>
   <sl-tab-group id="nav-bar">
     <sl-tab id="main-tab" slot="nav" panel="main" disabled><a href="{{ url_for('index') }}" id="main-tab-link">DMA-PRIME</a></sl-tab>
