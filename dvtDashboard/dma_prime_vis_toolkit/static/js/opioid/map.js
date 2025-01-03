@@ -40,21 +40,10 @@ const deckgl = new DeckGL({
 //     "divId": "help"
 // }));
 
-function mapSetup() {
-    d3.json(`/data/hospitalizations/opioid`).then(function (zctaData) {
-        features = zctaData.features
-        d3.select(mapVariable1Selector).selectAll("sl-option")
-            .each(function(el) {
-                column = this.value
-                d3.select(mapFiltersContainer).append("svg")
-                    .attr("id", `map-${column}-filter`)
-                    .attr("class", "map-histogram-filter")
-                updateHistogram(column)
-            })
-    })
+// function mapSetup() {
+//     redraw();
     
-    redraw();
-}
+// }
 
 function getDataFromFeatures(feature, column, year, rate) {
     columnData = feature.properties.data[column]
@@ -70,59 +59,76 @@ function getDataFromFeatures(feature, column, year, rate) {
       
 }
 
-function redraw(highlightIndex=-1) {
-    hIndex = highlightIndex == null ? deckgl.layerManager.layers[0].props.highlightedObjectIndex : highlightIndex
-    d3.json(`/data/hospitalizations/opioid`).then(function (zctaData) {
-        features = zctaData.features
+function redraw(first=false) {
+    deckgl.setProps({
+        layers: [
+            new GeoJsonLayer({
+                id: 'opioid_choropleth',
+                depthTest: false,
+                data: d3.json(`/data/hospitalizations/opioid`),
+                onDataLoad: (data, context) => {
+                    zctaData = data
+                    zctaFeatures = data.features
 
-        var1Data = d3.map(features, d => getDataFromFeatures(d, mapVariable1Selector.value, mapYearSelector.value, mapRateSwitch.value=="rate"))
-        var2Data = d3.map(features, d => getDataFromFeatures(d, mapVariable2Selector.value, mapYearSelector.value, mapRateSwitch.value=="rate"))
+                    if (selectedZCTA) {
+                        currIndex = zctaFeatures.findIndex(d => {return selectedZCTA === d})
+                        zctaFeatures.splice(currIndex, 1)
+                        zctaFeatures.push(selectedZCTA)
+                    }
 
-        if (mapVariable2Selector.value == "none") {
-            univariateColormap = createUnivariateColormap(d3.min(var1Data), d3.max(var1Data))
-        } else {
-            bivariateColormap = createBivariateColormap(d3.min(var1Data), d3.max(var1Data), d3.min(var2Data), d3.max(var2Data))
-        }
+                    var1Data = d3.map(zctaFeatures, d => getDataFromFeatures(d, mapVariable1Selector.value, mapYearSelector.value, mapRateSwitch.value=="rate"))
+                    var2Data = d3.map(zctaFeatures, d => getDataFromFeatures(d, mapVariable2Selector.value, mapYearSelector.value, mapRateSwitch.value=="rate"))
 
-        drawLegend(d3.min(var1Data), d3.max(var1Data), d3.min(var2Data), d3.max(var2Data))
-    }).then(() => {
-        deckgl.setProps({
-            layers: [
-                new GeoJsonLayer({
-                    id: 'opioid_choropleth',
-                    data: d3.json(`/data/hospitalizations/opioid`), //'../../static/data/opioid_zcta_hospitalization_data.json',
-                    stroked: true,
-                    filled: true,
-                    pointType: 'circle+text',
-                    pickable: true,
-                    onClick: function(info, event) {redraw(info.index); mobileClinicClick(info.object)},
-                    getFillColor: d => getColor(d),
-                    highlightedObjectIndex: hIndex,
-                    highlightColor: [255, 255, 255, 0],
-                    lineWidthMinPixels: .5,
-                    getLineWidth: (d, i) => {return 20 * (i.index == hIndex ? 50 :1)},
-                    getLineColor: (d, i) => i.index == hIndex ? [255, 255, 255] : [0, 0, 0],
-                    getPointRadius: 4,
-                    getTextSize: 12,
-                    updateTriggers: {
-                        getFillColor: { dataVersion }
-                    },
-                }),
-                new IconLayer({
-                    id: 'hospital-and-cdap',
-                    data: d3.csv('/data/health-care-facility/all'),
-                    iconAtlas: '/data/icon-pack/png',
-                    iconMapping: '/data/icon-pack/json',
-                    getPosition: d => {return [+d.longitude, +d.latitude]},
-                    getIcon: d => {if(checked.includes(d.type)) return d.type},
-                    getSize: 15,
-                    pickable: true,
-                    parameters: {
-                        depthTest: false
-                    },
-                })
-            ]
-        })
+                    if (mapVariable2Selector.value == "none") {
+                        univariateColormap = createUnivariateColormap(d3.min(var1Data), d3.max(var1Data))
+                    } else {
+                        bivariateColormap = createBivariateColormap(d3.min(var1Data), d3.max(var1Data), d3.min(var2Data), d3.max(var2Data))
+                    }
+
+                    drawLegend(d3.min(var1Data), d3.max(var1Data), d3.min(var2Data), d3.max(var2Data))
+
+                    if (first == true) {
+                        d3.select(mapVariable1Selector).selectAll("sl-option")
+                        .each(function(el) {
+                            var column = this.value
+                            d3.select(mapFiltersContainer).append("svg")
+                                .attr("id", `map-${column}-filter`)
+                                .attr("class", "map-histogram-filter")
+                            updateHistogram(column)
+                        })
+                    }
+                },
+                stroked: true,
+                filled: true,
+                pointType: 'circle+text',
+                pickable: true,
+                onClick: function(info, event) {mobileClinicClick(info.object); redraw(info.index);},
+                getFillColor: d => getColor(d),
+                highlightColor: [255, 255, 255, 0],
+                lineWidthMinPixels: .5,
+                getLineWidth: (d, i) => {return 20 * ( d == selectedZCTA ? 50 :1)},
+                getLineColor: (d, i) => {return d === selectedZCTA ? [255, 255, 255] : [0, 0, 0]},
+                getPointRadius: 4,
+                getTextSize: 12,
+                updateTriggers: {
+                    getFillColor: { dataVersion },
+                    getLineColor: { dataVersion }
+                },
+            }),
+            new IconLayer({
+                id: 'hospital-and-cdap',
+                data: d3.csv('/data/health-care-facility/all'),
+                iconAtlas: '/data/icon-pack/png',
+                iconMapping: '/data/icon-pack/json',
+                getPosition: d => {return [+d.longitude, +d.latitude]},
+                getIcon: d => {if(checked.includes(d.type)) return d.type},
+                getSize: 15,
+                pickable: true,
+                parameters: {
+                    depthTest: false
+                },
+            })
+        ]
     })
 }
 
@@ -291,7 +297,7 @@ function updateHistogram(column) {
     svgHeight = svgElement.clientHeight
     svgWidth = svgElement.clientWidth
 
-    data = d3.map(features, d => getDataFromFeatures(d, column, mapYearSelector.value, mapRateSwitch.value=="rate"))
+    data = d3.map(zctaFeatures, d => getDataFromFeatures(d, column, mapYearSelector.value, mapRateSwitch.value=="rate"))
     bins = d3.bin()(data) // if we want, we could change data to a selector of properties
 
     x = d3.scaleLinear().domain([bins[0].x0, bins[bins.length-1].x1]).range([2*em, svgWidth-em])
@@ -356,7 +362,7 @@ function updateHistogram(column) {
             d3.select(`#map-${column}-filter-right`).text("")
         }
         dataVersion++
-        redraw(null)
+        redraw()
     })
     svg.append("g").attr("id", `map-${column}-filter-brush`).call(brush)
 

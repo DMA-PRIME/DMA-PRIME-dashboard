@@ -24,7 +24,7 @@ mapRateSwitch.addEventListener("sl-change", () => {
             thresholds[column] = xScales[column].domain()
         }
     })
-    redraw(null)
+    redraw()
 })
 
 mapFilterResetButton.addEventListener("click", () => {
@@ -55,17 +55,33 @@ mapYearSelector.addEventListener("sl-change", function(event) {
     if (selectedZCTA) {
         mobileClinicClick(selectedZCTA)
     }
-    redraw(null)
+    redraw()
 })
 
 mapVariable1Selector.addEventListener("sl-change", function(event) {
     dataVersion++
-    redraw(null)
+    redraw()
 })
 
 mapVariable2Selector.addEventListener("sl-change", function(event) {
     dataVersion++
-    redraw(null)
+    redraw()
+})
+
+mapZctaCountySearch.addEventListener("sl-change", function(event) {
+    zctaValue = parseInt(mapZctaCountySearch.value)
+
+    if (zctaValue) {
+        mobileClinicClick(zctaFeatures.find(d => zctaValue == d.properties.ZCTA))
+        redraw()
+    } else {
+
+    }
+    searchValue = mapZctaCountySearch.value
+})
+
+mapZctaCountySearch.addEventListener("sl-clear", function(event) {
+
 })
 
 // adding/removing icons
@@ -77,7 +93,7 @@ hospitalIconsToggle.addEventListener("sl-change", () => {
         checked = checked.filter(check => check !== "hospital")
     }
     dataVersion++
-    redraw(null)
+    redraw()
 })
 cdapIconsToggle.addEventListener("sl-change", () => {
     // toggle cdap icons
@@ -87,7 +103,7 @@ cdapIconsToggle.addEventListener("sl-change", () => {
         checked = checked.filter(check => check !== "CDAP")
     }
     dataVersion++
-    redraw(null)
+    redraw()
 })
 mobileClinicIconsToggle.addEventListener("sl-change", () => {
     // toggle mhc icons
@@ -97,7 +113,7 @@ mobileClinicIconsToggle.addEventListener("sl-change", () => {
         checked = checked.filter(check => check !== "mobile_health_clinic")
     }
     dataVersion++
-    redraw(null)
+    redraw()
 })
 communityPartnerIconsToggle.addEventListener("sl-change", () => {
     // toggle community partner icons
@@ -107,7 +123,7 @@ communityPartnerIconsToggle.addEventListener("sl-change", () => {
         checked = checked.filter(check => check !== "community_partner")
     }
     dataVersion++
-    redraw(null)
+    redraw()
 })
 
 // zcta details panel
@@ -119,7 +135,11 @@ mapSecondarySidebarClose.addEventListener("sl-focus", function(event) {
 })
 
 function mobileClinicClick(object) {
+    if (object === undefined) {
+        return
+    }
     selectedZCTA = object
+    
     mapAndMinorSidebar.setAttribute("position", 80)
     mobileClinicInfoPanel.setAttribute("active", "")
 
@@ -131,6 +151,8 @@ function mobileClinicClick(object) {
     mapSecondarySidebarSVI.innerHTML = formatZctaData(object.properties.data["SVI"][mapYearSelector.value], d3.format(".0%"))
     mapSecondarySidebarProportionUninsured.innerHTML = formatZctaData(object.properties.data["proportion_uninsured"][mapYearSelector.value], d3.format(".0%"))
     mapSecondarySidebarMedianIncome.innerHTML = formatZctaData(object.properties.data["median_income"][mapYearSelector.value], d3.format("$,"))
+    
+    dataVersion++
 }
 
 function formatRateData(value, population) {

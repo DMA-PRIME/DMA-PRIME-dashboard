@@ -69,6 +69,14 @@
     row-gap: var(--sl-spacing-x-small);
     padding: var(--sl-spacing-large);
   }
+
+  .sidebar-container p {
+    font-size: var(--sl-font-size-small);
+  }
+
+  .sidebar-container sl-option::part(label) {
+    font-size: var(--sl-font-size-small);
+  }
   
   .hidden-children > * {
     /* Mainly used for the sidebar when closed */
