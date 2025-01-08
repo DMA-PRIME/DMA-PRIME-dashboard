@@ -65,11 +65,11 @@ sl-details.sidebar-detail-container::part(content) {
     font-size: var(--sl-font-size-small);
     text-align: center;
 }
-
-.map-secondary-sidebar-label {
-    font-size: var(--sl-font-size-medium);
+.map-secondary-sidebar-value::part(textarea) {
+    width: calc(100% - 2 * var(--sl-input-spacing-small));
+    white-space: nowrap;
 }
 
-.map-secondary-sidebar-value {
-    font-size: var(--sl-font-size-small);
+.map-secondary-sidebar-value::part(base) {
+    cursor: auto;
 }

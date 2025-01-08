@@ -81,23 +81,29 @@
         <sl-tab-group id="map-secondary-sidebar-group">
             <sl-icon-button slot="nav" name="x-lg" id="map-secondary-sidebar-close"></sl-icon-button>
             <sl-tab-panel id="secondary-sidebar-blank-panel" name="blank"></sl-tab-panel>
-            <sl-tab-panel id="zcta-opioid-info-panel" name="info">
+            <sl-tab-panel id="zcta-opioid-info-panel" name="info" class="sidebar-container">
                 <p id="map-secondary-sidebar-zcta-name" ></p>
                 <p id="map-secondary-sidebar-zcta-county" ></p>
                 <sl-divider></sl-divider>
-                <p class="map-secondary-sidebar-label"><u>Hospitalizations</u></p>
-                <p id="map-secondary-sidebar-hospitalizations" class="map-secondary-sidebar-value"></p>
-                <p class="map-secondary-sidebar-label"><u>Deaths</u></p>
-                <p id="map-secondary-sidebar-deaths" class="map-secondary-sidebar-value"></p>
+                <sl-textarea id="map-secondary-sidebar-hospitalizations" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Hospitalizations</p>
+                </sl-textarea>
+                <sl-textarea id="map-secondary-sidebar-deaths" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Deaths</p>
+                </sl-textarea>
                 <sl-divider></sl-divider>
-                <p class="map-secondary-sidebar-label"><u>Population</u></p>
-                <p id="map-secondary-sidebar-population" class="map-secondary-sidebar-value"></p>
-                <p class="map-secondary-sidebar-label"><u>Social Vulnerability Index</u></p>
-                <p id="map-secondary-sidebar-SVI" class="map-secondary-sidebar-value"></p>
-                <p class="map-secondary-sidebar-label"><u>Proportion of Uninsured</u></p>
-                <p id="map-secondary-sidebar-proportion-uninsured" class="map-secondary-sidebar-value"></p>
-                <p class="map-secondary-sidebar-label"><u>Median Income</u></p>
-                <p id="map-secondary-sidebar-median-income" class="map-secondary-sidebar-value"></p>
+                <sl-textarea id="map-secondary-sidebar-population" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Population</p>
+                </sl-textarea>
+                <sl-textarea id="map-secondary-sidebar-SVI" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Social Vulnerability Index</p>
+                </sl-textarea>
+                <sl-textarea id="map-secondary-sidebar-proportion-uninsured" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Proportion of Uninsured</p>
+                </sl-textarea>
+                <sl-textarea id="map-secondary-sidebar-median-income" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Median Income</p>
+                </sl-textarea>
             </sl-tab-panel>
         </sl-tab-group>
     </div>

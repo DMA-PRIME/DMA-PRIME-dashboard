@@ -420,12 +420,12 @@ function mobileClinicClick(object) {
 
     mapSecondarySidebarZctaName.innerHTML = `ZCTA: ${object.properties.ZCTA}`
     mapSecondarySidebarZctaCounty.innerHTML = `County: ${object.properties.county == "NaN" ? "Unknown" : capitalizeFirst(object.properties.county)}`
-    mapSecondarySidebarHospitalizations.innerHTML = formatZctaData(object.properties.data["hospitalizations"][mapYearSelector.value], d => formatRateData(d, object.properties.population))
-    mapSecondarySidebarDeaths.innerHTML = formatZctaData(object.properties.data["deaths"][mapYearSelector.value], d => formatRateData(d, object.properties.population))
-    mapSecondarySidebarPopulation.innerHTML = formatZctaData(object.properties.population, formatInt)
-    mapSecondarySidebarSVI.innerHTML = formatZctaData(object.properties.data["SVI"][mapYearSelector.value], d3.format(".0%"))
-    mapSecondarySidebarProportionUninsured.innerHTML = formatZctaData(object.properties.data["proportion_uninsured"][mapYearSelector.value], d3.format(".0%"))
-    mapSecondarySidebarMedianIncome.innerHTML = formatZctaData(object.properties.data["median_income"][mapYearSelector.value], d3.format("$,"))
+    mapSecondarySidebarHospitalizations.value = formatZctaData(object.properties.data["hospitalizations"][mapYearSelector.value], d => formatRateData(d, object.properties.population))
+    mapSecondarySidebarDeaths.value = formatZctaData(object.properties.data["deaths"][mapYearSelector.value], d => formatRateData(d, object.properties.population))
+    mapSecondarySidebarPopulation.value = formatZctaData(object.properties.population, formatInt)
+    mapSecondarySidebarSVI.value = formatZctaData(object.properties.data["SVI"][mapYearSelector.value], d3.format(".0%"))
+    mapSecondarySidebarProportionUninsured.value = formatZctaData(object.properties.data["proportion_uninsured"][mapYearSelector.value], d3.format(".0%"))
+    mapSecondarySidebarMedianIncome.value = formatZctaData(object.properties.data["median_income"][mapYearSelector.value], d3.format("$,"))
     
     dataVersion++
 }
