@@ -1,4 +1,4 @@
-import { map, deckOverlay, brushes, thresholds, xScales, selectedZCTA, zctaFeatures, redraw, updateHistogram, mobileClinicClick } from "/static/js/opioid/map.js"
+import { map, brushes, thresholds, xScales, selectedZCTA, selectedCounty, zctaFeatures, countyData, redraw, updateHistogram, mobileClinicClick } from "/static/js/opioid/map.js"
 
 mapResetButton.addEventListener("click", () => {
     // reset map zoom and center
@@ -7,7 +7,9 @@ mapResetButton.addEventListener("click", () => {
         zoom: 7,
         essential: true // this animation is considered essential with respect to prefers-reduced-motion
     })
-    
+    selectedZCTA.zcta = undefined
+    selectedCounty.county = undefined
+    redraw()
 })
 
 mapRateSwitch.addEventListener("sl-change", () => {
@@ -71,14 +73,14 @@ mapZctaCountySearch.addEventListener("sl-change", function(event) {
     if (zctaValue) {
         mobileClinicClick(zctaFeatures.find(d => zctaValue == d.properties.ZCTA))
         redraw()
-    } else {
-
+    } else if(mapZctaCountySearch.value) {
+        var county = countyData.features.find(d => mapZctaCountySearch.value.toLowerCase() == d.properties.NAME.toLowerCase())
+        console.log(county)
+        if (county) {
+            selectedCounty.county = county
+            redraw()
+        }
     }
-    var searchValue = mapZctaCountySearch.value
-})
-
-mapZctaCountySearch.addEventListener("sl-clear", function(event) {
-
 })
 
 // adding/removing icons

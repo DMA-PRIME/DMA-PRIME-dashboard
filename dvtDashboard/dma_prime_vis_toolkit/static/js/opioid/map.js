@@ -2,7 +2,7 @@
 
 const { GeoJsonLayer, IconLayer, MapboxOverlay } = deck;
 
-export { map, deckOverlay, brushes, thresholds, xScales, selectedZCTA, zctaFeatures, redraw, updateHistogram, mobileClinicClick }
+export { map, deckOverlay, brushes, thresholds, xScales, selectedZCTA, selectedCounty, zctaFeatures, countyData, redraw, updateHistogram, mobileClinicClick }
 
 var brushes = {}
 var thresholds = {}
@@ -18,14 +18,14 @@ const variableOptions = {
 
 var zctaData = await d3.json(`/data/hospitalizations/opioid`)
 var zctaFeatures = undefined
-var countyFeatures = undefined
+var countyData = await d3.json(`/data/map/county`)
 
 let selectedZCTA = {
     zcta: undefined,
-    index: -1
 }
-var selectedCounty = undefined
-var searchValue = undefined
+let selectedCounty = {
+    county: undefined,
+}
 
 const map = new maplibregl.Map({
     container: "map-div",
@@ -79,9 +79,6 @@ function redraw(first=false) {
                         zctaFeatures.push(selectedZCTA.zcta)
                         var currIndex = zctaFeatures.findIndex(d => {return selectedZCTA.zcta.properties.ZCTA == d.properties.ZCTA})
                         zctaFeatures.splice(currIndex, 1)
-                        selectedZCTA.index = zctaFeatures.length - 1
-                    } else {
-                        selectedZCTA.index = -1
                     }
                     drawLegend()
                     if (first == true) {
@@ -114,6 +111,33 @@ function redraw(first=false) {
                     getFillColor: { dataVersion },
                     getLineWidth: selectedZCTA["zcta"],
                     getLineColor: selectedZCTA["zcta"],
+                },
+            }),
+            new GeoJsonLayer({
+                id: 'opioid_county',
+                depthTest: false,
+                data: d3.json(`/data/map/county`),
+                onDataLoad: (data, context) => {          
+                    countyData = data
+                                        
+                    if (selectedCounty.county) {
+                        countyData.features.push(selectedCounty.county)
+                        var currIndex = countyData.features.findIndex(d => {return selectedCounty.county.properties.NAME == d.properties.NAME})
+                        countyData.features.splice(currIndex, 1)
+                    }
+                },
+                stroked: true,
+                filled: false,
+                pointType: 'circle+text',
+                pickable: false,
+                lineWidthMinPixels: .5,
+                getLineWidth: (d, i) => {return 20 * (d == selectedCounty.county ? 50 :1)},
+                getLineColor: (d, i) => {return d == selectedCounty.county ? [255, 255, 255] : [128, 128, 128]},
+                getPointRadius: 4,
+                getTextSize: 12,
+                updateTriggers: {
+                    getLineWidth: selectedCounty["county"],
+                    getLineColor: selectedCounty["county"],
                 },
             }),
             new IconLayer({
