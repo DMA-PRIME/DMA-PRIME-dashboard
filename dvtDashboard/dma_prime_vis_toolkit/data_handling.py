@@ -32,6 +32,13 @@ def getHospitalizations(disease='covid-19'):
     # hospitalization data based on disease
     return send_file(f'{current_app.config['DATADIR']}/processed/{disease}_zcta_hospitalization_data.json')
 
+@bp.route('/deckgl-respiratory', methods=['GET', 'POST'])
+@login_required
+def getRespiratoryHospitalizations(disease='covid-19'):
+    # hospitalization data based on disease
+    return send_file(f'{current_app.config['DATADIR']}/processed/deckgl_respiratory_zcta_hospitalization_data.json')
+
+
 @bp.route('/mobile-health-clinic-events', methods=['GET', 'POST'])
 @login_required
 def getMobileHealthClinicEvents():
