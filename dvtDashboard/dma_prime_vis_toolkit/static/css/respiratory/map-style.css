@@ -1,0 +1,49 @@
+
+/* map items */
+.map-icons-toggle::part(control--checked) {
+    /* Hospital icons toggle color is grey */
+    border-color: var(--sl-color-neutral-400);
+    background-color: var(--sl-color-neutral-400);
+}
+
+path.map-county {
+    /* SC counties */
+    stroke-width: 1;
+    stroke: black;
+    fill: var(--sl-color-gray-300);
+}
+
+path.map-zcta {
+    /* ZCTA map items */
+    stroke-width: 0.2;
+    stroke: black;
+    stroke-linejoin: round;
+}
+
+/* legend components */
+.map-legend-background {
+    /* legend backgrounds */
+    fill: var(--sl-color-neutral-50);
+    fill-opacity: .5;
+}
+
+.map-legend text {
+    /* legend text */
+    font-size: var(--sl-font-size-x-small);
+}
+
+#map-legend-title {
+    /* titles for the legends */
+    font-size: var(--sl-font-size-medium);
+    text-anchor: middle;
+    fill: currentColor;
+}
+
+/* tooltip */
+#map-tooltip-div {
+    /* map tooltip's containing div */
+    display: none;
+    border-width: var(--sl-border-radius-small);
+    border-style: solid;
+    border-radius: .25em;
+}

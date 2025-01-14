@@ -1,0 +1,159 @@
+{% extends "subtemplates/panel.html" %}
+
+{% block options %}
+<div id="map-options" class="sidebar-container">
+    <!-- reset zoom and location -->
+    <sl-button pill id="map-reset-button" class="center-self">Reset Map</sl-button>
+    <sl-divider class="options-divider"></sl-divider>
+
+    <!-- count vs rate switch -->
+    <sl-radio-group value="count" id="map-rate-switch" class="center-self" size="small">
+        <sl-tooltip content="Count of hospitalizations">
+            <sl-radio-button pill value="count">Count</sl-radio-button>
+        </sl-tooltip>
+        <sl-tooltip content="Hospitalizations per 1000 people">
+            <sl-radio-button pill value="rate">Rate</sl-radio-button>
+        </sl-tooltip>
+    </sl-radio-group>
+
+    <!-- Select year of analysis -->
+    <sl-select id="map-year-selector" value="cumulative" size="small">
+        <p slot="label">Select a year</p>
+        <sl-option value="cumulative">Cumulative</sl-option>
+        <sl-option value="2020">2020</sl-option>
+        <sl-option value="2021">2021</sl-option>
+        <sl-option value="2022">2022</sl-option>
+        <sl-option value="2023">2023</sl-option>
+        <sl-option value="2024">2024</sl-option>
+        <sl-option value="2025">2025</sl-option>
+    </sl-select>
+
+    <!-- Select variables -->
+    <sl-select id="map-variable-1-selector" value="hospitalizations" size="small">
+        <p slot="label">Variable 1</p>
+        <sl-option value="hospitalizations">Hospitalizations (2020-2023)</sl-option>
+        <sl-option value="deaths">Deaths (2020-2022)</sl-option>
+        <sl-option value="SVI">Social Vulnerability Index (SVI)</sl-option>
+        <sl-option value="proportion_uninsured">Proportion Uninsured</sl-option>
+        <sl-option value="median_income">Median Income</sl-option>
+    </sl-select>
+
+    <sl-select id="map-variable-2-selector" value="none" size="small">
+        <p slot="label">Variable 2</p>
+        <sl-option value="none">None</sl-option>
+        <sl-option value="hospitalizations">Hospitalizations (2020-2023)</sl-option>
+        <sl-option value="deaths">Deaths (2020-2022)</sl-option>
+        <sl-option value="SVI">Social Vulnerability Index (SVI)</sl-option>
+        <sl-option value="proportion_uninsured">Proportion Uninsured</sl-option>
+        <sl-option value="median_income">Median Income</sl-option>
+    </sl-select>
+
+    <sl-input id="map-zcta-county-search" size="small" clearable>
+        <p slot="label">ZCTA/County Search</p>
+    </sl-input>
+
+    <sl-details id="map-health-care-icons-container" class="sidebar-detail-container" open>
+        <p slot="summary">Health Care Icons</p>
+        <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle" size="small">Hospitals</sl-checkbox>
+        <sl-checkbox id="map-options-cdap-toggle" class="map-icons-toggle" size="small">Center for Drug & Alcohol Program</sl-checkbox>
+        <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle" size="small">Mobile Health Clinics</sl-checkbox>
+        <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-icons-toggle" size="small">Community Partners</sl-checkbox>
+    </sl-details>
+
+    <sl-details id="map-filters-container" class="sidebar-detail-container" open>
+        <p slot="summary">Filters</p>
+        <sl-button pill id="map-filter-reset-button" class="center-self" size="small">Clear Filters</sl-button>
+    </sl-details>
+</div>
+
+{% endblock %}
+
+{% block contents %}
+<sl-split-panel position="100" disabled id="map-and-minor-sidebar" class="fill-height main-content-split-panel">
+    <div slot="start">
+        <div class="fill-width fill-height" id="map-div">
+        </div>
+        <div id="choropleth-legend" style="position:absolute; bottom: 0; left:0;">
+        <svg id="choropleth-legend-svg"></svg>
+        </div>
+    </div>
+    <div slot="end">
+        <sl-tab-group id="map-secondary-sidebar-group">
+            <sl-icon-button slot="nav" name="x-lg" id="map-secondary-sidebar-close"></sl-icon-button>
+            <sl-tab-panel id="secondary-sidebar-blank-panel" name="blank"></sl-tab-panel>
+            <sl-tab-panel id="zcta-opioid-info-panel" name="info" class="sidebar-container">
+                <p id="map-secondary-sidebar-zcta-name" ></p>
+                <p id="map-secondary-sidebar-zcta-county" ></p>
+                <sl-divider></sl-divider>
+                <sl-textarea id="map-secondary-sidebar-hospitalizations" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Hospitalizations</p>
+                </sl-textarea>
+                <sl-textarea id="map-secondary-sidebar-deaths" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Deaths</p>
+                </sl-textarea>
+                <sl-divider></sl-divider>
+                <sl-textarea id="map-secondary-sidebar-population" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Population</p>
+                </sl-textarea>
+                <sl-textarea id="map-secondary-sidebar-SVI" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Social Vulnerability Index</p>
+                </sl-textarea>
+                <sl-textarea id="map-secondary-sidebar-proportion-uninsured" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Proportion of Uninsured</p>
+                </sl-textarea>
+                <sl-textarea id="map-secondary-sidebar-median-income" size="small" rows="1" resize="none" disabled class="map-secondary-sidebar-value">
+                    <p slot="label">Median Income</p>
+                </sl-textarea>
+            </sl-tab-panel>
+        </sl-tab-group>
+    </div>
+</sl-split-panel>
+
+{% endblock %}
+
+{% block scripts %}
+<script>    
+    mapResetButton = document.getElementById("map-reset-button")
+
+    mapRateSwitch = document.getElementById("map-rate-switch")
+
+    mapYearSelector = document.getElementById("map-year-selector")
+    mapVariable1Selector = document.getElementById("map-variable-1-selector")
+    mapVariable2Selector = document.getElementById("map-variable-2-selector")
+    mapFiltersContainer = document.getElementById("map-filters-container")
+    mapFilterResetButton = document.getElementById("map-filter-reset-button")
+    
+    mapZctaCountySearch = document.getElementById("map-zcta-county-search")
+
+    hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
+    cdapIconsToggle = document.getElementById("map-options-cdap-toggle")
+    mobileClinicIconsToggle = document.getElementById("map-options-mobile-clinic-icons-toggle")
+    communityPartnerIconsToggle = document.getElementById("map-options-community-partner-icons-toggle")
+    checked = []
+
+    mapAndMinorSidebar = document.getElementById("map-and-minor-sidebar")
+    mapSecondarySidebarGroup = document.getElementById("map-secondary-sidebar-group")
+    mapSecondarySidebarClose = document.getElementById("map-secondary-sidebar-close")
+    mobileClinicInfoPanel = document.getElementById("zcta-opioid-info-panel")
+
+    mapSecondarySidebarZctaName = document.getElementById("map-secondary-sidebar-zcta-name")
+    mapSecondarySidebarZctaCounty = document.getElementById("map-secondary-sidebar-zcta-county")
+    mapSecondarySidebarHospitalizations = document.getElementById("map-secondary-sidebar-hospitalizations")
+    mapSecondarySidebarDeaths = document.getElementById("map-secondary-sidebar-deaths")
+    mapSecondarySidebarPopulation = document.getElementById("map-secondary-sidebar-population")
+    mapSecondarySidebarSVI = document.getElementById("map-secondary-sidebar-SVI")
+    mapSecondarySidebarProportionUninsured = document.getElementById("map-secondary-sidebar-proportion-uninsured")
+    mapSecondarySidebarMedianIncome = document.getElementById("map-secondary-sidebar-median-income")
+
+    mapDiv = document.getElementById("map-div")
+
+    choroplethLegendSVG = document.getElementById("choropleth-legend-svg")
+
+    set{{panel.name}}Panel()
+</script>
+
+<script src="{{ url_for('static', filename='js/opioid/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/opioid/map.js') }}" type="module"></script>
+<script src="{{ url_for('static', filename='js/opioid/map-interactions.js') }}" type="module"></script>
+
+{% endblock %}
