@@ -79,7 +79,7 @@ def create_app(development=False, dataDir=None):
                 'html': 'respiratory/deckgl-respiratory-map-panel.html'
             },
         ]
-        return render_template('respiratory/respiratory-base.html', panels=panels, diseases=list(files.keys()))
+        return render_template('respiratory/respiratory-base.html', panels=panels)
     
     @app.route('/mobile-health-clinics')
     @login_required

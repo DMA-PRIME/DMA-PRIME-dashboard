@@ -5,6 +5,7 @@
   <!-- reset map button (zoom & zcta selection) -->
   <sl-button pill id="map-reset-button" class="center-self">Reset Map</sl-button>
   <sl-divider class="options-divider"></sl-divider>
+  <sl-checkbox id="map-show-all-events-toggle">Show all events</sl-checkbox>
 
 </div>
 
@@ -56,6 +57,7 @@
 {% block scripts %}
 <script>
     mapResetButton = document.getElementById("map-reset-button")
+    mapShowAllEventsToggle = document.getElementById("map-show-all-events-toggle")
 
     mapAndMinorSidebar = document.getElementById("map-and-minor-sidebar")
     mapSecondarySidebarGroup = document.getElementById("map-secondary-sidebar-group")
