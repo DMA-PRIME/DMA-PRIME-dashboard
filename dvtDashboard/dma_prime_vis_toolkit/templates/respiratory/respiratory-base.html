@@ -69,13 +69,13 @@
     ])
 
     // get zcta data, then visualize for each panel
-    var diseases = Array.from(JSON.parse("{{diseases|safe}}".replaceAll("\'","\"")))
+    var diseases =d3.selectAll("#map-disease-selector sl-option:not([disabled])").nodes().map(d => {return d.value})
 
     var dataFetching = []
     diseases.forEach((disease) => dataFetching.push(getZCTAData(disease)))
 
     await Promise.all(dataFetching)
-    // mapInitialVisualization()
+    mapInitialVisualization()
     gridInitialVisualization() 
     gridContainerResizer.addEventListener("sl-resize", () => {
         updateGridData()

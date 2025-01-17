@@ -10,7 +10,7 @@ gridRateSwitch.addEventListener("sl-change", (event) => {
   d3.select(gridContainer).selectAll("sl-tooltip[open]")
         .each(function(d, i) {
             slTTP = d3.select(this)
-            gridTooltipWidth = Math.max(500, width * .3)
+            gridTooltipWidth = Math.max(500, gridWidth * .3)
             gridTooltipHeight = gridTooltipWidth * .65
             drawTooltip(d3.select(this.parentNode).datum(), slTTP.select("div[slot='content']"), gridTooltipHeight, gridTooltipWidth, gridRateSwitch.value == "rate")
 
@@ -88,7 +88,7 @@ function setGridTooltip(gridTooltip) {
     // draw the tooltip for each grid item
     gridTooltip.on("sl-show", function(event) {
         // get data/parameters together for drawing the tooltip         
-        gridTooltipWidth = Math.max(500, width * .3)
+        gridTooltipWidth = Math.max(500, gridWidth * .3)
         gridTooltipHeight = gridTooltipWidth * .65
 
         slTTPDOM = event.target

@@ -61,23 +61,23 @@ def create_app(development=False, dataDir=None):
                 'name': 'main',
                 'displayName': 'DMA-PRIME',
             },
-            # {
-            #     'name': 'map',
-            #     'displayName': 'Map View',
-            #     # 'active': True,
-            #     'html': 'respiratory/respiratory-map-panel.html'
-            # },
+            {
+                'name': 'map',
+                'displayName': 'Map View',
+                'active': True,
+                'html': 'respiratory/respiratory-map-panel.html'
+            },
             {
                 'name': 'grid',
                 'displayName': 'Grid View',
                 'html': 'respiratory/respiratory-grid-panel.html'
             },
-            {
-                'name': 'deckmap',
-                'displayName': 'Deckgl Map View',
-                'active': True,
-                'html': 'respiratory/deckgl-respiratory-map-panel.html'
-            },
+            # {
+            #     'name': 'deckmap',
+            #     'displayName': 'Deckgl Map View',
+            #     'active': True,
+            #     'html': 'respiratory/deckgl-respiratory-map-panel.html'
+            # },
         ]
         return render_template('respiratory/respiratory-base.html', panels=panels)
     

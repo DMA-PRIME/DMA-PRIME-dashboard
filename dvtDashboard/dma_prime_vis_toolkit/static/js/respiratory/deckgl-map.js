@@ -14,16 +14,56 @@ const map = new maplibregl.Map({
     container: "map-div",
     style: "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json",
     center: [-81, 33.65],
-    zoom: 7
+    zoom: 7,
 })
 
 await map.once('load')
 
+var popup = new maplibregl.Popup()
+
 const deckOverlay = new MapboxOverlay({
-    interleaved: false,
+    interleaved: true,
 })
 
-deckOverlay.addWidget(new D3Anchor({}))
+map.on("click", e => {
+    var temp = {x: e.point.x, y: e.point.y}
+    var dataObject = deckOverlay.pickObject(temp).object
+    
+    var coordinates = [dataObject.properties.INTPTLON, dataObject.properties.INTPTLAT]
+    popup.setLngLat(coordinates)
+        .setHTML("<div id='map-tooltip-div' class='tooltip-div'></div>")
+
+    popup.addTo(map)
+    popup.setMaxWidth(`${mapDiv.clientWidth}px`)
+
+    var ttpDiv = d3.select("#map-tooltip-div")
+
+    ttpDiv.style("display", "initial")
+    ttpDiv.style("border-style", "none")
+        
+    var ttpTitle = ttpDiv.append("p")
+        .attr("class", "tooltip-title")
+    ttpTitle.append("span")
+        .attr("class", "tooltip-title")
+    ttpTitle.append("br")
+    ttpTitle.append("span")
+        .attr("class", "tooltip-subtitle")
+
+    ttpDiv.append("svg")
+        .attr("id", `map-tooltip-svg`)
+        .attr("class", `tooltip-outer-svg`)
+
+    var tooltipData = dataObject.properties.data[mapDiseaseSelector.value]
+    tooltipData["zcta"] = dataObject.properties.ZCTA
+    tooltipData["county"] = dataObject.properties.county
+    tooltipData["population"] = dataObject.properties.population
+
+    var width = mapDiv.clientWidth
+    var mapTooltipWidth = Math.max(500, width * .3)
+    var mapTooltipHeight = mapTooltipWidth * .65
+    drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, gridRateSwitch.value == "rate")
+
+})
 
 map.addControl(deckOverlay)
 map.addControl(new maplibregl.NavigationControl())
@@ -32,9 +72,10 @@ await Promise.allSettled([ // wait for following to be defined/load in
     customElements.whenDefined('sl-select'),
     customElements.whenDefined('sl-option'),
     customElements.whenDefined('sl-button'),
-])
 
-redraw()
+redraw(true)
+
+])
 
 function redraw(first=false) {
     console.log("redraw")
@@ -43,6 +84,7 @@ function redraw(first=false) {
             new GeoJsonLayer({
                 id: 'respiratory_choropleth',
                 depthTest: false,
+                pickable: true,
                 data: d3.json(`/data/deckgl-respiratory`),
                 onDataLoad: (data, context) => {   
                     console.log(data)
@@ -75,8 +117,7 @@ function redraw(first=false) {
                 // stroked: true,
                 filled: true,
                 pointType: 'circle+text',
-                // pickable: true,
-                // onClick: function(info, event) {mobileClinicClick(info.object); redraw();},
+                pickable: true,
                 getFillColor: d => getColor(d),
                 // getFillColor: [128,128,128],
                 highlightColor: [255, 255, 255, 0],
@@ -119,6 +160,7 @@ function redraw(first=false) {
             // })
         ]
     })
+
 }
 
 function getColor(feature) {
