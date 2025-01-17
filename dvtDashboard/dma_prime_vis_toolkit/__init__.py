@@ -132,6 +132,23 @@ def create_app(development=False, dataDir=None):
         ]
         return render_template('opioid/opioid-base.html', panels=panels)
 
+    @app.route('/state-disease-data')
+    @login_required
+    def state_disease_data():
+        panels = [
+            {
+                'name': 'main',
+                'displayName': 'DMA-PRIME',
+            },
+            {
+                'name': 'map',
+                'displayName': 'Map View',
+                'active': True,
+                'html': 'state-disease-data/state-disease-data-map-panel.html'
+            },
+        ]
+        return render_template('state-disease-data/state-disease-data-base.html', panels=panels)
+
     if development:
         # Simply for my own convenience
         @app.route('/testing')
