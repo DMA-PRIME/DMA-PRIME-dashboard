@@ -1,5 +1,9 @@
 
-function createBarGraph(svg, data, height, width, rate=false) {
+function parseDate(datestring) {
+    return dayjs.tz(datestring, "YYYY-MM-DD", "America/New_York").toDate()
+}
+
+function createBarGraph(svg, data, height, width) {
     svg
         .attr("height", height)
         .attr("width", width)
@@ -13,12 +17,9 @@ function createBarGraph(svg, data, height, width, rate=false) {
         .attr("class", "y-axis")
     var xAxis = svg.append("g")
         .attr("class", "x-axis")
-
-    var thisDiseaseData = data.data.map((val) => 
-        (val / (rate ? data.population / 1000.0 : 1)) || 0)
         
     // figure out how much space is needed for the y-axis text
-    var temp = svg.append("text").text(d3.format(".2r")(d3.max(thisDiseaseData))).attr("x", 0).attr("y", 0)
+    var temp = svg.append("text").text(d3.format(".2r")(d3.max(data.data))).attr("x", 0).attr("y", 0)
     var margins = {
         "top": .5*em, 
         "bottom": 1.5*em,
@@ -27,18 +28,18 @@ function createBarGraph(svg, data, height, width, rate=false) {
     }
 
     var yScale = d3.scaleLinear()
-        .domain([0, d3.max(thisDiseaseData)])
+        .domain([0, d3.max(data.data)])
         .nice()
         .range([height-margins.bottom, margins.top])
 
-    var start_date = dayjs.tz(data.start_date, "YYYY-MM-DD", "America/New_York").toDate()
+    var start_date = parseDate(data.start_date)
     var xScale = d3.scaleUtc()
         .domain([start_date, d3.utcDay.offset(start_date, (7 * data.data.length))])
         .nice()
         .range([margins.left, width - margins.right])
 
     graphSVG.selectAll("rect")
-        .data(thisDiseaseData)
+        .data(data.data)
         .enter()
         .append("rect")
         .attr("x", (d, i) => xScale(d3.utcDay.offset(start_date, (7 * i))))

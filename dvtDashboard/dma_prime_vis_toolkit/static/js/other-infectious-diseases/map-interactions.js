@@ -1,4 +1,4 @@
-import { selectedItems, zctaData, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation } from "/static/js/state-disease-data/map.js"
+import { selectedItems, zctaData, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, getData } from "/static/js/other-infectious-diseases/map.js"
 
 mapResetButton.addEventListener("click", () => {
     // reset map zoom and center
@@ -7,10 +7,6 @@ mapResetButton.addEventListener("click", () => {
         zoom: 7,
         essential: true // this animation is considered essential with respect to prefers-reduced-motion
     })
-
-    // unselect zcta if applicable: clear highlight, remove tooltip
-
-    redraw()
 })
 
 map.on("click", e => {
@@ -42,6 +38,38 @@ map.on("click", e => {
 mapRateSwitch.addEventListener("sl-change", function() {
     drawTooltip(selectedItems.zcta)
     drawAggregation()
+    drawLegend()
+})
+
+mapAllDiseaseSelector.addEventListener("sl-change", function() {
+    selectedItems.dataVersion++
+
+    if (d3.select(".disease-checkbox").attr("disabled") != null) {
+        d3.selectAll(".disease-checkbox").attr("disabled", null)
+    } else {
+        d3.selectAll(".disease-checkbox").attr("disabled", "")
+    }
+    
+    drawTooltip(selectedItems.zcta)
+    drawAggregation()
+    drawLegend()
+    redraw()
+})
+
+d3.selectAll(".disease-checkbox").on("sl-change", function(d) {
+    var disease = this.getAttribute("disease")
+    var index = selectedItems.diseases.indexOf(disease)
+        if (index > -1) { // remove disease if on list
+        selectedItems.diseases.splice(index, 1)
+    } else { // add disease if not on list aka toggle disease
+        selectedItems.diseases.push(disease)
+    }
+    console.log(selectedItems)
+    selectedItems.dataVersion++
+    drawTooltip(selectedItems.zcta)
+    drawAggregation()
+    drawLegend()
+    redraw()
 })
 
 aggregatedDiseaseHistoryResizer.addEventListener("sl-resize", function() {

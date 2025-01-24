@@ -132,9 +132,18 @@ def create_app(development=False, dataDir=None):
         ]
         return render_template('opioid/opioid-base.html', panels=panels)
 
-    @app.route('/state-disease-data')
+    @app.route('/other-infectious-diseases')
     @login_required
-    def state_disease_data():
+    def other_infectious_diseases():
+        disease_files = os.listdir(f'{app.config['DATADIR']}/raw/other_diseases')
+
+        diseases = []
+
+        for file in disease_files:
+            disease_display_name = file.split(',')[0]
+            disease = disease_display_name.lower()
+            disease = '-'.join(disease.split(' '))
+            diseases.append({'display-name': disease_display_name, 'disease-name': disease})
         panels = [
             {
                 'name': 'main',
@@ -144,10 +153,10 @@ def create_app(development=False, dataDir=None):
                 'name': 'map',
                 'displayName': 'Map View',
                 'active': True,
-                'html': 'state-disease-data/state-disease-data-map-panel.html'
+                'html': 'other-infectious-diseases/other-infectious-diseases-map-panel.html'
             },
         ]
-        return render_template('state-disease-data/state-disease-data-base.html', panels=panels)
+        return render_template('other-infectious-diseases/other-infectious-diseases-base.html', panels=panels, diseases=diseases)
 
     if development:
         # Simply for my own convenience

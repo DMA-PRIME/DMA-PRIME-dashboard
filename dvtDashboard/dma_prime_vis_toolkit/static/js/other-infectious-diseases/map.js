@@ -1,13 +1,14 @@
 const { GeoJsonLayer, IconLayer, MapboxOverlay, Widget } = deck;
 
-export { zctaData, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation }
+export { zctaData, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, getData }
 
-var zctaData = await d3.json(`/data/state-disease-data`)
+var zctaData = await d3.json(`/data/other-infectious-diseases`)
 var zctaFeatures = undefined
 
 var selectedItems = {
     "zcta": undefined,
-    "diseases": mapDiseaseSelector.value
+    "diseases": [],
+    "dataVersion": 0
 }
 
 var choroplethColorMap = d3.scaleLinear()
@@ -34,8 +35,7 @@ map.addControl(deckOverlay)
 map.addControl(new maplibregl.NavigationControl())
 
 await Promise.allSettled([ // wait for following to be defined/load in
-    customElements.whenDefined('sl-select'),
-    customElements.whenDefined('sl-option'),
+    customElements.whenDefined('sl-checkbox'),
     customElements.whenDefined('sl-button'),
 ])
 
@@ -79,9 +79,9 @@ function redraw(first=false) {
                 id: 'respiratory_choropleth',
                 depthTest: false,
                 pickable: true,
-                data: d3.json(`/data/state-disease-data`),
+                data: d3.json(`/data/other-infectious-diseases`),
                 onDataLoad: (data, context) => {   
-                    createChoropleth(data, mapDiseaseSelector.value, mapRateSwitch.value == "rate")
+                    createChoropleth(data)
                     zctaData = data
                     drawLegend()
                 },
@@ -94,12 +94,10 @@ function redraw(first=false) {
                 lineWidthMinPixels: .75,
                 getLineWidth: 20,
                 getLineColor: [64, 64, 64],
-                // updateTriggers: {
-                //     data: { dataVersion },
-                //     getFillColor: { dataVersion },
-                //     getLineWidth: selectedZCTA["zcta"],
-                //     getLineColor: selectedZCTA["zcta"],
-                // },
+                updateTriggers: {
+                    data: [ mapRateSwitch.value, selectedItems.diseases, selectedItems.dataVersion ],
+                    // getFillColor: { dataVersion }
+                },
             }),
             new GeoJsonLayer({
                 id: 'respiratory_county',
@@ -132,18 +130,10 @@ function redraw(first=false) {
 }
 
 function getColor(feature) {
-    var disease = mapDiseaseSelector.value
-    var rate = mapRateSwitch.value == "rate"
-
-    var thisData = feature.properties.data[disease]
+    var thisData = getData(feature)
     var value = NaN
-
     if (thisData.data.length > 0) {
-        if (rate) {
-            value = thisData.data.at(-1) / feature.properties.population * 1000
-        } else {
-            value = thisData.data.at(-2)
-        }
+        value = thisData.data.at(-1)
     }
 
     var c = d3.rgb(choroplethColorMap(value))
@@ -151,16 +141,12 @@ function getColor(feature) {
     return [c.r, c.g, c.b]
 }
 
-function createChoropleth(data, disease, rate) {
-    var arr = data.features.map((d) => {
-        var thisData = d.properties.data[disease]
+function createChoropleth(data) {
+    var arr = data.features.map((feature) => {
+        var thisData = getData(feature)
 
-        if (thisData.data.length > 0 && d.properties.ZCTA != "state") {
-            if (rate) {
-                return thisData.data.at(-1) / d.properties.population * 1000
-            } else {
-                return thisData.data.at(-2)
-            }
+        if (thisData.data.length > 0 && feature.properties.ZCTA != "state") {
+            return thisData.data.at(-1)
         } else {
             return 0
         }
@@ -207,6 +193,10 @@ function drawLegend() {
 }
 
 function drawTooltip(dataObject) {
+    if(!dataObject || !popup.isOpen()) {
+        return
+    }
+    var thisData = getData(dataObject)
     // draw in tooltip
     var ttpWidth = Math.max(400, mapDiv.clientWidth * .25)
     var ttpHeight = ttpWidth * .35
@@ -222,27 +212,26 @@ function drawTooltip(dataObject) {
     ttpTitle.append("span")
         .attr("class", "tooltip-title")
         .html(`ZCTA: ${dataObject.properties.ZCTA}`)
-        ttpTitle.append("br")
+    ttpTitle.append("br")
     ttpTitle.append("span")
         .attr("class", "tooltip-subtitle")
         .html(`County: ${dataObject.properties.county[0].toUpperCase()+dataObject.properties.county.substring(1)}`)
 
-    if (dataObject.properties.data[mapDiseaseSelector.value].data.length < 1) {
+    if (thisData.data.length < 1) {
         ttpDiv.append("p").html("No Data")
         return
     }
 
+    ttpTitle.append("br")
+    ttpTitle.append("span")
+        .attr("class", "tooltip-subtitle")
+        .html(`Encounters in week of ${d3.utcFormat("%B %d, %Y")(d3.timeSaturday.offset(parseDate(thisData.start_date), thisData.data.length))}: ${thisData.data.at(-1)}`)
+
     var ttpSVG = ttpDiv.append("svg")
         .attr("id", `map-tooltip-svg`)
         .attr("class", `tooltip-outer-svg`)
-
-    var thisData = {
-        "data": dataObject.properties.data[mapDiseaseSelector.value].data,
-        "population": dataObject.properties.population,
-        "start_date": dataObject.properties.data[mapDiseaseSelector.value].start_date,
-    }
     
-    createBarGraph(ttpSVG, thisData, ttpHeight, ttpWidth, mapRateSwitch.value == "rate")
+    createBarGraph(ttpSVG, thisData, ttpHeight, ttpWidth)
 }
 
 function drawAggregation() {
@@ -254,11 +243,60 @@ function drawAggregation() {
 
     var aggData = zctaData.features.find(e => e.properties.ZCTA == "state")
 
-    var thisData = {
-        "data": aggData.properties.data[mapDiseaseSelector.value].data,
-        "population": aggData.properties.population,
-        "start_date": aggData.properties.data[mapDiseaseSelector.value].start_date,
-    }
+    var thisData = getData(aggData)
     
-    createBarGraph(aggSVG, thisData, aggHeight, aggWidth, mapRateSwitch.value == "rate")
+    createBarGraph(aggSVG, thisData, aggHeight, aggWidth)
+}
+
+function getData(feature) {
+    var diseases = selectedItems.diseases
+    var thisData = {
+        "data": [],
+        "population": feature.properties.population,
+        "start_date": dayjs(),
+    }
+    if (mapAllDiseaseSelector.checked) {
+        // all diseases
+        var dataDicts = Object.values(feature.properties.data)
+        var earliestDate = d3.min(dataDicts.map(d => parseDate(d.start_date)))
+        var latestDate = d3.max(dataDicts.map(d => d3.timeSaturday.offset(parseDate(d.start_date), d.data.length)))
+        thisData.start_date = earliestDate
+        var weeks = d3.timeSaturday.range(earliestDate, latestDate)
+        thisData.data = new Array(weeks.length).fill(0)
+        for (var data of dataDicts) {
+            var startIndex = weeks.findIndex(d => dayjs(d).isSame(data.start_date))
+            if (startIndex > -1) {
+                for (var i=0; i < data.data.length; i++) {
+                    thisData.data[i+startIndex] += data.data[i]
+                }
+            }
+        }        
+    } else {
+        if (diseases.length > 0) {
+            // one/many diseases
+            var dataDicts = Object.entries(feature.properties.data).filter(d => diseases.includes(d[0]))
+            dataDicts = dataDicts.map(d => d[1])
+
+            var earliestDate = d3.min(dataDicts.map(d => parseDate(d.start_date)))
+            var latestDate = d3.max(dataDicts.map(d => d3.timeSaturday.offset(parseDate(d.start_date), d.data.length)))
+            thisData.start_date = earliestDate
+            var weeks = d3.timeSaturday.range(earliestDate, latestDate)
+            thisData.data = new Array(weeks.length).fill(0)
+            for (var data of dataDicts) {
+                var startIndex = weeks.findIndex(d => dayjs(d).isSame(data.start_date))
+                if (startIndex > -1) {
+                    for (var i=0; i < data.data.length; i++) {
+                        thisData.data[i+startIndex] += data.data[i]
+                    }
+                }
+            }
+        }
+    }    
+    
+    // rate applied at end
+    if (mapRateSwitch.value == "rate") {
+        thisData.data = thisData.data.map((val) => 
+            (parseFloat(val) / (thisData.population / 1000.0)) || 0)
+    }
+    return thisData
 }

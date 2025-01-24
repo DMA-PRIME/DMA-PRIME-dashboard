@@ -1,6 +1,6 @@
 [project]
 name = "dma_prime_vis_toolkit"
-version = "1.4.3"
+version = "1.4.4"
 description = "DMA-PRIME Jan 2025"
 dependencies = [
     "waitress",
@@ -13,6 +13,7 @@ dependencies = [
     "openpyxl",
     "numpy",
     "geojson",
+    "glob2",
 
     "requests",
 

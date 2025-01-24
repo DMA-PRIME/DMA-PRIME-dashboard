@@ -75,7 +75,6 @@ mapZctaCountySearch.addEventListener("sl-change", function(event) {
         redraw()
     } else if(mapZctaCountySearch.value) {
         var county = countyData.features.find(d => mapZctaCountySearch.value.toLowerCase() == d.properties.NAME.toLowerCase())
-        console.log(county)
         if (county) {
             selectedCounty.county = county
             redraw()

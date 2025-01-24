@@ -78,7 +78,6 @@ redraw(true)
 ])
 
 function redraw(first=false) {
-    console.log("redraw")
     deckOverlay.setProps({
         layers: [
             new GeoJsonLayer({
@@ -87,8 +86,6 @@ function redraw(first=false) {
                 pickable: true,
                 data: d3.json(`/data/deckgl-respiratory`),
                 onDataLoad: (data, context) => {   
-                    console.log(data)
-
                     createChoropleth(data, mapDiseaseSelector.value, mapDataSourceSelector.value, mapRateSwitch.value == "rate", mapIncludeImputations.checked)
                     zctaData = data
                     // zctaFeatures = data.features

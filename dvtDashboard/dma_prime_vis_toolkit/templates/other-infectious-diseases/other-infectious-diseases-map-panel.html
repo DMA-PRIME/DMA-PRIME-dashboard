@@ -18,11 +18,13 @@
 
   <!-- disease selector -->
    <!-- TODO: make this a loop -->
-  <sl-select value="mycoplasma-pneumoniae" id="map-disease-selector" class="fill-width">
-    <p slot="label">Select a disease or group of diseases</p>
-    <sl-option value="mycoplasma-pneumoniae">Mycoplasma Pneumoniae</sl-option>
-  </sl-select>
-  
+    <sl-details open>
+      <p slot="summary">Select a disease or group of diseases</p>
+      <sl-checkbox id="map-all-disease-selector" >All Diseases</sl-checkbox>
+      {% for disease in diseases %}
+      <sl-checkbox id="map-{{ disease['disease-name'] }}-selector" class="disease-checkbox" disease="{{ disease['disease-name'] }}" >{{ disease['display-name'] }}</sl-checkbox>
+      {% endfor %}
+    </sl-details>  
   
   <sl-divider class="options-divider"></sl-divider>
   <!-- map icon inclusion checkboxes (hospital, mobile health clinic, community partners) -->
@@ -53,7 +55,7 @@
   mapResetButton = document.getElementById("map-reset-button")
   mapRateSwitch = document.getElementById("map-rate-switch")
 
-  mapDiseaseSelector = document.getElementById("map-disease-selector")
+  mapAllDiseaseSelector = document.getElementById("map-all-disease-selector")
 
   aggregatedDiseaseHistoryResizer = document.getElementById("aggregated-disease-history-resizer")
   aggregatedDiseaseHistoryContainer = document.getElementById("aggregated-disease-history-container")
@@ -74,7 +76,7 @@
   set{{panel.name}}Panel()
 </script>
 
-<script src="{{ url_for('static', filename='js/state-disease-data/map.js') }}" type="module"></script>
-<script src="{{ url_for('static', filename='js/state-disease-data/map-interactions.js') }}" type="module"></script>
+<script src="{{ url_for('static', filename='js/other-infectious-diseases/map.js') }}" type="module"></script>
+<script src="{{ url_for('static', filename='js/other-infectious-diseases/map-interactions.js') }}" type="module"></script>
 
 {% endblock %}
