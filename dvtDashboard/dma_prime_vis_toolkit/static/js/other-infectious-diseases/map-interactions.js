@@ -64,7 +64,6 @@ d3.selectAll(".disease-checkbox").on("sl-change", function(d) {
     } else { // add disease if not on list aka toggle disease
         selectedItems.diseases.push(disease)
     }
-    console.log(selectedItems)
     selectedItems.dataVersion++
     drawTooltip(selectedItems.zcta)
     drawAggregation()

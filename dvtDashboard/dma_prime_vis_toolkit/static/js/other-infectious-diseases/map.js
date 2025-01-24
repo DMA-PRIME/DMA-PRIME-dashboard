@@ -225,7 +225,7 @@ function drawTooltip(dataObject) {
     ttpTitle.append("br")
     ttpTitle.append("span")
         .attr("class", "tooltip-subtitle")
-        .html(`Encounters in week of ${d3.utcFormat("%B %d, %Y")(d3.timeSaturday.offset(parseDate(thisData.start_date), thisData.data.length))}: ${thisData.data.at(-1)}`)
+        .html(`Encounters in week of ${d3.utcFormat("%B %d, %Y")(parseDate(thisData.end_date))}: ${thisData.data.at(-1)}`)
 
     var ttpSVG = ttpDiv.append("svg")
         .attr("id", `map-tooltip-svg`)
@@ -254,14 +254,18 @@ function getData(feature) {
         "data": [],
         "population": feature.properties.population,
         "start_date": dayjs(),
+        "end_date": dayjs(),
     }
     if (mapAllDiseaseSelector.checked) {
         // all diseases
         var dataDicts = Object.values(feature.properties.data)
         var earliestDate = d3.min(dataDicts.map(d => parseDate(d.start_date)))
-        var latestDate = d3.max(dataDicts.map(d => d3.timeSaturday.offset(parseDate(d.start_date), d.data.length)))
+        var latestDate = d3.max(dataDicts.map(d => parseDate(d.end_date)))
         thisData.start_date = earliestDate
+        thisData.end_date = latestDate
         var weeks = d3.timeSaturday.range(earliestDate, latestDate)
+        weeks.push(latestDate)
+
         thisData.data = new Array(weeks.length).fill(0)
         for (var data of dataDicts) {
             var startIndex = weeks.findIndex(d => dayjs(d).isSame(data.start_date))
@@ -278,9 +282,12 @@ function getData(feature) {
             dataDicts = dataDicts.map(d => d[1])
 
             var earliestDate = d3.min(dataDicts.map(d => parseDate(d.start_date)))
-            var latestDate = d3.max(dataDicts.map(d => d3.timeSaturday.offset(parseDate(d.start_date), d.data.length)))
+            var latestDate = d3.max(dataDicts.map(d => parseDate(d.end_date)))
             thisData.start_date = earliestDate
+            thisData.end_date = latestDate
             var weeks = d3.timeSaturday.range(earliestDate, latestDate)
+            weeks.push(latestDate)
+
             thisData.data = new Array(weeks.length).fill(0)
             for (var data of dataDicts) {
                 var startIndex = weeks.findIndex(d => dayjs(d).isSame(data.start_date))
@@ -290,6 +297,7 @@ function getData(feature) {
                     }
                 }
             }
+            console.log(feature.properties.ZCTA, earliestDate, latestDate, weeks, startIndex, thisData)
         }
     }    
     
@@ -298,5 +306,6 @@ function getData(feature) {
         thisData.data = thisData.data.map((val) => 
             (parseFloat(val) / (thisData.population / 1000.0)) || 0)
     }
+    // console.log(feature.properties.ZCTA, thisData)
     return thisData
 }
