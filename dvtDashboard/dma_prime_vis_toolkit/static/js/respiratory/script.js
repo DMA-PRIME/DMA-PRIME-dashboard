@@ -58,24 +58,24 @@ d3.selectAll('sl-tooltip').nodes().forEach((n, i) => {
     .style('background-color', `hsla(${getComputedStyle(document.head).getPropertyValue("--sl-color-neutral-1000").replace("hsl(", "").replace(")", "")}, 0.925)`)
 })
 
-addEventListener("keydown", (event) => {
-if (event.key == "m") {
-    function waitForChange() {
-        if(changed != true) {
-            window.setTimeout(waitForChange, 10);
-        } else {
-            styleSheet.deleteRule(0)
-            styleSheet.insertRule(`
-                .tooltip-div {
-                    /* tooltip's containing div */
-                    background-color: hsla(${getComputedStyle(document.head).getPropertyValue("--sl-color-neutral-0").replace("hsl(", "").replace(")", "")}, 0.925);
-                }`
-                ,0)
-            changed = false
+window.addEventListener("keydown", (event) => {
+    if (event.key == "m") {
+        function waitForChange() {
+            if(changed != true) {
+                window.setTimeout(waitForChange, 10);
+            } else {
+                styleSheet.deleteRule(0)
+                styleSheet.insertRule(`
+                    .tooltip-div {
+                        /* tooltip's containing div */
+                        background-color: hsla(${getComputedStyle(document.head).getPropertyValue("--sl-color-neutral-0").replace("hsl(", "").replace(")", "")}, 0.925);
+                    }`
+                    ,0)
+                changed = false
+            }
         }
+        waitForChange()
     }
-    waitForChange()
-}
 });
 
 document.adoptedStyleSheets = [styleSheet]

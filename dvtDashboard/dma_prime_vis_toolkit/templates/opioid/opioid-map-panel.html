@@ -51,6 +51,10 @@
     <sl-input id="map-zcta-county-search" size="small" clearable>
         <p slot="label">ZCTA/County Search</p>
     </sl-input>
+    <sl-button-group>
+        <sl-button size="small" id="map-clear-zcta-selection" class="map-clear-selection-buttion">Clear ZCTA</sl-button>
+        <sl-button size="small" id="map-clear-county-selection" class="map-clear-selection-buttion">Clear County</sl-button>
+    </sl-button-group>
 
     <sl-details id="map-health-care-icons-container" class="sidebar-detail-container" open>
         <p slot="summary">Health Care Icons</p>
@@ -124,6 +128,8 @@
     mapFilterResetButton = document.getElementById("map-filter-reset-button")
     
     mapZctaCountySearch = document.getElementById("map-zcta-county-search")
+    mapClearZctaSelection = document.getElementById("map-clear-zcta-selection")
+    mapClearCountySelection = document.getElementById("map-clear-county-selection")
 
     hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
     cdapIconsToggle = document.getElementById("map-options-cdap-toggle")

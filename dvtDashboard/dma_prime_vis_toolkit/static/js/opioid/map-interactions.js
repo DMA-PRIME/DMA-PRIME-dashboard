@@ -17,7 +17,7 @@ mapRateSwitch.addEventListener("sl-change", () => {
     updateHistogram("hospitalizations")
     updateHistogram("deaths")
     Object.entries(brushes).forEach(brush => {
-        column = brush[0]
+        var column = brush[0]
         if (["hospitalizations", "deaths"].includes(column)) {
             d3.select(`#map-${column}-filter-brush`).call(brush[1].clear)
             thresholds[column] = xScales[column].domain()
@@ -29,7 +29,7 @@ mapRateSwitch.addEventListener("sl-change", () => {
 mapFilterResetButton.addEventListener("click", () => {
     // clear brushes on histograms that act as filters for map zctas
     Object.entries(brushes).forEach(brush => {
-        column = brush[0]
+        var column = brush[0]
         d3.select(`#map-${column}-filter-brush`).call(brush[1].clear)
         thresholds[column] = xScales[column].domain()
     })
@@ -82,6 +82,16 @@ mapZctaCountySearch.addEventListener("sl-change", function(event) {
     }
 })
 
+mapClearZctaSelection.addEventListener("click", () => {
+    selectedZCTA.zcta = undefined
+    redraw()
+})
+
+mapClearCountySelection.addEventListener("click", () => {
+    selectedCounty.county = undefined
+    redraw()
+})
+
 // adding/removing icons
 hospitalIconsToggle.addEventListener("sl-change", () => {
     // toggle hospital icons
@@ -131,3 +141,18 @@ mapSecondarySidebarClose.addEventListener("sl-focus", function(event) {
     mobileClinicInfoPanel.removeAttribute("active")
     redraw()
 })
+
+window.removeEventListener("keydown", swapTheme)
+window.addEventListener("keydown", (event) => {
+    console.log("stuff", document.activeElement.id, document.activeElement.id !== "map-zcta-county-search", event.key == "m")
+    if (event.key == "m" && document.activeElement.id !== "map-zcta-county-search") {
+        if (Array.from(document.documentElement.classList).includes('sl-theme-light')) {
+            document.documentElement.classList.remove('sl-theme-light')
+            document.documentElement.classList.add('sl-theme-dark')
+        } else {
+            document.documentElement.classList.remove('sl-theme-dark')
+            document.documentElement.classList.add('sl-theme-light')
+        }
+        changed = true
+    }
+});

@@ -17,7 +17,7 @@ const variableOptions = {
 }
 
 var zctaData = await d3.json(`/data/hospitalizations/opioid`)
-var zctaFeatures = undefined
+var zctaFeatures = zctaData.features
 var countyData = await d3.json(`/data/map/county`)
 
 let selectedZCTA = {
@@ -49,6 +49,8 @@ await Promise.allSettled([ // wait for following to be defined/load in
     customElements.whenDefined('sl-button'),
 ])
 
+redraw(true) 
+
 function getDataFromFeatures(feature, column, year, rate) {
     var columnData = feature.properties.data[column]
     if (columnData) {
@@ -60,40 +62,34 @@ function getDataFromFeatures(feature, column, year, rate) {
     } else {
         return undefined
     }
-      
 }
 
 function redraw(first=false) {
+    drawLegend()
+    if (first == true) {
+        d3.select(mapVariable1Selector).selectAll("sl-option")
+        .each(function(el) {
+            var column = this.value
+            d3.select(mapFiltersContainer).append("svg")
+                .attr("id", `map-${column}-filter`)
+                .attr("class", "map-histogram-filter")
+            updateHistogram(column)
+        })
+        first = false
+    }
+    var highlightedData = []
+    if (selectedZCTA.zcta) {
+        highlightedData.push(selectedZCTA.zcta)
+    }
+    if (selectedCounty.county) {
+        highlightedData.push(selectedCounty.county)
+    }
     deckOverlay.setProps({
         layers: [
             new GeoJsonLayer({
                 id: 'opioid_choropleth',
                 depthTest: false,
-                data: d3.json(`/data/hospitalizations/opioid`),
-                onDataLoad: (data, context) => {          
-                    zctaData = data
-                    zctaFeatures = data.features
-                                        
-                    if (selectedZCTA.zcta) {
-                        zctaFeatures = zctaData.features
-                        zctaFeatures.push(selectedZCTA.zcta)
-                        var currIndex = zctaFeatures.findIndex(d => {return selectedZCTA.zcta.properties.ZCTA == d.properties.ZCTA})
-                        zctaFeatures.splice(currIndex, 1)
-                    }
-                    drawLegend()
-                    if (first == true) {
-                        d3.select(mapVariable1Selector).selectAll("sl-option")
-                        .each(function(el) {
-                            var column = this.value
-                            d3.select(mapFiltersContainer).append("svg")
-                                .attr("id", `map-${column}-filter`)
-                                .attr("class", "map-histogram-filter")
-                            updateHistogram(column)
-                        })
-                        first = false
-                    }
-
-                },
+                data: zctaData,
                 stroked: true,
                 filled: true,
                 pointType: 'circle+text',
@@ -131,13 +127,30 @@ function redraw(first=false) {
                 pointType: 'circle+text',
                 pickable: false,
                 lineWidthMinPixels: .5,
-                getLineWidth: (d, i) => {return 20 * (d == selectedCounty.county ? 50 :1)},
-                getLineColor: (d, i) => {return d == selectedCounty.county ? [255, 255, 255] : [128, 128, 128]},
+                getLineWidth: 20,
+                getLineColor: [128, 128, 128],
                 getPointRadius: 4,
                 getTextSize: 12,
                 updateTriggers: {
                     getLineWidth: selectedCounty["county"],
                     getLineColor: selectedCounty["county"],
+                },
+            }),
+            new GeoJsonLayer({
+                id: 'search_highlight',
+                depthTest: false,
+                data: highlightedData,
+                stroked: true,
+                filled: false,
+                pointType: 'circle+text',
+                pickable: true,
+                lineWidthMinPixels: .5,
+                getLineWidth: 1000,
+                getLineColor: [255, 255, 255],
+                getPointRadius: 4,
+                getTextSize: 12,
+                updateTriggers: {
+                    data: { dataVersion },
                 },
             }),
             new IconLayer({
@@ -172,10 +185,10 @@ function getColor(zcta) {
 
     // filter all thresholds, use colormap = (a, b) => unknownColor
     Object.entries(thresholds).forEach(threshold => {
-        column = threshold[0]
-        min = threshold[1][0]
-        max = threshold[1][1]
-        val = getDataFromFeatures(zcta, column, mapYearSelector.value, mapRateSwitch.value=="rate")
+        var column = threshold[0]
+        var min = threshold[1][0]
+        var max = threshold[1][1]
+        var val = getDataFromFeatures(zcta, column, mapYearSelector.value, mapRateSwitch.value=="rate")
         if (val < min || val > max) {
             colormap = a => b => unknownColor
         }
