@@ -5,7 +5,7 @@ function parseDate(datestring) {
     return dayjs.tz(datestring, "YYYY-MM-DD", "America/New_York").toDate()
 }
 
-function createBarGraph(svg, data, height, width) {
+function createBarGraph(svg, data, metadata, height, width) {
     svg
         .attr("height", height)
         .attr("width", width)
@@ -34,9 +34,9 @@ function createBarGraph(svg, data, height, width) {
         .nice()
         .range([height-margins.bottom, margins.top])
 
-    var start_date = parseDate(zctaData.metadata.start_date)
+    var start_date = parseDate(metadata.start_date)
     var xScale = d3.scaleUtc()
-        .domain([start_date, d3.utcDay.offset(start_date, (7 * data.data.length))])
+        .domain([start_date, parseDate(metadata.end_date)])
         .nice()
         .range([margins.left, width - margins.right])
 

@@ -230,7 +230,7 @@ function drawTooltip(dataObject) {
         .attr("id", `map-tooltip-svg`)
         .attr("class", `tooltip-outer-svg`)
     
-    createBarGraph(ttpSVG, thisData, ttpHeight, ttpWidth)
+    createBarGraph(ttpSVG, thisData, zctaData.metadata, ttpHeight, ttpWidth)
 }
 
 function drawAggregation() {
@@ -244,7 +244,7 @@ function drawAggregation() {
 
     var thisData = getData(aggData)
     
-    createBarGraph(aggSVG, thisData, aggHeight, aggWidth)
+    createBarGraph(aggSVG, thisData, zctaData.metadata, aggHeight, aggWidth)
 }
 
 function getData(feature) {

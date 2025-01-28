@@ -9,6 +9,11 @@ mapResetButton.addEventListener("click", () => {
     })
 })
 
+popup.on("close", e => {
+    selectedItems.zcta = undefined
+    redraw()
+})
+
 map.on("click", e => {
     var temp = {x: e.point.x, y: e.point.y}
     var thisObject = deckOverlay.pickObject(temp)
@@ -16,6 +21,7 @@ map.on("click", e => {
     if (thisObject == null) {
         popup.remove()
         selectedItems.zcta = undefined
+        redraw()
         return
     }
 

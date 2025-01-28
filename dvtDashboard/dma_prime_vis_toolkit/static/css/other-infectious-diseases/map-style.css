@@ -8,6 +8,10 @@
     position: relative;
 }
 
+.disease-checkbox {
+    width: 100%;
+}
+
 /* choropleth legend */
 #choropleth-legend {
     z-index: 10;
