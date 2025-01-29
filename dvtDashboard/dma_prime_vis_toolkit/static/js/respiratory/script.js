@@ -89,7 +89,7 @@ startDate.setMonth(startDate.getMonth() - 18);
 historicalDates = d3.timeSaturday.range(startDate, new Date(thisWeekMonday).setDate(thisWeekMonday.getDate()+1), 1)
 
 endDate = new Date(thisWeekMonday);
-endDate.setDate(endDate.getDate() + 5*7);
+endDate.setDate(endDate.getDate() + 4*7);
 predictionDates = d3.timeSaturday.range(thisWeekMonday, new Date(endDate).setDate(endDate.getDate()+1), 1)
 
 // data fetching
@@ -597,7 +597,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
             .attr("y1", ttpLegendTop + .75*em + em * parseInt(i/2))
             .attr("x2", 2.25*em + ((ttpWidth-2*em)/3 * (i%2)))
             .attr("y2", ttpLegendTop + .75*em + em * parseInt(i/2))
-            .style("stroke-dasharray", dataSourceLineStyle[dataSource])
+            .style("stroke-dasharray", dataSourceLineStyle[`${dataSource}-tooltip`])
             .attr("stroke", dataSourceColorMap[dataSource])
         labelText = labelGroup.append("text")
             .attr("class", "tooltip-label")
