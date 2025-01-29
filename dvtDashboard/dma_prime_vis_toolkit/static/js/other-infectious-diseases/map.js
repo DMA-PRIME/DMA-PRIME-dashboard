@@ -1,10 +1,9 @@
 const { GeoJsonLayer, IconLayer, MapboxOverlay, Widget } = deck;
 
-export { styleSheet, zctaData, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, getData }
+export { styleSheet, zctaData, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, getData, changeDataColumn }
 
-var zctaData = await d3.json(`/data/other-infectious-diseases`)
-var zctaFeatures = zctaData.features
-var stateFeature = zctaData.features.find(e => e.properties.ZCTA == "state")
+var zctaData = await d3.json(`/data/other-infectious-diseases/encounters`)
+var stateFeature = zctaData.features.find(d => d.properties.ZCTA == "state")
 
 var selectedItems = {
     "zcta": undefined,
@@ -307,4 +306,20 @@ function getData(feature) {
             (parseFloat(val) / (thisData.population / 1000.0)) || 0)
     }
     return thisData
+}
+
+async function changeDataColumn(e) {
+    console.log(e)
+
+    zctaData = await d3.json(`/data/other-infectious-diseases/${mapColumnSwitch.value}`)
+    stateFeature = zctaData.features.find(d => d.properties.ZCTA == "state")
+
+    if (selectedItems.zcta) {
+        selectedItems.zcta = zctaData.features.find(d => d.properties.ZCTA == selectedItems.zcta.properties.ZCTA)
+        drawTooltip(selectedItems.zcta)
+    }
+
+    drawAggregation()
+    drawLegend()
+    redraw()
 }

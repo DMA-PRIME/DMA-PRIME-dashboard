@@ -16,8 +16,19 @@
     </sl-tooltip>
   </sl-radio-group>
 
+  <sl-radio-group value="encounters" id="map-column-switch" class="center-self" size="small">
+    <sl-tooltip content="Disease encounters">
+      <sl-radio-button pill value="encounters">Encounters</sl-radio-button>
+    </sl-tooltip>
+    <sl-tooltip content="Disease encounter related positive tests">
+      <sl-radio-button pill value="pos_tests">Tests</sl-radio-button>
+    </sl-tooltip>
+    <sl-tooltip content="Sum of disease encounters and encounter related positive tests">
+      <sl-radio-button pill value="encounter_plus_test">Encounters and Tests</sl-radio-button>
+    </sl-tooltip>
+  </sl-radio-group>
+
   <!-- disease selector -->
-   <!-- TODO: make this a loop -->
     <sl-details open>
       <p slot="summary">Select a disease or group of diseases</p>
       <sl-checkbox id="map-all-disease-selector" >All Diseases</sl-checkbox>
@@ -54,6 +65,7 @@
 
   mapResetButton = document.getElementById("map-reset-button")
   mapRateSwitch = document.getElementById("map-rate-switch")
+  mapColumnSwitch = document.getElementById("map-column-switch")
 
   mapAllDiseaseSelector = document.getElementById("map-all-disease-selector")
 

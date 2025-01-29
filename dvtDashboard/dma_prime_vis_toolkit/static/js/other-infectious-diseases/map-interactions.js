@@ -1,4 +1,4 @@
-import { styleSheet, selectedItems, zctaData, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, getData } from "/static/js/other-infectious-diseases/map.js"
+import { styleSheet, selectedItems, zctaData, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, getData, changeDataColumn } from "/static/js/other-infectious-diseases/map.js"
 
 mapResetButton.addEventListener("click", () => {
     // reset map zoom and center
@@ -9,38 +9,7 @@ mapResetButton.addEventListener("click", () => {
     })
 })
 
-popup.on("close", e => {
-    selectedItems.zcta = undefined
-    redraw()
-})
-
-map.on("click", e => {
-    var temp = {x: e.point.x, y: e.point.y}
-    var thisObject = deckOverlay.pickObject(temp)
-
-    if (thisObject == null) {
-        popup.remove()
-        selectedItems.zcta = undefined
-        redraw()
-        return
-    }
-
-    // add popup to map
-    var feature = thisObject.object
-    selectedItems.zcta = feature
-    
-    var coordinates = [feature.properties.INTPTLON, feature.properties.INTPTLAT]
-    popup.setLngLat(coordinates)
-        .setHTML("<div id='map-tooltip-div' class='tooltip-div'></div>")
-
-    if (!popup.isOpen()) {
-        popup.addTo(map)
-    }
-
-    popup.setMaxWidth(`${mapDiv.clientWidth}px`)
-    drawTooltip(feature)
-    redraw()
-})
+mapColumnSwitch.addEventListener("sl-change", changeDataColumn)
 
 mapRateSwitch.addEventListener("sl-change", function() {
     drawTooltip(selectedItems.zcta)
@@ -76,6 +45,39 @@ d3.selectAll(".disease-checkbox").on("sl-change", function(d) {
     drawTooltip(selectedItems.zcta)
     drawAggregation()
     drawLegend()
+    redraw()
+})
+
+popup.on("close", e => {
+    selectedItems.zcta = undefined
+    redraw()
+})
+
+map.on("click", e => {
+    var temp = {x: e.point.x, y: e.point.y}
+    var thisObject = deckOverlay.pickObject(temp)
+
+    if (thisObject == null) {
+        popup.remove()
+        selectedItems.zcta = undefined
+        redraw()
+        return
+    }
+
+    // add popup to map
+    var feature = thisObject.object
+    selectedItems.zcta = feature
+    
+    var coordinates = [feature.properties.INTPTLON, feature.properties.INTPTLAT]
+    popup.setLngLat(coordinates)
+        .setHTML("<div id='map-tooltip-div' class='tooltip-div'></div>")
+
+    if (!popup.isOpen()) {
+        popup.addTo(map)
+    }
+
+    popup.setMaxWidth(`${mapDiv.clientWidth}px`)
+    drawTooltip(feature)
     redraw()
 })
 
