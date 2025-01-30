@@ -31,9 +31,9 @@
   <!-- disease selector -->
     <sl-details open>
       <p slot="summary">Select a disease or group of diseases</p>
-      <sl-checkbox id="map-all-disease-selector" >All Diseases</sl-checkbox>
+      <sl-checkbox id="map-all-disease-selector" >All Diseases <span id="map-all-count"></span></sl-checkbox>
       {% for disease in diseases %}
-      <sl-checkbox id="map-{{ disease['disease-name'] }}-selector" class="disease-checkbox" disease="{{ disease['disease-name'] }}" >{{ disease['display-name'] }}</sl-checkbox>
+      <sl-checkbox id="map-{{ disease['disease-name'] }}-selector" class="disease-checkbox" disease="{{ disease['disease-name'] }}" >{{ disease['display-name'] }} <span id="map-{{ disease['disease-name'] }}-count"></span></sl-checkbox>
       {% endfor %}
     </sl-details>  
   

@@ -141,7 +141,10 @@ def create_app(development=False, dataDir=None):
 
         for file in disease_files:
             disease_display_name = file.split(',')[0]
-            disease = disease_display_name.lower()
+            disease = disease_display_name.split(',')[0]
+            disease = disease.lower()
+            disease = disease.split('(')[0]
+            disease = disease.strip()
             disease = '-'.join(disease.split(' '))
             diseases.append({'display-name': disease_display_name, 'disease-name': disease})
         panels = [

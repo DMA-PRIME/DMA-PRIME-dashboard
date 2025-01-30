@@ -1,6 +1,6 @@
 const { GeoJsonLayer, IconLayer, MapboxOverlay, Widget } = deck;
 
-export { styleSheet, zctaData, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, getData, changeDataColumn }
+export { styleSheet, zctaData, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn }
 
 var zctaData = await d3.json(`/data/other-infectious-diseases/encounters`)
 var stateFeature = zctaData.features.find(d => d.properties.ZCTA == "state")
@@ -49,7 +49,7 @@ styleSheet.insertRule(`
 
 document.adoptedStyleSheets = [styleSheet]
 drawAggregation()
-
+updateDiseaseCountDisplay()
 redraw(true)
 
 function redraw(first=false) {
@@ -189,6 +189,7 @@ function drawLegend() {
 
 function drawTooltip(dataObject) {
     if(!dataObject || !popup.isOpen()) {
+        popup.remove()
         return
     }
     var thisData = getData(dataObject)
@@ -248,6 +249,20 @@ function drawAggregation() {
     createBarGraph(aggSVG, thisData, zctaData.metadata, aggHeight, aggWidth)
 }
 
+function updateDiseaseCountDisplay() {
+    var diseases = d3.selectAll(".disease-checkbox").nodes().map(d => d.getAttribute("disease")) 
+    var allCount = 0
+    diseases.forEach(disease => {
+        var val = stateFeature.properties.data[disease].data.at(-1)
+        if (mapRateSwitch.value == "rate") {
+            val /= (stateFeature.properties.population / 1000.0)
+        }
+        allCount += val
+        d3.select(`#map-${disease}-count`).html(`(${Math.round(val * 1000) / 1000})`)
+    })
+    d3.select("#map-all-count").html(`(${Math.round(allCount * 1000) / 1000})`)
+}
+
 function getData(feature) {
     var diseases = selectedItems.diseases
     var thisData = {
@@ -288,7 +303,7 @@ function getData(feature) {
     return thisData
 }
 
-async function changeDataColumn(e) {
+async function changeDataColumn() {
     zctaData = await d3.json(`/data/other-infectious-diseases/${mapColumnSwitch.value}`)
     stateFeature = zctaData.features.find(d => d.properties.ZCTA == "state")
 

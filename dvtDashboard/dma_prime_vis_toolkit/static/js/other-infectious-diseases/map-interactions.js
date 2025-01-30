@@ -1,4 +1,4 @@
-import { styleSheet, selectedItems, zctaData, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, getData, changeDataColumn } from "/static/js/other-infectious-diseases/map.js"
+import { styleSheet, selectedItems, zctaData, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn } from "/static/js/other-infectious-diseases/map.js"
 
 mapResetButton.addEventListener("click", () => {
     // reset map zoom and center
@@ -7,14 +7,29 @@ mapResetButton.addEventListener("click", () => {
         zoom: 7,
         essential: true // this animation is considered essential with respect to prefers-reduced-motion
     })
+
+    selectedItems.zcta = undefined
+    selectedItems.diseases = []
+
+    d3.selectAll(".disease-checkbox").attr("checked", null)
+    mapAllDiseaseSelector.removeAttribute("checked")
+
+    drawTooltip(selectedItems.zcta)
+    drawAggregation()
+    drawLegend()
+    redraw()
 })
 
-mapColumnSwitch.addEventListener("sl-change", changeDataColumn)
+mapColumnSwitch.addEventListener("sl-change", async () => {
+    await changeDataColumn()
+    updateDiseaseCountDisplay()
+})
 
 mapRateSwitch.addEventListener("sl-change", function() {
     drawTooltip(selectedItems.zcta)
     drawAggregation()
     drawLegend()
+    updateDiseaseCountDisplay()
     redraw()
 })
 
