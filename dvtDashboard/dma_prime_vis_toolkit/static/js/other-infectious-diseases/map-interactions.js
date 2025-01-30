@@ -18,29 +18,35 @@ mapRateSwitch.addEventListener("sl-change", function() {
     redraw()
 })
 
-mapAllDiseaseSelector.addEventListener("sl-change", function() {
+mapAllDiseaseSelector.addEventListener("sl-change", function(e) {
     selectedItems.dataVersion++
-
-    if (d3.select(".disease-checkbox").attr("disabled") != null) {
-        d3.selectAll(".disease-checkbox").attr("disabled", null)
-    } else {
-        d3.selectAll(".disease-checkbox").attr("disabled", "")
+    if (e.target.checked) {
+        d3.selectAll(".disease-checkbox").attr("checked", "")
+        selectedItems.diseases = d3.selectAll(".disease-checkbox").nodes().map(d => d.getAttribute("disease")) 
     }
-    
+
     drawTooltip(selectedItems.zcta)
     drawAggregation()
     drawLegend()
     redraw()
 })
 
-d3.selectAll(".disease-checkbox").on("sl-change", function(d) {
+d3.selectAll(".disease-checkbox").on("sl-change", function(e) {
     var disease = this.getAttribute("disease")
     var index = selectedItems.diseases.indexOf(disease)
-        if (index > -1) { // remove disease if on list
-        selectedItems.diseases.splice(index, 1)
-    } else { // add disease if not on list aka toggle disease
-        selectedItems.diseases.push(disease)
+    if (e.target.checked) {
+        // add disease if not on list
+        if (index == -1) {
+            selectedItems.diseases.push(disease)
+        }
+    } else {
+        // remove disease if on list
+        if (index > -1) {
+            selectedItems.diseases.splice(index, 1)
+        }
+        mapAllDiseaseSelector.removeAttribute("checked")
     }
+
     selectedItems.dataVersion++
     drawTooltip(selectedItems.zcta)
     drawAggregation()

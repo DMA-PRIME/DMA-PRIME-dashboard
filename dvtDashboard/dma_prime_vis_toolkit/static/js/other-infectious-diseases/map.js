@@ -256,9 +256,11 @@ function getData(feature) {
         "start_date": dayjs(),
         "end_date": dayjs(),
     }
-    if (mapAllDiseaseSelector.checked) {
-        // all diseases
-        var dataDicts = Object.values(feature.properties.data).filter(d => d.data.length > 0)
+    if (diseases.length > 0) {
+        // one/many diseases
+        var dataDicts = Object.entries(feature.properties.data).filter(d => diseases.includes(d[0]) && d[1].data.length > 0)
+        dataDicts = dataDicts.map(d => d[1])
+
         var earliestDate = parseDate(zctaData.metadata.start_date)
         var latestDate = parseDate(zctaData.metadata.end_date)
         thisData.start_date = earliestDate
@@ -271,34 +273,12 @@ function getData(feature) {
                 for (var i=0; i < data.data.length; i++) {
                     thisData.data[i] += data.data[i]
                 }
-            }   
-        }
-
-    } else {
-        if (diseases.length > 0) {
-            // one/many diseases
-            var dataDicts = Object.entries(feature.properties.data).filter(d => diseases.includes(d[0]) && d[1].data.length > 0)
-            dataDicts = dataDicts.map(d => d[1])
-
-            var earliestDate = parseDate(zctaData.metadata.start_date)
-            var latestDate = parseDate(zctaData.metadata.end_date)
-            thisData.start_date = earliestDate
-            thisData.end_date = latestDate
-
-            if (dataDicts.length > 0) {
-                var weeks = d3.timeSaturday.count(earliestDate, latestDate) + 1
-                thisData.data = new Array(weeks).fill(0)
-                for (var data of dataDicts) {
-                    for (var i=0; i < data.data.length; i++) {
-                        thisData.data[i] += data.data[i]
-                    }
-                }
-            } else {
-                thisData.data = []
             }
-            
+        } else {
+            thisData.data = []
         }
-    }    
+        
+    }
     
     // rate applied at end
     if (mapRateSwitch.value == "rate") {
@@ -309,8 +289,6 @@ function getData(feature) {
 }
 
 async function changeDataColumn(e) {
-    console.log(e)
-
     zctaData = await d3.json(`/data/other-infectious-diseases/${mapColumnSwitch.value}`)
     stateFeature = zctaData.features.find(d => d.properties.ZCTA == "state")
 
