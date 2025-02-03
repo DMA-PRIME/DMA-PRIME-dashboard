@@ -30,13 +30,20 @@ function mobileClinicClick(object) {
     mobileClinicInfoPanel.setAttribute("active", "")
     
     mapSecondarySidebarOrgName.innerHTML = object.org_name
-    mapSecondarySidebarEventDate.innerHTML = typeof(object.event_date) == "object" ? d3.utcFormat("%a, %b %d, %Y")(object.event_date.toDate()) : object.event_date
-    mapSecondarySidebarEventAddress.innerHTML = object.site_address
-    mapSecondarySidebarEventType.innerHTML = object.type
-    mapSecondarySidebarEventPatients.innerHTML = object.num_epic_patients
-    mapSecondarySidebarEventNonClinicalAttendants.innerHTML = object['num_non-clinical_attendees']
-    mapSecondarySidebarEventStaff.innerHTML = object.staff_members_present
-    mapSecondarySidebarEventNotes.innerHTML = object.notes
-    mapSecondarySidebarEventPOC.innerHTML = object.POC_name
-    mapSecondarySidebarEventPOCContact.innerHTML = object.POC_contact_info    
+    mapSecondarySidebarEventDate.value = typeof(object.event_date) == "object" ? d3.utcFormat("%a, %b %d, %Y")(object.event_date.toDate()) : object.event_date
+    mapSecondarySidebarEventAddress.value = object.site_address
+    mapSecondarySidebarEventType.value = object.type
+    mapSecondarySidebarEventPatients.value = object.num_epic_patients
+    mapSecondarySidebarEventNonClinicalAttendants.value = object['num_non-clinical_attendees']
+    mapSecondarySidebarEventStaff.value = object.staff_members_present
+    mapSecondarySidebarEventNotes.value = object.notes
+    mapSecondarySidebarEventPOC.value = object.POC_name
+    mapSecondarySidebarEventPOCContact.value = object.POC_contact_info
+
+    d3.selectAll(".map-secondary-sidebar-value")
+        .each(function () {
+            var textArea = d3.select(this.shadowRoot).select("textarea")
+            textArea.style("height", "auto")
+            textArea.style("height", `${textArea.node().scrollHeight}px`)
+        })
 }
