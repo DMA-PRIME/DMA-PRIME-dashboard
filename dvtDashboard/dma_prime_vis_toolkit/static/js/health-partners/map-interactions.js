@@ -40,10 +40,4 @@ function mobileClinicClick(object) {
     mapSecondarySidebarEventPOC.value = object.POC_name
     mapSecondarySidebarEventPOCContact.value = object.POC_contact_info
 
-    d3.selectAll(".map-secondary-sidebar-value")
-        .each(function () {
-            var textArea = d3.select(this.shadowRoot).select("textarea")
-            textArea.style("height", "auto")
-            textArea.style("height", `${textArea.node().scrollHeight}px`)
-        })
 }

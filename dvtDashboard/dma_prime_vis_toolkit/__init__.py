@@ -167,7 +167,7 @@ def create_app(development=False, dataDir=None):
     def waste_water():
         metadata = {
             'site_info': {},
-            'diseases': [],
+            'diseases': {},
             'min_date': pd.to_datetime('today').strftime('%Y-%m-%d'),
             'max_date': pd.to_datetime('today').strftime('%Y-%m-%d'),
         }

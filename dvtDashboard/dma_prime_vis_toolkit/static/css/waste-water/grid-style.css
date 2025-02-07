@@ -5,14 +5,8 @@
 #grid-container{
     padding: var(--sl-spacing-large);
     display: grid;
-    grid-template-columns: 1fr 1fr;
     gap: var(--sl-spacing-large);
-    overflow-y: scroll;
     height: 100%;
-}
-
-.site-div{
-    aspect-ratio: 3/2;
 }
 
 .site-svg{

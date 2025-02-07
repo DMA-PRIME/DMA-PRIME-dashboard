@@ -48,10 +48,17 @@
     Hospitalization cases are aggregated by zip code tabulation area (zcta).
   </p>
   </div>
+
+  <!-- Aggregation visualization -->
+  <div id="map-state-hospitalizations" >
+    <sl-resize-observer id="map-state-hospitalizations-resizer">
+      <svg id="map-state-hospitalizations-svg"></svg>
+    </sl-resize-observer>
+  </div>
 </div>
 
 <!-- Aggregation visualization -->
-<div class="options-div aggregation-vis" id="{{panel.name}}-aggregation-vis">
+<!-- <div class="options-div aggregation-vis" id="{{panel.name}}-aggregation-vis">
   <svg id="{{panel.name}}-aggregation-donut-svg" class="fill-width aggregation-donut">
     <defs>
       <pattern id="nan-pattern"
@@ -71,7 +78,7 @@
 
     </svg>
   </sl-resize-observer>
-</div>
+</div> -->
 
 {% endblock %}
 
@@ -101,9 +108,11 @@
   var mapIncludeImputations = document.getElementById("map-include-imputations")
 
   // aggregation visualization elements
-  var jsmapAggregationDonutSvg = document.getElementById("map-aggregation-donut-svg")
-  var mapAggregationDonutGroup = d3.select("#map-aggregation-donut")
-  var mapAggregationSvg = d3.select("#map-aggregation-svg")
+  mapStateHospitalizationsResizer = document.getElementById("map-state-hospitalizations-resizer")
+  mapStateHospitalizationsSvg = document.getElementById("map-state-hospitalizations-svg")
+  // var jsmapAggregationDonutSvg = document.getElementById("map-aggregation-donut-svg")
+  // var mapAggregationDonutGroup = d3.select("#map-aggregation-donut")
+  // var mapAggregationSvg = d3.select("#map-aggregation-svg")
 
   // content visualization elements
   var mapSVG = d3.select("#map-svg")

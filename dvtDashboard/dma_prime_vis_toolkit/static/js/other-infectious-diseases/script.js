@@ -68,5 +68,7 @@ function createBarGraph(svg, data, metadata, height, width) {
 
     xAxis.call(d3.axisBottom(xScale).tickArguments([d3.timeYear.every(1), d3.timeFormat("%Y")]))
         .attr("transform", `translate(0, ${height - margins.bottom})`)
+
+    temp.remove()
     
 }

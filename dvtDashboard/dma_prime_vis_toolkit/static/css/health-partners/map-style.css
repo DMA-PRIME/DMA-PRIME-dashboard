@@ -6,6 +6,10 @@
     font-size: var(--sl-font-size-small);
 }
 
+#mobile-clinic-info-panel {
+    padding: var(--sl-spacing-large)
+}
+
 #map-secondary-sidebar-org-name {
     font-size: var(--sl-font-size-large);
     font-weight: var(--sl-font-weight-bold);

@@ -365,3 +365,92 @@ function updateMapData() {
     })  
 
 }
+
+function drawStateHospitalizations() {
+    var disease_crosswalk = {
+        "covid-19": d => +d["Total.COVID.19.Admissions"],
+        "influenza-1": d => +d["Total.Influenza.Admissions"],
+        "RSV": d => +d["Total.RSV.Admissions"], 
+        "respiratory-diseases": d => (parseFloat(d["Total.COVID.19.Admissions"]) || 0) + (parseFloat(d["Total.Influenza.Admissions"]) || 0) + (parseFloat(d["Total.RSV.Admissions"]) || 0),
+        "respiratory-diseases-2": d => (parseFloat(d["Total.COVID.19.Admissions"]) || 0) + (parseFloat(d["Total.Influenza.Admissions"]) || 0) + (parseFloat(d["Total.RSV.Admissions"]) || 0),
+    }
+
+    var disease_display_names = {
+        "covid-19": "COVID-19",
+        "influenza-1": "Influenza",
+        "RSV": "RSV", 
+        "respiratory-diseases": "COVID-19, Flu, RSV",
+        "respiratory-diseases-2": "COVID-19, Flu, RSV"
+    }
+    
+    mapStateHospitalizationsSvg.innerHTML = ""
+    stateHeight = mapStateHospitalizationsSvg.clientHeight
+    stateWidth = mapStateHospitalizationsSvg.clientWidth
+    
+    var svg = d3.select(mapStateHospitalizationsSvg)
+
+    d3.csv("/data/hospitalizations/state").then(function(stateData) {
+        stateData = stateData.filter(d => dayjs(parseDate(d["Week.Ending.Date"])).isSameOrAfter(startDate))
+        var yAxis = svg.append("g")
+            .attr("class", "y-axis")
+        var xAxis = svg.append("g")
+            .attr("class", "x-axis")
+
+        
+        var maxVal = d3.max(stateData.map(d => disease_crosswalk[mapDiseaseSelector.value](d)))
+
+        var temp = svg.append("text").text(d3.format(".2r")(maxVal)).attr("x", 0).attr("y", 0)
+        stateMargins = {
+            "top": .5*em, 
+            "bottom": 3.25*em,
+            "left": Math.max(20, temp.node().getBBox().width) + 1.25*em,
+            "right": 1*em,
+        }
+
+        stateXScale = d3.scaleUtc()
+                    .domain([startDate, endDate]).range([stateMargins.left, stateWidth - stateMargins.right])    
+                    .nice()
+
+        stateYScale = d3.scaleLinear()
+            .domain([0, maxVal])
+            .nice()
+            .range([stateHeight-stateMargins.bottom, stateMargins.top])
+
+        svg.append("g")
+            .selectAll("rect")
+            .data(stateData)
+            .enter()
+            .append("rect")
+            .attr("x", (d) => stateXScale(parseDate(d["Week.Ending.Date"])))
+            .attr("y", d => stateYScale(disease_crosswalk[mapDiseaseSelector.value](d)))
+            .attr("height", d => stateYScale(0) - stateYScale(disease_crosswalk[mapDiseaseSelector.value](d)))
+            .attr("width", (stateWidth - (stateMargins.left + stateMargins.right)) / stateData.length)
+            .attr("stroke", "var(--sl-color-neutral-1000)")
+            .attr("stroke-width", 1)
+            .attr("fill", "var(--sl-color-neutral-100)")
+
+        yAxis.append("text")
+            .attr("id", "map-state-hospitalizations-yaxis-title")
+            .attr("transform", `translate(${1*em},${d3.mean(stateYScale.range())})rotate(-90)`)
+            .attr("text-anchor", "middle")
+            .attr("fill", "var(--sl-color-neutral-1000)")
+            .attr("font-size", "var(--sl-font-size-small)")
+            .text(disease_display_names[mapDiseaseSelector.value])
+            
+        yAxis.append("g")
+            .attr("transform", `translate(${stateMargins.left},0)`)
+            .call(d3.axisLeft(stateYScale).ticks(5).tickSize(4))
+            .selectAll("text")
+            .attr("class", "tooltip-label")
+            .attr("fill", "var(--sl-color-neutral-1000)")
+
+        xAxis.call(d3.axisBottom(stateXScale).tickArguments([d3.timeMonth.every(1), d3.timeFormat("%b %Y")]))
+            .attr("transform", `translate(0, ${stateHeight - stateMargins.bottom})`)  
+            .selectAll("text")
+            .style("text-anchor", "end")
+            .attr("transform", `translate(0, 10) rotate(-90)`)
+
+        temp.remove()
+    })
+}
+drawStateHospitalizations()

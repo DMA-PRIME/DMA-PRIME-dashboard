@@ -22,6 +22,7 @@ mapDataSourceSelector.addEventListener("sl-change", (event) => {
 })
 
 mapDiseaseSelector.addEventListener("sl-change", (event) => {
+    drawStateHospitalizations()
     updateMapData()
 
     if (focusZCTA != null) {
@@ -208,3 +209,8 @@ function setZctaInteractions(zcta) {
     }
 
 }
+
+
+mapStateHospitalizationsResizer.addEventListener("sl-resize", () => {
+    drawStateHospitalizations()
+})
