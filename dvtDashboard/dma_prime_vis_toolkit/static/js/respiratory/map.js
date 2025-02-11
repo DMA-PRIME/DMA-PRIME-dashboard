@@ -98,7 +98,7 @@ function mapInitialVisualization() {
                 thisData = element[mapDataSourceSelector.value].data
 
                 // find index of current date in data
-                thisStartDate = parseDate(element[mapDataSourceSelector.value]["start-date"])
+                var thisStartDate = parseDate(element[mapDataSourceSelector.value]["start-date"])
                 thisEndDate = new Date(thisStartDate);
                 thisEndDate.setDate(thisEndDate.getDate() + thisData.length*7);
                 datesReconstructed = d3.timeSaturday.range(thisStartDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 1)
@@ -343,7 +343,7 @@ function updateMapData() {
         thisData = d[mapDataSourceSelector.value].data
 
         // find index of current date in the data
-        thisStartDate = parseDate(d[mapDataSourceSelector.value]["start-date"])
+        var thisStartDate = parseDate(d[mapDataSourceSelector.value]["start-date"])
         thisEndDate = new Date(thisStartDate);
         thisEndDate.setDate(thisEndDate.getDate() + thisData.length*7);
         datesReconstructed = d3.timeSaturday.range(thisStartDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 1)
@@ -391,7 +391,7 @@ function drawStateHospitalizations() {
 
     d3.csv("/data/hospitalizations/state").then(function(stateData) {
         stateData = stateData.filter(d => {
-            var thisDate = dayjs(parseDate(d["Week.Ending.Date"]))
+            var thisDate = dayjs(parseHospDate(d["Week.Ending.Date"]))
             return thisDate.isSameOrAfter(startDate) && thisDate.isSameOrBefore(thisWeekMonday)})
         var yAxis = svg.append("g")
             .attr("class", "y-axis")
@@ -422,7 +422,7 @@ function drawStateHospitalizations() {
             .data(stateData)
             .enter()
             .append("rect")
-            .attr("x", (d) => stateXScale(parseDate(d["Week.Ending.Date"])))
+            .attr("x", (d) => stateXScale(parseHospDate(d["Week.Ending.Date"])))
             .attr("y", d => stateYScale(disease_crosswalk[mapDiseaseSelector.value](d)))
             .attr("height", d => stateYScale(0) - stateYScale(disease_crosswalk[mapDiseaseSelector.value](d)))
             .attr("width", (stateWidth - (stateMargins.left + stateMargins.right)) / stateData.length)

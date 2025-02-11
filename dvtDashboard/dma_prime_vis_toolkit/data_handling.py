@@ -36,7 +36,7 @@ def getHospitalizations(disease='covid-19'):
 @login_required
 def getHospitalizationsState():
     # hospitalization data based on disease
-    return send_file(f'{current_app.config['DATADIR']}/raw/Weekly_Hospital_Respiratory_Data_2025_02_04.csv')
+    return send_file(f'{current_app.config['DATADIR']}/raw/respiratory/Weekly_Hospital_Respiratory_Data.csv')
 
 @bp.route('/deckgl-respiratory', methods=['GET', 'POST'])
 @login_required

@@ -133,6 +133,11 @@ function getDataAsArray(disease, dataSource, rate, imputations=true) {
 function parseDate(dateString) {
     return dayjs.tz(dateString, "YYYY-MM-DD", "America/New_York").toDate()
 }
+
+function parseHospDate(dateString) {
+    return dayjs.tz(dateString, "M/D/YYYY", "America/New_York").toDate()
+}
+
 function fixName(name) {
     // replace spaces with dashes
     // remove apostrophe's 
@@ -560,7 +565,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
 
     // line generators
     historicalLine = function(data) {
-        thisStartDate = d3.timeSaturday.round(new Date(data["start-date"]))
+        var thisStartDate = d3.timeSaturday.round(new Date(data["start-date"]))
         startIndex = historicalDates.findIndex((d) => d.getTime() == thisStartDate.getTime())
 
         return d3.line()
@@ -570,7 +575,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
     }
 
     predictionLine = function(data) {
-        thisStartDate = d3.timeSaturday.round(new Date(data["start-date"]))
+        var thisStartDate = d3.timeSaturday.round(new Date(data["start-date"]))
         startIndex = predictionDates.findIndex((d) => d.getTime() == thisStartDate.getTime())
 
         return d3.line()
@@ -668,7 +673,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
         thisData = data[dataSource]
         historicalLabels = graphSVG.append("g")
 
-        thisStartDate = parseDate(thisData["start-date"])
+        var thisStartDate = parseDate(thisData["start-date"])
         thisEndDate = new Date(thisStartDate);
         thisEndDate.setDate(thisEndDate.getDate() + thisData.data.length*7);
         datesReconstructed = d3.timeSaturday.range(thisStartDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 1)

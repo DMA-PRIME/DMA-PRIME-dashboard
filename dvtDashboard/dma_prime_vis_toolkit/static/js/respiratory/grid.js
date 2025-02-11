@@ -229,8 +229,8 @@ function updateGridData() {
             
         // create the line creation function
         line = function(data) {
-            startDate = d3.timeSaturday.round(new Date(data["start-date"]))
-            startIndex = historicalDates.findIndex((d) => d.getTime() == startDate.getTime())
+            var thisStartDate = d3.timeSaturday.round(new Date(data["start-date"]))
+            startIndex = historicalDates.findIndex((d) => d.getTime() == thisStartDate.getTime())
             
             return d3.line()
                 .x((_, i) => xScale(historicalDates[i+startIndex]))
