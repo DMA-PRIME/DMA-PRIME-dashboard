@@ -1,4 +1,4 @@
-import { styleSheet, selectedItems, zctaData, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn, update } from "/static/js/other-infectious-diseases/map.js"
+import { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, changeDataColumn, update } from "/static/js/other-infectious-diseases/map.js"
 
 mapResetButton.addEventListener("click", () => {
     // reset map zoom and center
@@ -113,3 +113,11 @@ window.addEventListener("keydown", (event) => {
         waitForChange()
     }
 });
+
+aggregatedDiseaseHistory.addEventListener("click", () => {
+    aggregatedDiseaseHistoryLarge.show()
+})
+
+aggregatedDiseaseHistoryResizerLarge.addEventListener("sl-resize", () => {
+    drawLargeAggregation()
+})

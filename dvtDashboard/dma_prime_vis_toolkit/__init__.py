@@ -185,7 +185,6 @@ def create_app(development=False, dataDir=None):
                 'html': 'waste-water/waste-water-grid-panel.html'
             },
         ]
-        print(metadata)
         return render_template('waste-water/waste-water-base.html', panels=panels, metadata=metadata)
 
     if development:

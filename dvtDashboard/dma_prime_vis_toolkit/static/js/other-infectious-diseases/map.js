@@ -1,6 +1,6 @@
 const { GeoJsonLayer, IconLayer, MapboxOverlay, Widget } = deck;
 
-export { styleSheet, zctaData, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn, update }
+export { styleSheet, zctaData, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn, update }
 
 var zctaData = await d3.json(`/data/other-infectious-diseases/encounters`)
 var stateFeature = zctaData.features.find(d => d.properties.ZCTA == "state")
@@ -379,6 +379,125 @@ function getData(feature, timeFrame="weekly") {
     return thisData
 }
 
+function drawLargeAggregation() {
+    var thisData = getData(stateFeature, "weekly")
+
+    aggregatedDiseaseHistoryLargeTitle.innerHTML = `State Wide ${d3.select(`sl-radio-button[value=${mapColumnSwitch.value}]`).html()}`
+
+    var encounterString = ""
+    switch (mapColumnSwitch.value) {
+        case "encounters":
+            encounterString += "Encounters"
+            break;
+        case "pos_tests":
+            encounterString += "Positive tests"
+            break;
+        case "encounter_plus_test":
+            encounterString += "Encounters and positive tests"
+            break;
+    }
+    encounterString += " in the "
+    var thisWeek = parseDate(thisData.end_date)
+    switch (mapTimeSwitch.value) {
+        case "weekly":
+            var formatDate = d3.utcFormat("%B %d, %Y")
+            encounterString += `week of ${formatDate(thisWeek)}`
+            break;
+        case "monthly":
+            var startWeek = d3.timeSaturday.offset(parseDate('2025-01-04'), -4)
+            var formatDate = d3.utcFormat("%b/%d/%y")
+            encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
+            break;
+        case "yearly":
+            var startWeek = d3.timeSaturday.offset(parseDate('2025-01-04'), -52)
+            var formatDate = d3.utcFormat("%b/%d/%y")
+            encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
+            break;
+    }
+    encounterString += ": "
+    var val = getData(stateFeature, mapTimeSwitch.value).data.at(-1)
+    if (val) {
+        if (mapRateSwitch.value == "rate") {
+            val = Math.round(val * 1000) / 1000
+            encounterString += `${val} (per 1000 people)`
+        } else {
+            encounterString += val
+        }
+    } else {
+        encounterString += "N/A"
+    }
+    aggregatedDiseaseHistoryLargeSubtitle.innerHTML = encounterString
+
+    var svg = d3.select(aggregatedDiseaseHistoryLargeSvg)
+    svg.html("")
+    var data = thisData
+    var metadata = zctaData.metadata
+    var width = aggregatedDiseaseHistoryLargeSvg.clientWidth
+    var height = aggregatedDiseaseHistoryLargeSvg.clientHeight
+
+    var graphSVG = svg.append("svg")
+        .attr("class", "tooltip-graph-svg")
+        .attr("height", height)
+        .attr("width", width)
+
+    var yAxis = svg.append("g")
+        .attr("class", "y-axis")
+    var xAxis = svg.append("g")
+        .attr("class", "x-axis")
+    
+    var minMaxVal = mapRateSwitch.value == "rate" ? 1000.0/data.population : 1
+    var maxVal = d3.max(data.data) ? d3.max(data.data) : minMaxVal
+    // figure out how much space is needed for the y-axis text
+    var temp = svg.append("text").text(d3.format(".2r")(maxVal)).attr("x", 0).attr("y", 0)
+    var margins = {
+        "top": .5*em, 
+        "bottom": 1.5*em,
+        "left": Math.max(20, temp.node().getBBox().width) + 1.25*em,
+        "right": .5*em,
+    }
+
+    var yScale = d3.scaleLinear()
+        .domain([0, maxVal])
+        .nice()
+        .range([height-margins.bottom, margins.top])
+
+    var start_date = parseDate(metadata.start_date)
+    var xScale = d3.scaleUtc()
+        .domain([start_date, parseDate(metadata.end_date)])
+        .nice()
+        .range([margins.left, width - margins.right])
+
+    graphSVG.selectAll("rect")
+        .data(data.data)
+        .enter()
+        .append("rect")
+        .attr("x", (d, i) => xScale(d3.utcDay.offset(start_date, (7 * i))))
+        .attr("y", d => yScale(d))
+        .attr("height", d => yScale(0) - yScale(d))
+        .attr("width", (width - (margins.left + margins.right)) / data.data.length)
+        .attr("fill", "red")
+
+    yAxis.append("text")
+        .attr("transform", `translate(${1*em},${yScale(d3.mean(yScale.domain()))})rotate(-90)`)
+        .attr("text-anchor", "middle")
+        .attr("fill", "var(--sl-color-neutral-1000)")
+        .attr("font-size", "var(--sl-font-size-small)")
+        .text(d3.select(`sl-radio-button[value=${mapColumnSwitch.value}]`).html())
+        
+    yAxis.append("g")
+        .attr("transform", `translate(${margins.left},0)`)
+        .call(d3.axisLeft(yScale).ticks(5).tickSize(4))
+        .selectAll("text")
+        .attr("class", "tooltip-label")
+        .attr("fill", "var(--sl-color-neutral-1000)")
+
+    xAxis.call(d3.axisBottom(xScale).tickArguments([d3.timeYear.every(1), d3.timeFormat("%Y")]))
+        .attr("transform", `translate(0, ${height - margins.bottom})`)
+
+    temp.remove()
+    
+}
+
 async function changeDataColumn() {
     zctaData = await d3.json(`/data/other-infectious-diseases/${mapColumnSwitch.value}`)
     stateFeature = zctaData.features.find(d => d.properties.ZCTA == "state")
@@ -397,6 +516,7 @@ function update() {
     drawTooltip(selectedItems.zcta)
     updateDiseaseCountDisplay()
     drawAggregation()
+    drawLargeAggregation()
     drawLegend()
     redraw()
 }

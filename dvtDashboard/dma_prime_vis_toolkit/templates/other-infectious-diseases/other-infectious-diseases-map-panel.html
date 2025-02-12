@@ -63,6 +63,16 @@
     <svg id="aggregated-disease-history"></svg>
   </div>
 </sl-resize-observer>
+
+<sl-dialog id="aggregated-disease-history-large" class="dialog-width" >
+  <div slot="label">
+    <p id="aggregated-disease-history-large-title">State Wide Disease Encounters</p>
+    <p id="aggregated-disease-history-large-subtitle" >N/A</p>
+  </div>
+  <sl-resize-observer id="aggregated-disease-history-resizer-large">
+    <svg id="aggregated-disease-history-large-svg"></svg>
+  </sl-resize-observer>
+</sl-dialog>
 {% endblock %}
 
 {% block contents %}
@@ -88,6 +98,12 @@
   aggregatedDiseaseHistoryTitle = document.getElementById("aggregated-disease-history-title")
   aggregatedDiseaseHistorySubtitle = document.getElementById("aggregated-disease-history-subtitle")
   aggregatedDiseaseHistory = document.getElementById("aggregated-disease-history")
+
+  aggregatedDiseaseHistoryLarge = document.getElementById("aggregated-disease-history-large")
+  aggregatedDiseaseHistoryLargeTitle = document.getElementById("aggregated-disease-history-large-title")
+  aggregatedDiseaseHistoryLargeSubtitle = document.getElementById("aggregated-disease-history-large-subtitle")
+  aggregatedDiseaseHistoryLargeSvg = document.getElementById("aggregated-disease-history-large-svg")
+  aggregatedDiseaseHistoryResizerLarge = document.getElementById("aggregated-disease-history-resizer-large")
 
   mapDiv = document.getElementById("map-div")
   choroplethLegendSVG = document.getElementById("choropleth-legend-svg")

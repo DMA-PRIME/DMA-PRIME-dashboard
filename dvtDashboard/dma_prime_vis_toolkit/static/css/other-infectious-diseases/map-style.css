@@ -24,6 +24,18 @@
     width: 100%;
 }
 
+/* agg disease large */
+#aggregated-disease-history-large {
+    --width: 65vw;
+}
+#aggregated-disease-history-large-svg {
+    width: 100%;
+    aspect-ratio: 2;
+}
+#aggregated-disease-history-large-subtitle {
+    font-size: var(--sl-font-size-small);
+}
+
 /* choropleth legend */
 #choropleth-legend {
     /* makes sure the legend renders above the map */
