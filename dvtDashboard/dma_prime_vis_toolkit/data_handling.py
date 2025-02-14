@@ -44,6 +44,12 @@ def getRespiratoryHospitalizations(disease='covid-19'):
     # hospitalization data based on disease
     return send_file(f'{current_app.config['DATADIR']}/processed/deckgl_respiratory_zcta_hospitalization_data.json')
 
+@bp.route('/opioid-hcv-hiv/<disease>', methods=['GET', 'POST'])
+@login_required
+def getOpioidHcvHiv(disease='opioid'):
+    # hospitalization data based on disease
+    return send_file(f'{current_app.config['DATADIR']}/processed/opioid_hcv_hiv/{disease}_zcta_hospitalization_data.json')
+
 @bp.route('/other-infectious-diseases/<column>', methods=['GET', 'POST'])
 @login_required
 def getStateDiseaseHospitalizations(column='encounters'):

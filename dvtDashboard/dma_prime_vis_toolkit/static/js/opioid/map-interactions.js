@@ -1,4 +1,4 @@
-import { map, brushes, thresholds, xScales, selectedZCTA, selectedCounty, zctaFeatures, countyData, redraw, updateHistogram, mobileClinicClick } from "/static/js/opioid/map.js"
+import { map, brushes, thresholds, xScales, selectedZCTA, selectedCounty, zctaFeatures, countyData, redraw, updateHistogram, mobileClinicClick, clearBrushes, changeDisease } from "/static/js/opioid/map.js"
 
 mapResetButton.addEventListener("click", () => {
     // reset map zoom and center
@@ -16,13 +16,7 @@ mapRateSwitch.addEventListener("sl-change", () => {
     dataVersion++
     updateHistogram("hospitalizations")
     updateHistogram("deaths")
-    Object.entries(brushes).forEach(brush => {
-        var column = brush[0]
-        if (["hospitalizations", "deaths"].includes(column)) {
-            d3.select(`#map-${column}-filter-brush`).call(brush[1].clear)
-            thresholds[column] = xScales[column].domain()
-        }
-    })
+    clearBrushes()
     redraw()
 })
 
@@ -36,7 +30,10 @@ mapFilterResetButton.addEventListener("click", () => {
 })
 
 // options selection handling
-mapYearSelector.addEventListener("sl-change", function(event) {
+mapDiseaseSelector.addEventListener("sl-change", changeDisease)
+
+mapYearSelector.addEventListener("sl-change", yearChange)
+function yearChange(event) {
     dataVersion++
     if (Number.isNaN(Number.parseInt(mapYearSelector.value))) {
         d3.selectAll("sl-option[value='hospitalizations']")
@@ -55,7 +52,8 @@ mapYearSelector.addEventListener("sl-change", function(event) {
         mobileClinicClick(selectedZCTA.zcta)
     }
     redraw()
-})
+}
+yearChange()
 
 mapVariable1Selector.addEventListener("sl-change", function(event) {
     dataVersion++

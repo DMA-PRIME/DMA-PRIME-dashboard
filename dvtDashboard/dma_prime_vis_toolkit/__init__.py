@@ -5,7 +5,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
 
 import os
-import subprocess
+import datetime
 import pandas as pd
 import numpy as np
 import json
@@ -119,6 +119,23 @@ def create_app(development=False, dataDir=None):
     @app.route('/opioid')
     @login_required
     def opioid():
+        metadata = {
+            'diseases': {
+                'opioid': 'Opioid',
+                'hcv': 'HCV',
+                'hiv': 'HIV',
+            },
+            'years': range(2020, int(datetime.datetime.now().year)),
+            'variables': {
+                'hospitalizations': 'Hospitalizations',
+                'deaths': 'Deaths',
+                'SVI': 'Social Vulnerability Index',
+                'proportion_uninsured': 'Proportion Uninsured',
+                'median_income': 'Median Income',
+            }
+        }
+        with open(f'{app.config['DATADIR']}/processed/opioid_hcv_hiv/metadata.json') as f:
+            metadata = dict(json.load(f))
         panels = [
             {
                 'name': 'main',
@@ -131,7 +148,7 @@ def create_app(development=False, dataDir=None):
                 'html': 'opioid/opioid-map-panel.html'
             },
         ]
-        return render_template('opioid/opioid-base.html', panels=panels)
+        return render_template('opioid/opioid-base.html', panels=panels, metadata=metadata)
 
     @app.route('/other-infectious-diseases')
     @login_required

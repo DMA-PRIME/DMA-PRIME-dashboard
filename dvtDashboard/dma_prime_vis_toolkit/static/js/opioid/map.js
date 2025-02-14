@@ -2,21 +2,19 @@
 
 const { GeoJsonLayer, IconLayer, MapboxOverlay } = deck;
 
-export { map, deckOverlay, brushes, thresholds, xScales, selectedZCTA, selectedCounty, zctaFeatures, countyData, redraw, updateHistogram, mobileClinicClick }
+export { map, deckOverlay, brushes, thresholds, xScales, selectedZCTA, selectedCounty, zctaData, zctaFeatures, countyData, redraw, updateHistogram, mobileClinicClick, clearBrushes, changeDisease }
 
 var brushes = {}
 var thresholds = {}
 var xScales = {}
 
-const variableOptions = {
-    "hospitalizations": {"displayName": "Hospitalizations"},
-    "deaths": {"displayName": "Deaths"},
-    "SVI": {"displayName": "Social Vulnerability Index"},
-    "proportion_uninsured": {"displayName": "Proportion Uninsured"},
-    "median_income": {"displayName": "Median Income"},
-}
+await Promise.allSettled([ // wait for following to be defined/load in
+    customElements.whenDefined('sl-select'),
+    customElements.whenDefined('sl-option'),
+    customElements.whenDefined('sl-button'),
+])
 
-var zctaData = await d3.json(`/data/hospitalizations/opioid`)
+var zctaData = await d3.json(`/data/opioid-hcv-hiv/${mapDiseaseSelector.value}`)
 var zctaFeatures = zctaData.features
 var countyData = await d3.json(`/data/map/county`)
 
@@ -42,12 +40,6 @@ const deckOverlay = new MapboxOverlay({
 
 map.addControl(deckOverlay)
 map.addControl(new maplibregl.NavigationControl())
-
-await Promise.allSettled([ // wait for following to be defined/load in
-    customElements.whenDefined('sl-select'),
-    customElements.whenDefined('sl-option'),
-    customElements.whenDefined('sl-button'),
-])
 
 redraw(true) 
 
@@ -253,6 +245,7 @@ function drawLegend() {
             .call(d3.axisBottom(d3.scaleLinear().domain(d3.extent(univariateColormap.domain())).range([0, 450])))
 
     } else {
+        var gridSize = 35
         legend.attr("width", 100)
             .attr("height", 100)
             .attr("transform", `translate(40,-40) rotate(0) scale(1 -1)`)
@@ -262,10 +255,10 @@ function drawLegend() {
                 var rect = legend.append('rect')
                     .attr("id", `#r${i}${j}`)
                     .attr("fill", bivariateColormap(primaryMin + (primaryMax-primaryMin)*(i+.1)/3)(secondaryMin + (secondaryMax-secondaryMin)*(j+.1)/3))
-                    .attr("height", 25)
-                    .attr("width", 25)
-                    .attr("x", 25 * i)
-                    .attr("y", 25 * j)
+                    .attr("height", gridSize)
+                    .attr("width", gridSize)
+                    .attr("x", gridSize * i)
+                    .attr("y", gridSize * j)
             }
         }
     
@@ -274,34 +267,34 @@ function drawLegend() {
         legendCountAxis.append("line")
             .attr("x1", 0)
             .attr("y1", 0)
-            .attr("x2", 75)
+            .attr("x2", gridSize*3)
             .attr("y2", 0)
             .attr("stroke-width", 2)
             .attr("stroke", "black")
         legendCountAxis.append("text")
-            .attr("x", 75 / 2)
+            .attr("x", gridSize*3 / 2)
             .attr("y", 10 + 10 + 12)
             .attr("text-anchor", "middle")
             .attr("font-size", 12)
             .attr("fill", "black")
             .attr("transform", "scale(1 -1)")
-            .text(variableOptions[mapVariable1Selector.value]["displayName"])
+            .text(metadata['variables'][mapVariable1Selector.value])
         for (i = 1; i < 3; i++) {
             legendCountAxis.append("line")
-                .attr("x1", 25 * i)
+                .attr("x1", gridSize * i)
                 .attr("y1", 0)
-                .attr("x2", 25 * i)
+                .attr("x2", gridSize * i)
                 .attr("y2", -10)
                 .attr("stroke-width", 2)
                 .attr("stroke", "black")
             legendCountAxis.append("text")
-                .attr("x", 25 * i)
+                .attr("x", gridSize * i)
                 .attr("y", 10 + 10)
                 .attr("text-anchor", "middle")
                 .attr("font-size", 10)
                 .attr("fill", "black")
                 .attr("transform", "scale(1 -1)")
-                .text(d3.format(".0f")(bivariateColormap.thresholds()[i-1]))
+                .text(parseInt(bivariateColormap.thresholds()[i-1] * 100)/100)
         }
     
         legendCountAxis = legend.append("g")
@@ -310,34 +303,34 @@ function drawLegend() {
         legendCountAxis.append("line")
             .attr("x1", 0)
             .attr("y1", 0)
-            .attr("x2", 75)
+            .attr("x2", gridSize*3)
             .attr("y2", 0)
             .attr("stroke-width", 2)
             .attr("stroke", "black")
         legendCountAxis.append("text")
-            .attr("x", 75 / 2)
+            .attr("x", gridSize*3 / 2)
             .attr("y", -(5 + 10 + 12))
             .attr("text-anchor", "middle")
             .attr("font-size", 12)
             .attr("fill", "black")
             .attr("transform", "scale(1 -1)")
-            .text(variableOptions[mapVariable2Selector.value]["displayName"])
+            .text(metadata['variables'][mapVariable2Selector.value])
         for (i = 1; i < 3; i++) {
             legendCountAxis.append("line")
-                .attr("x1", 25 * i)
+                .attr("x1", gridSize * i)
                 .attr("y1", 0)
-                .attr("x2", 25 * i)
+                .attr("x2", gridSize * i)
                 .attr("y2", 10)
                 .attr("stroke-width", 2)
                 .attr("stroke", "black")
             legendCountAxis.append("text")
-                .attr("x", 25 * i)
+                .attr("x", gridSize * i)
                 .attr("y", -(5 + 10))
                 .attr("text-anchor", "middle")
                 .attr("font-size", 10)
                 .attr("fill", "black")
                 .attr("transform", "scale(1 -1)")
-                .text(d3.format(".0f")(bivariateColormap(0).thresholds()[i-1]))
+                .text(parseInt(bivariateColormap(0).thresholds()[i-1] * 100.) / 100)
         }
     }
 }
@@ -379,7 +372,7 @@ function updateHistogram(column) {
                         .attr("y", 1.75*em)
                         .attr("fill", "currentColor")
                         .attr("text-anchor", "middle")
-                        .text(variableOptions[column]["displayName"]))
+                        .text(metadata['variables'][column]))
 
     var yAxis = svg.append("g")
         .attr("transform", `translate(${2*em}, 0)`)
@@ -453,4 +446,24 @@ function formatZctaData(value, formatter = (d) => d) {
     } else {
         return formatter(value)
     }
+}
+
+function clearBrushes() {
+    Object.entries(brushes).forEach(brush => {
+        var column = brush[0]
+        if (["hospitalizations", "deaths"].includes(column)) {
+            d3.select(`#map-${column}-filter-brush`).call(brush[1].clear)
+            thresholds[column] = xScales[column].domain()
+        }
+    })
+}
+
+async function changeDisease() {
+    dataVersion++
+    zctaData = await d3.json(`/data/opioid-hcv-hiv/${mapDiseaseSelector.value}`)
+    clearBrushes()
+    if (selectedZCTA.zcta) {
+        mobileClinicClick(selectedZCTA.zcta)
+    }
+    redraw()
 }
