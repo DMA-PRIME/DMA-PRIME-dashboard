@@ -1,0 +1,39 @@
+#grid-content{
+    position: relative;
+}
+
+#grid-container{
+    padding: var(--sl-spacing-large);
+    display: grid;
+    gap: var(--sl-spacing-large);
+    height: 100%;
+}
+
+.site-svg{
+    height: 100%;
+    width: 100%;
+}
+
+#grid-legend{
+    position: absolute;
+    left: 0px;
+    bottom: 0px;
+    background-color: rgba(255, 255, 255, .35);
+}
+#grid-legend-svg{
+    height: 2em;
+}
+
+#grid-map {
+    width: 100%;
+    overflow: hidden;
+}
+
+#grid-map-svg {
+    width: 100%;
+    aspect-ratio: 13/10;
+}
+.grid-map-zcta {
+    stroke-width: 1;
+    stroke: black;
+}

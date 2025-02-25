@@ -1,0 +1,101 @@
+
+/* map sidebar/options */
+#map-main-content {
+    /* makes sure state aggregation has enough room */
+    --min: 350px
+}
+
+#map-sidebar {
+    /* scroll vertically if the state aggregation overflows vertically */
+    overflow-y: scroll
+}
+
+#map-content {
+    /* needed for choropleth legend to be in the correct spot */
+    position: relative;
+}
+
+#map-disease-selector-container::part(content) {
+    /* makes disease selector detail content look nicer - not so far from the summary */
+    padding-top: 0px;
+}
+.disease-checkbox {
+    /* ensures 1 disease per "line" */
+    width: 100%;
+}
+
+/* agg disease large */
+#aggregated-disease-history-large {
+    --width: 65vw;
+}
+#aggregated-disease-history-large-svg {
+    width: 100%;
+    aspect-ratio: 2;
+}
+#aggregated-disease-history-large-subtitle {
+    font-size: var(--sl-font-size-small);
+}
+
+/* choropleth legend */
+#choropleth-legend {
+    /* makes sure the legend renders above the map */
+    z-index: 10;
+}
+
+#choropleth-legend-svg text {
+    fill: black
+}
+
+#choropleth-legend-svg line,path {
+    stroke: black
+}
+
+/* map tooltip and state aggregation bar graph */
+#aggregated-disease-history-container {
+    /* places state aggregation graph at the bottom of the sidebar */
+    align-self: end;
+    text-align: center;
+}
+
+#map-tooltip-svg text, #aggregated-disease-history text {
+    /* bar graph svg text */
+    margin: 0;
+    padding: 0;
+    font-size: var(--sl-font-size-x-small);
+    white-space: nowrap;
+}
+
+#map-tooltip-svg .tick text, #aggregated-disease-history .tick text {
+    /* makes axes font smaller */
+    font-size: var(--sl-font-size-2x-small);
+}
+
+p.tooltip-title {
+    /* tooltip title element */
+    margin: 0;
+    padding-top: var(--sl-spacing-x-small);
+    text-align: center;
+  }
+  
+.tooltip-title, #aggregated-disease-history-title {
+    /* bar graph title */
+    font-size: var(--sl-font-size-small);
+}
+
+.tooltip-subtitle, #aggregated-disease-history-subtitle {
+    /* bar graph subtitles */
+    font-size: var(--sl-font-size-x-small);
+}
+
+/* tooltip popup item */
+.maplibregl-popup-content {
+    /* popup content div */
+    border-width: var(--sl-border-radius-small);
+    border-style: solid;
+    border-color: var(--sl-color-neutral-1000);
+}
+
+.maplibregl-popup-tip {
+    /* triangular tip pointing to zcta popup refers to */
+    border-top-color: black  !important;
+}

@@ -16,6 +16,13 @@ sl-details.sidebar-detail-container::part(content) {
     padding-top: 0px;
 }
 
+.map-clear-selection-buttion {
+    width: 100%;
+}
+.map-icons-toggle {
+    width: 100%;
+}
+
 /* histogram filters container */
 #map-filters-container {
     max-height: auto;

@@ -1,4 +1,40 @@
 
+#map-content {
+    /* needed for choropleth legend to be in the correct spot I think */
+    position: relative;
+}
+
+/* state hospitalizations */
+#map-state-hospitalizations {
+    padding: var(--sl-spacing-large) var(--sl-spacing-small);
+}
+
+#map-state-hospitalizations-large {
+    --width: 65vw;
+}
+
+#map-state-hospitalizations-svg {
+    width: 100%;
+    height: 200px;
+}
+
+#map-state-hospitalizations-large-svg {
+    width: 100%;
+    aspect-ratio: 2;
+}
+
+.map-state-hospitalizations-title {
+    text-align: center;
+}
+
+#map-state-hospitalizations-yaxis-title {
+    font-size: var(--sl-font-size-x-small);
+}
+
+#map-state-hospitalizations-large-yaxis-title {
+    font-size: var(--sl-font-size-medium);
+}
+
 /* map items */
 .map-icons-toggle::part(control--checked) {
     /* Hospital icons toggle color is grey */
@@ -21,6 +57,12 @@ path.map-zcta {
 }
 
 /* legend components */
+#choropleth-legend {
+    position:absolute;
+    bottom: var(--sl-spacing-small);
+    left: var(--sl-spacing-small);
+}
+
 .map-legend-background {
     /* legend backgrounds */
     fill: var(--sl-color-neutral-50);

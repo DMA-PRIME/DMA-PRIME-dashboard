@@ -5,9 +5,10 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
 
 import os
-import subprocess
+import datetime
 import pandas as pd
 import numpy as np
+import json
 
 from .utility import * 
 from .authenticate import login_required, bp
@@ -56,6 +57,20 @@ def create_app(development=False, dataDir=None):
     @app.route('/respiratory')
     @login_required
     def respiratory():
+        today = pd.to_datetime("today").normalize()
+        current_week = today + pd.DateOffset(days=(5 - today.weekday()) % 7)
+        metadata = {
+            'diseases': {
+                'covid-19': 'Covid-19'
+            },
+            'start_date': (current_week - pd.DateOffset(months=18)).strftime('%Y-%m-%d'),
+            'current_week': current_week.strftime('%Y-%m-%d'),
+            'end_date': (current_week + pd.DateOffset(weeks=4)).strftime('%Y-%m-%d')
+        }
+
+        with open(f'{app.config['DATADIR']}/processed/respiratory/metadata.json') as f:
+            metadata = dict(json.load(f))
+
         panels = [
             {
                 'name': 'main',
@@ -73,12 +88,13 @@ def create_app(development=False, dataDir=None):
                 'html': 'respiratory/respiratory-grid-panel.html'
             },
             # {
-            #     'name': 'comparison',
-            #     'displayName': 'Map Comparison View',
-            #     'html': 'respiratory/comparison-panel.html'
-            # }
+            #     'name': 'deckmap',
+            #     'displayName': 'Deckgl Map View',
+            #     'active': True,
+            #     'html': 'respiratory/deckgl-respiratory-map-panel.html'
+            # },
         ]
-        return render_template('respiratory/respiratory-base.html', panels=panels, diseases=list(files.keys()))
+        return render_template('respiratory/respiratory-base.html', panels=panels, metadata=metadata)
     
     @app.route('/mobile-health-clinics')
     @login_required
@@ -114,9 +130,26 @@ def create_app(development=False, dataDir=None):
         ]
         return render_template('modeling/modeling-base.html', panels=panels)
     
-    @app.route('/opioid')
+    @app.route('/opioid-hcv-hiv')
     @login_required
-    def opioid():
+    def opioid_hcv_hiv():
+        metadata = {
+            'diseases': {
+                'opioid': 'Opioid',
+                'hcv': 'HCV',
+                'hiv': 'HIV',
+            },
+            'years': range(2020, int(datetime.datetime.now().year)),
+            'variables': {
+                'hospitalizations': 'Hospitalizations',
+                'deaths': 'Deaths',
+                'SVI': 'Social Vulnerability Index',
+                'proportion_uninsured': 'Proportion Uninsured',
+                'median_income': 'Median Income',
+            }
+        }
+        with open(f'{app.config['DATADIR']}/processed/opioid_hcv_hiv/metadata.json') as f:
+            metadata = dict(json.load(f))
         panels = [
             {
                 'name': 'main',
@@ -126,10 +159,64 @@ def create_app(development=False, dataDir=None):
                 'name': 'map',
                 'displayName': 'Map View',
                 'active': True,
-                'html': 'opioid/opioid-map-panel.html'
+                'html': 'opioid-hcv-hiv/opioid-hcv-hiv-map-panel.html'
             },
         ]
-        return render_template('opioid/opioid-base.html', panels=panels)
+        return render_template('opioid-hcv-hiv/opioid-hcv-hiv-base.html', panels=panels, metadata=metadata)
+
+    @app.route('/other-infectious-diseases')
+    @login_required
+    def other_infectious_diseases():
+        disease_files = os.listdir(f'{app.config['DATADIR']}/raw/other_diseases')
+
+        diseases = []
+
+        for file in disease_files:
+            disease_display_name = file.split(',')[0]
+            disease = disease_display_name.split(',')[0]
+            disease = disease.lower()
+            disease = disease.split('(')[0]
+            disease = disease.strip()
+            disease = '-'.join(disease.split(' '))
+            diseases.append({'display-name': disease_display_name, 'disease-name': disease})
+        panels = [
+            {
+                'name': 'main',
+                'displayName': 'DMA-PRIME',
+            },
+            {
+                'name': 'map',
+                'displayName': 'Map View',
+                'active': True,
+                'html': 'other-infectious-diseases/other-infectious-diseases-map-panel.html'
+            },
+        ]
+        return render_template('other-infectious-diseases/other-infectious-diseases-base.html', panels=panels, diseases=diseases)
+
+    @app.route('/waste-water')
+    @login_required
+    def waste_water():
+        metadata = {
+            'site_info': {},
+            'diseases': {},
+            'min_date': pd.to_datetime('today').strftime('%Y-%m-%d'),
+            'max_date': pd.to_datetime('today').strftime('%Y-%m-%d'),
+        }
+        with open(f'{app.config['DATADIR']}/processed/waste_water/metadata.json') as f:
+            metadata = dict(json.load(f))
+        panels = [
+            {
+                'name': 'main',
+                'displayName': 'DMA-PRIME',
+            },
+            {
+                'name': 'grid',
+                'displayName': 'Grid View',
+                'active': True,
+                'html': 'waste-water/waste-water-grid-panel.html'
+            },
+        ]
+        return render_template('waste-water/waste-water-base.html', panels=panels, metadata=metadata)
 
     if development:
         # Simply for my own convenience
