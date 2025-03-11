@@ -257,11 +257,12 @@ function drawLargeStateHospitalizations() {
     }
 
     function xAxisDisplayFunc(svg, stateXScale, stateWidth, stateHeight, stateMargins, diseaseDisplayNames) {
+        var allWeeks = d3.timeDay.range(startDate, d3.timeDay.offset(endDate, 7), 7)
         var xAxis = svg.select(".x-axis")
         var svgMajorXAxis = xAxis.append("g")
             .attr("id", "map-state-hospitalizations-large-major-xaxis")
             .call(d3.axisBottom(stateXScale)
-                .tickValues(d3.timeMonth.every(1).range(stateXScale.domain()[0], stateXScale.domain()[1]).map(d => d3.timeSaturday.ceil(d)))
+                .tickValues(allWeeks.filter(d => d.getDate() < 7))
                 .tickFormat(d3.timeFormat("")))
             .attr("transform", `translate(0, ${stateHeight - stateMargins.bottom})`)  
         
@@ -286,7 +287,7 @@ function drawLargeStateHospitalizations() {
 
         xAxis.append("g")
             .attr("id", "map-state-hospitalizations-large-minor-xaxis")
-            .call(d3.axisBottom(stateXScale).tickArguments([d3.timeSaturday.every(1), d3.timeFormat("")]))
+            .call(d3.axisBottom(stateXScale).tickArguments([d3.timeDay.every(7), d3.timeFormat("")]))
             .attr("transform", `translate(0, ${stateHeight - stateMargins.bottom})`)
 
     }
@@ -332,7 +333,7 @@ async function drawStateBarChart(svgDOM, stateMargins, yAxisDisplayFunc, xAxisDi
     stateMargins.left += Math.max(20, temp.node().getBBox().width)
 
     var stateXScale = d3.scaleUtc()
-                .domain([startDate, d3.timeSaturday.offset(endDate, 1)]).range([stateMargins.left, stateWidth - stateMargins.right])    
+                .domain([startDate, d3.timeDay.offset(endDate, 7)]).range([stateMargins.left, stateWidth - stateMargins.right])    
 
     var stateYScale = d3.scaleLinear()
         .domain([0, maxVal])

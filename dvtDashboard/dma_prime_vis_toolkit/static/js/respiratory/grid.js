@@ -1,4 +1,4 @@
-import { zctaData, historicalDates, currentWeek, dataSourceLineStyle, gridItemDataSources, getDataAsArray, drawTooltip } from "/static/js/respiratory/script.js";
+import { zctaData, historicalDates, currentWeek, dataSourceLineStyle, gridItemDataSources, parseDate, getDataAsArray, drawTooltip } from "/static/js/respiratory/script.js";
 export { gridWidth, gridHeight, updateGridData, sortGrid }
 
 await Promise.allSettled([ // wait for following to be defined/load in
@@ -243,7 +243,7 @@ function updateGridData() {
             
         // create the line creation function
         var line = function(data) {
-            var thisStartDate = d3.timeSaturday.round(new Date(data["start-date"]))
+            var thisStartDate = parseDate(data["start-date"])
             var startIndex = historicalDates.findIndex((d) => d.getTime() == thisStartDate.getTime())
             
             return d3.line()

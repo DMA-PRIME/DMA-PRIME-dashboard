@@ -238,12 +238,12 @@ function drawTooltip(dataObject) {
             encounterString += `week of ${formatDate(thisWeek)}`
             break;
         case "monthly":
-            var startWeek = d3.timeSaturday.offset(parseDate('2025-01-04'), -4)
+            var startWeek = d3.timeDay.offset(thisWeek, -4*7)
             var formatDate = d3.utcFormat("%b/%d/%y")
             encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
             break;
         case "yearly":
-            var startWeek = d3.timeSaturday.offset(parseDate('2025-01-04'), -52)
+            var startWeek = d3.timeDay.offset(thisWeek, -52*7)
             var formatDate = d3.utcFormat("%b/%d/%y")
             encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
             break;
@@ -294,12 +294,12 @@ function drawAggregation() {
             encounterString += `week of ${formatDate(thisWeek)}`
             break;
         case "monthly":
-            var startWeek = d3.timeSaturday.offset(parseDate('2025-01-04'), -4)
+            var startWeek = d3.timeDay.offset(thisWeek, -4*7)
             var formatDate = d3.utcFormat("%b/%d/%y")
             encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
             break;
         case "yearly":
-            var startWeek = d3.timeSaturday.offset(parseDate('2025-01-04'), -52)
+            var startWeek = d3.timeDay.offset(thisWeek, -52*7)
             var formatDate = d3.utcFormat("%b/%d/%y")
             encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
             break;
@@ -357,7 +357,7 @@ function getData(feature, timeFrame="weekly") {
                 var latestDate = parseDate(zctaData.metadata.end_date)
                 thisData.start_date = earliestDate
                 thisData.end_date = latestDate
-                weeks = d3.timeSaturday.count(earliestDate, latestDate) + 1
+                weeks = (d3.timeDay.count(earliestDate, latestDate)/7) + 1
             } else {
                 weeks = 1
             }
@@ -404,12 +404,12 @@ function drawLargeAggregation() {
             encounterString += `week of ${formatDate(thisWeek)}`
             break;
         case "monthly":
-            var startWeek = d3.timeSaturday.offset(parseDate('2025-01-04'), -4)
+            var startWeek = d3.timeDay.offset(parseDate('2025-01-04'), -4*7)
             var formatDate = d3.utcFormat("%b/%d/%y")
             encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
             break;
         case "yearly":
-            var startWeek = d3.timeSaturday.offset(parseDate('2025-01-04'), -52)
+            var startWeek = d3.timeDay.offset(parseDate('2025-01-04'), -52*7)
             var formatDate = d3.utcFormat("%b/%d/%y")
             encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
             break;

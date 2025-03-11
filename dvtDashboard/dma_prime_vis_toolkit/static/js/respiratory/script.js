@@ -6,10 +6,10 @@ export { regionData, zctaData, startDate, currentWeek, endDate, historicalDates,
 var currentWeek = parseDate(metadata.current_week)
 
 var startDate = parseDate(metadata.start_date)
-var historicalDates = d3.timeSaturday.range(startDate, new Date(currentWeek).setDate(currentWeek.getDate()+1), 1)
+var historicalDates = d3.timeDay.range(startDate, new Date(currentWeek).setDate(currentWeek.getDate()+1), 7)
 
 var endDate = parseDate(metadata.end_date)
-var predictionDates = d3.timeSaturday.range(currentWeek, new Date(endDate).setDate(endDate.getDate()+1), 1)
+var predictionDates = d3.timeDay.range(currentWeek, new Date(endDate).setDate(endDate.getDate()+1), 7)
 
 
 var zctaData = await d3.json(`/data/deckgl-respiratory/zcta`)
@@ -328,7 +328,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
 
     // line generators
     var historicalLine = function(data) {
-        var thisStartDate = d3.timeSaturday.round(new Date(data["start-date"]))
+        var thisStartDate = parseDate(data["start-date"])
         var startIndex = historicalDates.findIndex((d) => d.getTime() == thisStartDate.getTime())
 
         return d3.line()
@@ -338,7 +338,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
     }
 
     var predictionLine = function(data) {
-        var thisStartDate = d3.timeSaturday.round(new Date(data["start-date"]))
+        var thisStartDate = parseDate(data["start-date"])
         var startIndex = predictionDates.findIndex((d) => d.getTime() == thisStartDate.getTime())
 
         return d3.line()
@@ -439,7 +439,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
         var thisStartDate = parseDate(thisData["start-date"])
         var thisEndDate = new Date(thisStartDate);
         thisEndDate.setDate(thisEndDate.getDate() + thisData.data.length*7);
-        var datesReconstructed = d3.timeSaturday.range(thisStartDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 1)
+        var datesReconstructed = d3.timeDay.range(startDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 7)
 
         var refDate = new Date(currentWeek)
         refDate.setDate(refDate.getDate() - 7)

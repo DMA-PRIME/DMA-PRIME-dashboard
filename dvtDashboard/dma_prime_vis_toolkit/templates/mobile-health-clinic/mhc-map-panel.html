@@ -5,7 +5,13 @@
   <!-- reset map button (zoom & zcta selection) -->
   <sl-button pill id="map-reset-button" class="center-self">Reset Map</sl-button>
   <sl-divider class="options-divider"></sl-divider>
-  <sl-checkbox id="map-show-all-events-toggle">Show all events</sl-checkbox>
+  <sl-select id="map-timeframe-selector" value="week">
+    <p slot="label">Select a timeframe</p>
+    <sl-option value="week">Past Week</sl-option>
+    <sl-option value="month">Past Month</sl-option>
+    <sl-option value="year">Past Year</sl-option>
+    <sl-option value="all">All Time</sl-option>
+  </sl-select>
 
 </div>
 
@@ -66,7 +72,7 @@
 {% block scripts %}
 <script>
     mapResetButton = document.getElementById("map-reset-button")
-    mapShowAllEventsToggle = document.getElementById("map-show-all-events-toggle")
+    mapTimeframeSelector = document.getElementById("map-timeframe-selector")
 
     mapAndMinorSidebar = document.getElementById("map-and-minor-sidebar")
     mapSecondarySidebarGroup = document.getElementById("map-secondary-sidebar-group")
