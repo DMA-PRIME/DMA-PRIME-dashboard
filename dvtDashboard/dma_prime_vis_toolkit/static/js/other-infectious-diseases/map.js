@@ -230,25 +230,25 @@ function drawTooltip(dataObject) {
             encounterString += "Encounters and positive tests"
             break;
     }
-    encounterString += " in the "
+    encounterString += " from "
     var thisWeek = parseDate(thisData.end_date)
     switch (mapTimeSwitch.value) {
         case "weekly":
-            var formatDate = d3.utcFormat("%B %d, %Y")
-            encounterString += `week of ${formatDate(thisWeek)}`
+            var formatDate = d3.utcFormat("%b %d, %Y")
+            encounterString += `${formatDate(thisWeek)}<br/>to ${formatDate(d3.timeDay.offset(thisWeek, 6))}`
             break;
         case "monthly":
             var startWeek = d3.timeDay.offset(thisWeek, -4*7)
-            var formatDate = d3.utcFormat("%b/%d/%y")
-            encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
+            var formatDate = d3.utcFormat("%b %d, %y")
+            encounterString += `${formatDate(startWeek)}<br/>to ${formatDate(d3.timeDay.offset(thisWeek, 6))}`
             break;
         case "yearly":
             var startWeek = d3.timeDay.offset(thisWeek, -52*7)
-            var formatDate = d3.utcFormat("%b/%d/%y")
-            encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
+            var formatDate = d3.utcFormat("%b %d, %y")
+            encounterString += `${formatDate(startWeek)}<br/>to ${formatDate(d3.timeDay.offset(thisWeek, 6))}`
             break;
     }
-    encounterString += ":<br/>"
+    encounterString += ": "
     if (mapRateSwitch.value == "rate") {
         encounterString += `${Math.round(getData(dataObject, mapTimeSwitch.value).data.at(-1) * 1000) / 1000} (per 1000 people)`
     } else {
@@ -286,25 +286,25 @@ function drawAggregation() {
             encounterString += "Encounters and positive tests"
             break;
     }
-    encounterString += " in the "
+    encounterString += " from "
     var thisWeek = parseDate(thisData.end_date)
     switch (mapTimeSwitch.value) {
         case "weekly":
-            var formatDate = d3.utcFormat("%B %d, %Y")
-            encounterString += `week of ${formatDate(thisWeek)}`
+            var formatDate = d3.utcFormat("%b %d, %Y")
+            encounterString += `${formatDate(thisWeek)} to<br/>${formatDate(d3.timeDay.offset(thisWeek, 6))}`
             break;
         case "monthly":
             var startWeek = d3.timeDay.offset(thisWeek, -4*7)
-            var formatDate = d3.utcFormat("%b/%d/%y")
-            encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
+            var formatDate = d3.utcFormat("%b %d, %y")
+            encounterString += `${formatDate(startWeek)} to<br/>${formatDate(d3.timeDay.offset(thisWeek, 6))}`
             break;
         case "yearly":
             var startWeek = d3.timeDay.offset(thisWeek, -52*7)
-            var formatDate = d3.utcFormat("%b/%d/%y")
-            encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
+            var formatDate = d3.utcFormat("%b %d, %y")
+            encounterString += `${formatDate(startWeek)} to<br/>${formatDate(d3.timeDay.offset(thisWeek, 6))}`
             break;
     }
-    encounterString += ":<br/>"
+    encounterString += ": "
     var val = getData(stateFeature, mapTimeSwitch.value).data.at(-1)
     if (val) {
         if (mapRateSwitch.value == "rate") {
@@ -396,22 +396,22 @@ function drawLargeAggregation() {
             encounterString += "Encounters and positive tests"
             break;
     }
-    encounterString += " in the "
+    encounterString += " from "
     var thisWeek = parseDate(thisData.end_date)
     switch (mapTimeSwitch.value) {
         case "weekly":
-            var formatDate = d3.utcFormat("%B %d, %Y")
-            encounterString += `week of ${formatDate(thisWeek)}`
+            var formatDate = d3.utcFormat("%b %d, %Y")
+            encounterString += `${formatDate(thisWeek)} to ${formatDate(d3.timeDay.offset(thisWeek, 6))}`
             break;
         case "monthly":
-            var startWeek = d3.timeDay.offset(parseDate('2025-01-04'), -4*7)
-            var formatDate = d3.utcFormat("%b/%d/%y")
-            encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
+            var startWeek = d3.timeDay.offset(thisWeek, -4*7)
+            var formatDate = d3.utcFormat("%b %d, %y")
+            encounterString += `${formatDate(startWeek)} to ${formatDate(d3.timeDay.offset(thisWeek, 6))}`
             break;
         case "yearly":
-            var startWeek = d3.timeDay.offset(parseDate('2025-01-04'), -52*7)
-            var formatDate = d3.utcFormat("%b/%d/%y")
-            encounterString += `weeks ${formatDate(startWeek)}-${formatDate(thisWeek)}`
+            var startWeek = d3.timeDay.offset(thisWeek, -52*7)
+            var formatDate = d3.utcFormat("%b %d, %y")
+            encounterString += `${formatDate(startWeek)} to ${formatDate(d3.timeDay.offset(thisWeek, 6))}`
             break;
     }
     encounterString += ": "

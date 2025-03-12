@@ -1,3 +1,4 @@
+{% set min_width = "350px" %}
 {% extends "subtemplates/panel.html" %}
 
 {% block options %}
@@ -117,7 +118,18 @@
 //   communityPartnerIconsToggle = document.getElementById("map-options-community-partner-icons-toggle")
 //   checked = []
 
+</script>
+
+<script type="module">
+  await Promise.allSettled([ // wait for following to be defined/load in
+        customElements.whenDefined('sl-tab-group'),
+        customElements.whenDefined('sl-button'),
+        customElements.whenDefined('sl-resize-observer'),
+        customElements.whenDefined('sl-split-panel'),
+        customElements.whenDefined('sl-tab'),
+    ])
   set{{panel.name}}Panel()
+
 </script>
 
 <script src="{{ url_for('static', filename='js/other-infectious-diseases/map.js') }}" type="module"></script>

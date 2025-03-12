@@ -1,3 +1,4 @@
+{% set min_width = "350px" %}
 {% extends "subtemplates/panel.html" %}
 
 {% block options %}
@@ -107,10 +108,20 @@
   mapDiv = document.getElementById("map-div")
   choroplethLegendSVG = document.getElementById("choropleth-legend-svg")
 
-  set{{panel.name}}Panel()
 </script>
 
 <script src="{{ url_for('static', filename='js/respiratory/map.js') }}" type="module"></script>
 <script src="{{ url_for('static', filename='js/respiratory/map-interactions.js') }}" type="module"></script>
 
+<script type="module">
+  await Promise.allSettled([ // wait for following to be defined/load in
+        customElements.whenDefined('sl-tab-group'),
+        customElements.whenDefined('sl-button'),
+        customElements.whenDefined('sl-resize-observer'),
+        customElements.whenDefined('sl-split-panel'),
+        customElements.whenDefined('sl-tab'),
+    ])
+  set{{panel.name}}Panel()
+
+</script>
 {% endblock %}
