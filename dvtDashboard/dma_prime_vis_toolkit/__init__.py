@@ -206,6 +206,8 @@ def create_app(development=False, dataDir=None):
             'diseases': {},
             'min_date': pd.to_datetime('today').strftime('%Y-%m-%d'),
             'max_date': pd.to_datetime('today').strftime('%Y-%m-%d'),
+            'min_display_date': pd.to_datetime('today').strftime('%A, %B %d, %Y'),
+            'max_display_date': pd.to_datetime('today').strftime('%A, %B %d, %Y'),
         }
         with open(f'{app.config['DATADIR']}/processed/waste_water/metadata.json') as f:
             metadata = dict(json.load(f))

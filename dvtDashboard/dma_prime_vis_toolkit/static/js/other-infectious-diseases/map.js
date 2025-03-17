@@ -17,7 +17,7 @@ var choroplethColorMap = d3.scaleLinear()
     .unknown(unknownColor).nice()
 
 const map = new maplibregl.Map({
-    container: "map-div",
+    container: mapDiv,
     style: "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json",
     center: [-81, 33.65],
     zoom: 7,
@@ -272,7 +272,7 @@ function drawAggregation() {
     var aggWidth = Math.max(300, document.getElementById("map-sidebar").clientWidth)
     var aggHeight = aggWidth * .5
 
-    aggregatedDiseaseHistoryTitle.innerHTML = `State Wide ${d3.select(`sl-radio-button[value=${mapColumnSwitch.value}]`).html()}`
+    aggregatedDiseaseHistoryTitle.innerHTML = `State Wide ${d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html()}`
 
     var encounterString = ""
     switch (mapColumnSwitch.value) {
@@ -342,6 +342,7 @@ function getData(feature, timeFrame="weekly") {
     var diseases = selectedItems.diseases
     var thisData = {
         "data": [],
+        "other": [],
         "population": feature.properties.population,
         "start_date": dayjs(),
         "end_date": dayjs(),
@@ -350,6 +351,8 @@ function getData(feature, timeFrame="weekly") {
         // one/many diseases
         var dataDicts = Object.entries(feature.properties.data).filter(d => diseases.includes(d[0]) && d[1][timeFrame].length > 0)
         dataDicts = dataDicts.map(d => d[1])
+        var otherDicts = Object.entries(feature.properties.other).filter(d => diseases.includes(d[0]) && d[1][timeFrame].length > 0)
+        otherDicts = otherDicts.map(d => d[1])
         var weeks
         if (dataDicts.length > 0) {
             if (timeFrame === "weekly") {
@@ -367,6 +370,12 @@ function getData(feature, timeFrame="weekly") {
                     thisData.data[i] += data[timeFrame][i]
                 }
             }
+            thisData.other = new Array(weeks).fill(0)
+            for (var other of otherDicts) {
+                for (var i=0; i < other[timeFrame].length; i++) {
+                    thisData.other[i] += other[timeFrame][i]
+                }
+            }
         }
     }
     
@@ -382,7 +391,7 @@ function getData(feature, timeFrame="weekly") {
 function drawLargeAggregation() {
     var thisData = getData(stateFeature, "weekly")
 
-    aggregatedDiseaseHistoryLargeTitle.innerHTML = `State Wide ${d3.select(`sl-radio-button[value=${mapColumnSwitch.value}]`).html()}`
+    aggregatedDiseaseHistoryLargeTitle.innerHTML = `State Wide ${d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html()}`
 
     var encounterString = ""
     switch (mapColumnSwitch.value) {
@@ -482,7 +491,7 @@ function drawLargeAggregation() {
         .attr("text-anchor", "middle")
         .attr("fill", "var(--sl-color-neutral-1000)")
         .attr("font-size", "var(--sl-font-size-small)")
-        .text(d3.select(`sl-radio-button[value=${mapColumnSwitch.value}]`).html())
+        .text(d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html())
         
     yAxis.append("g")
         .attr("transform", `translate(${margins.left},0)`)

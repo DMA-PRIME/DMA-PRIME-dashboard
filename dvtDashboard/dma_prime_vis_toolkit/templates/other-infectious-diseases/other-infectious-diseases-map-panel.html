@@ -29,24 +29,18 @@
     </sl-tooltip>
   </sl-radio-group>
 
-  <sl-radio-group value="encounters" id="map-column-switch" class="center-self" size="small">
-    <sl-tooltip content="Disease encounters">
-      <sl-radio-button pill value="encounters">Encounters</sl-radio-button>
-    </sl-tooltip>
-    <sl-tooltip content="Disease encounter related positive tests">
-      <sl-radio-button pill value="pos_tests">Tests</sl-radio-button>
-    </sl-tooltip>
-    <sl-tooltip content="Sum of disease encounters and encounter related positive tests">
-      <sl-radio-button pill value="encounter_plus_test">Encounters and Tests</sl-radio-button>
-    </sl-tooltip>
-  </sl-radio-group>
+  <sl-select value="pos_tests" id="map-column-switch" class="center-self" size="small">
+    <sl-option value="encounters">Encounters</sl-option>
+    <sl-option value="pos_tests">Positive Tests</sl-option>
+    <sl-option value="encounter_plus_test">Encounters and Positive Tests</sl-option>
+  </sl-select>
 
   <!-- disease selector -->
     <sl-details id="map-disease-selector-container" open>
       <p slot="summary">Select a disease or group of diseases</p>
-      <sl-checkbox id="map-all-disease-selector" >All Diseases <span id="map-all-count"></span></sl-checkbox>
+      <sl-checkbox id="map-all-disease-selector" size="small">All Diseases <span id="map-all-count"></span></sl-checkbox>
       {% for disease in diseases %}
-      <sl-checkbox id="map-{{ disease['disease-name'] }}-selector" class="disease-checkbox" disease="{{ disease['disease-name'] }}" >{{ disease['display-name'] }} <span id="map-{{ disease['disease-name'] }}-count"></span></sl-checkbox>
+      <sl-checkbox id="map-{{ disease['disease-name'] }}-selector" class="disease-checkbox" disease="{{ disease['disease-name'] }}" size="small">{{ disease['display-name'] }} <span id="map-{{ disease['disease-name'] }}-count"></span></sl-checkbox>
       {% endfor %}
     </sl-details>  
   
@@ -124,6 +118,8 @@
   await Promise.allSettled([ // wait for following to be defined/load in
         customElements.whenDefined('sl-tab-group'),
         customElements.whenDefined('sl-button'),
+        customElements.whenDefined('sl-select'),
+        customElements.whenDefined('sl-option'),
         customElements.whenDefined('sl-resize-observer'),
         customElements.whenDefined('sl-split-panel'),
         customElements.whenDefined('sl-tab'),
