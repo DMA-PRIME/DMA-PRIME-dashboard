@@ -52,7 +52,7 @@ function createBarGraph(svg, data, metadata, height, width) {
         .attr("y", d => yScale(d))
         .attr("height", d => yScale(0) - yScale(d))
         .attr("width", (width - (margins.left + margins.right)) / data.data.length)
-        .attr("fill", "blue")
+        .attr("fill", "#FFCCCC")
 
     graphSVG.append("g").selectAll("rect")
         .data(data.data)
@@ -105,7 +105,7 @@ function createBarGraph(svg, data, metadata, height, width) {
             .attr("width", .5*em)
             .attr("x", 0)
             .attr("y", .5*em/4)
-            .attr("fill", "blue")
+            .attr("fill", "#FFCCCC")
         test.append("text")
             .attr("x", .5*1.5*em)
             .attr("y", em/2)
