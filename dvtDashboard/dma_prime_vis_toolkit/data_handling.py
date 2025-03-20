@@ -38,11 +38,11 @@ def getOpioidHcvHiv(disease='opioid'):
     # hospitalization data based on disease
     return send_file(f'{current_app.config['DATADIR']}/processed/opioid_hcv_hiv/{disease}_zcta_hospitalization_data.json')
 
-@bp.route('/other-infectious-diseases/<column>', methods=['GET', 'POST'])
+@bp.route('/other-infectious-diseases/<region_size>/<column>', methods=['GET', 'POST'])
 @login_required
-def getStateDiseaseHospitalizations(column='encounters'):
+def getStateDiseaseHospitalizations(region_size='region',column='encounters'):
     # hospitalization data based on disease
-    return send_file(f'{current_app.config['DATADIR']}/processed/other_infectious_diseases_{column}_data.json')
+    return send_file(f'{current_app.config['DATADIR']}/processed/other_infectious_diseases/{region_size}/{column}_data.json')
 
 @bp.route('/waste-water/<site>', methods=['GET', 'POST'])
 @login_required

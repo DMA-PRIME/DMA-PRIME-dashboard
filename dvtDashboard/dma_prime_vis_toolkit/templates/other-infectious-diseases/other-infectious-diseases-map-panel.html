@@ -29,7 +29,15 @@
     </sl-tooltip>
   </sl-radio-group>
 
-  <sl-select value="encounters" id="map-column-switch" class="center-self" size="small">
+  <sl-select value="region" id="map-region-selector" class="fill-width" size="small">
+    <p slot="label">Geographic unit</p>
+    <sl-option value="region">Region</sl-option>
+    <sl-option value="county">County</sl-option>
+    <sl-option value="zcta">Zip Code</sl-option>
+  </sl-select>
+
+  <sl-select value="encounters" id="map-column-switch" class="fill-width" size="small">
+    <p slot="label">Data Variable</p>
     <sl-option value="encounters">Encounters</sl-option>
     <sl-option value="pos_tests">Positive Tests</sl-option>
     <sl-option value="encounter_plus_test">Encounters and Positive Tests</sl-option>
@@ -84,6 +92,7 @@
   mapResetButton = document.getElementById("map-reset-button")
   mapTimeSwitch = document.getElementById("map-time-switch")
   mapRateSwitch = document.getElementById("map-rate-switch")
+  mapRegionSelector = document.getElementById("map-region-selector")
   mapColumnSwitch = document.getElementById("map-column-switch")
 
   mapAllDiseaseSelector = document.getElementById("map-all-disease-selector")

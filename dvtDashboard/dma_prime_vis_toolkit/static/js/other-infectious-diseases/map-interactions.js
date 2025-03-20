@@ -8,7 +8,7 @@ mapResetButton.addEventListener("click", () => {
         essential: true // this animation is considered essential with respect to prefers-reduced-motion
     })
 
-    selectedItems.zcta = undefined
+    selectedItems.region = undefined
     selectedItems.diseases = []
 
     d3.selectAll(".disease-checkbox").attr("checked", null)
@@ -20,6 +20,8 @@ mapResetButton.addEventListener("click", () => {
 mapRateSwitch.addEventListener("sl-change", update)
 
 mapTimeSwitch.addEventListener("sl-change", update)
+
+mapRegionSelector.addEventListener("sl-change", changeDataColumn)
 
 mapColumnSwitch.addEventListener("sl-change", changeDataColumn)
 
@@ -57,7 +59,7 @@ d3.selectAll(".disease-checkbox").on("sl-change", function(e) {
 })
 
 popup.on("close", e => {
-    selectedItems.zcta = undefined
+    selectedItems.region = undefined
     redraw()
 })
 
@@ -67,16 +69,40 @@ map.on("click", e => {
 
     if (thisObject == null) {
         popup.remove()
-        selectedItems.zcta = undefined
+        selectedItems.region = undefined
         redraw()
         return
     }
 
     // add popup to map
     var feature = thisObject.object
-    selectedItems.zcta = feature
+    selectedItems.region = feature
     
     var coordinates = [feature.properties.INTPTLON, feature.properties.INTPTLAT]
+    if (!(coordinates[0] || coordinates[1])) {
+        const fullCoords = feature.geometry.coordinates;
+        const bounds = new maplibregl.LngLatBounds()
+        function addCoordToBounds(bounds, arr) {
+            if (Array.isArray(arr[0])) {
+                arr.forEach(a => {
+                    addCoordToBounds(bounds, a)
+                })
+            } else {
+                bounds.extend(arr)
+                return
+            }
+        }
+        addCoordToBounds(bounds, fullCoords)
+
+        map.fitBounds(bounds, {
+            padding: Math.min(mapDiv.clientWidth/3, mapDiv.clientHeight/3),
+            maxZoom: 12,
+            screenSpeed: .7
+        });
+        
+        coordinates = bounds.getCenter()
+    }
+
     popup.setLngLat(coordinates)
         .setHTML("<div id='map-tooltip-div' class='tooltip-div'></div>")
 
@@ -90,7 +116,7 @@ map.on("click", e => {
 })
 
 aggregatedDiseaseHistoryResizer.addEventListener("sl-resize", function() {
-    drawTooltip(selectedItems.zcta)
+    drawTooltip(selectedItems.region)
     drawAggregation()
 })
 
