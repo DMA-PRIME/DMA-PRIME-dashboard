@@ -8,9 +8,9 @@ import MySQLdb
 def get_db():
     # create connection to database if it doesn't exist
     if 'db' not in g:
-        g.db = MySQLdb.connect(user="***REMOVED***", password="***REMOVED***", database="")
-        g.db_cursor = g.db.cursor()
-    return g.db_cursor
+        # g.db = MySQLdb.connect(user="***REMOVED***", password="***REMOVED***", database="")
+        g.db = MySQLdb.connect(user="root", password="superuser", database="")
+    return g.db
 
 
 def close_db(e=None):
@@ -25,7 +25,7 @@ def close_db(e=None):
 
 
 def init_db():
-    db = get_db()
+    db = get_db().cursor()
 
     with current_app.open_resource('schema.sql') as f:
         string = f.read().decode('utf8')

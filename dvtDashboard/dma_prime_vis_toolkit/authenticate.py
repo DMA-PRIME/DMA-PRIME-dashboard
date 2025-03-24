@@ -7,6 +7,8 @@ from flask_bcrypt import Bcrypt
 
 from .database import get_db
 
+import MySQLdb
+
 
 
 bp = Blueprint('auth', __name__, url_prefix='/auth') # allow __init__.py to import these routes
@@ -17,7 +19,7 @@ def login():
     if request.method == "POST":
         username = request.form["username"]
         password = request.form["password"]
-        db = get_db()
+        db = get_db().cursor()
         error = None
         db.execute('SELECT * FROM user WHERE username = %s', [username])
         user = db.fetchone()
@@ -49,11 +51,17 @@ def signup():
         password = request.form["password"]
         email = request.form["email"]
         db = get_db()
-        db.execute(
-            """INSERT INTO user (username, email, password) VALUES (%s, %s, %s)""", 
-            [username, email, password]
-        ) # Bcrypt().generate_password_hash('')
-
+        
+        try:
+            db.cursor().execute(
+                """INSERT INTO user (username, email, password) VALUES (%s, %s, %s)""", 
+                [username, email, Bcrypt().generate_password_hash(password)]
+            ) # Bcrypt().generate_password_hash('')
+            db.commit()
+        except Exception as e:
+            flash(e)
+            return redirect("/auth/signup")
+            
         # store the user id in a new session and return to the index
         session.clear()
         return redirect("/auth/login")
@@ -69,7 +77,7 @@ def load_logged_in_user():
     if user_id is None:
         g.user = None
     else:
-        db = get_db()
+        db = get_db().cursor()
         db.execute('SELECT * FROM user WHERE id = %s', [user_id])
         g.user = db.fetchone()
 
