@@ -106,19 +106,33 @@ function getColor(feature) {
 }
 
 function createChoropleth(data, disease, dataSource, rate, imputations=true) {
-    var arr = data.features.map((d) => {
-        var thisData = d.properties.data[disease]
-
+    var arr
+    if (mapRegionSelector.value == "state") {
+        var thisData = data.features[0].properties.data[disease]
         if (thisData[dataSource].data.length > 0 && (imputations || !thisData.imputation)) {
             if (rate) {
-                return thisData[dataSource].data.at(-1) / d.properties.population * 1000
+                arr =  thisData[dataSource].data / d.properties.population * 1000
             } else {
-                return thisData[dataSource].data.at(-1)
+                arr =  thisData[dataSource].data
             }
         } else {
-            return 0
+            arr = [0]
         }
-    })
+    } else {
+        arr = data.features.map((d) => {
+            var thisData = d.properties.data[disease]
+    
+            if (thisData[dataSource].data.length > 0 && (imputations || !thisData.imputation)) {
+                if (rate) {
+                    return thisData[dataSource].data.at(-1) / d.properties.population * 1000
+                } else {
+                    return thisData[dataSource].data.at(-1)
+                }
+            } else {
+                return 0
+            }
+        })
+    }
 
     choroplethColorMap = d3.scaleLinear()
         .domain([0, d3.max(arr)])
@@ -315,7 +329,7 @@ async function drawStateBarChart(svgDOM, stateMargins, yAxisDisplayFunc, xAxisDi
 
     var stateData
     try {
-        stateData = await d3.json(`/data/deckgl-respiratory/state`) 
+        stateData = await d3.json(`/data/deckgl-respiratory/state-cdc`) 
         stateData = Object.entries(stateData[mapDiseaseSelector.value]).map(d => {
             temp = {"Date": d[0], "count": d[1]}
             if (mapRateSwitch.value == "rate") {

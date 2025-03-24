@@ -25,7 +25,8 @@
     {% endfor %}
   </sl-select>
 
-  <!-- disease selector -->
+  <!-- region selector -->
+  <!-- <sl-select value="zcta" id="map-region-selector" class="fill-width"> -->
   <sl-select value="{{ metadata['region_sizes'].keys() | first }}" id="map-region-selector" class="fill-width">
     <p slot="label">Geographic unit</p>
     {% for region, name in metadata['region_sizes'].items() %}
@@ -58,13 +59,13 @@
 </div>
 
 <div id="map-state-hospitalizations" >
-  <p id="map-state-hospitalizations-title" class="map-state-hospitalizations-title">State Hospitalizations</p>
+  <p id="map-state-hospitalizations-title" class="map-state-hospitalizations-title">CDC-Reported State Hospitalizations</p>
   <sl-resize-observer id="map-state-hospitalizations-resizer">
     <svg id="map-state-hospitalizations-svg"></svg>
   </sl-resize-observer>
 </div>
 <sl-dialog id="map-state-hospitalizations-large" class="dialog-width" >
-  <p id="map-state-hospitalizations-large-title" slot="label">State Hospitalizations</p>
+  <p id="map-state-hospitalizations-large-title" slot="label">CDC-Reported State Hospitalizations</p>
   <sl-resize-observer id="map-state-hospitalizations-large-resizer">
     <svg id="map-state-hospitalizations-large-svg"></svg>
   </sl-resize-observer>

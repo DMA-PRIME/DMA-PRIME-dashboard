@@ -251,7 +251,11 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
     var data = JSON.parse(JSON.stringify(d))
 
     var p = div.select("p")
-    p.select(".tooltip-title").html(`${metadata.region_sizes[mapRegionSelector.value]}: ${data.id}`)
+    if (mapRegionSelector.value != "state") {
+        p.select(".tooltip-title").html(`${metadata.region_sizes[mapRegionSelector.value]}: ${data.id}`)
+    } else {
+        p.select(".tooltip-title").html("State")
+    }
     if (mapRegionSelector.value == "zcta") {
         p.select(".tooltip-subtitle").html(`County: ${data.county[0].toUpperCase()+data.county.substring(1)}`)
     } else {
