@@ -1,6 +1,7 @@
 # This is where the main flask code should lie
-
+from flask_mailman import Mail
 from flask import Flask, render_template, request, send_file
+from flask_login import LoginManager
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
 
@@ -11,7 +12,8 @@ import numpy as np
 import json
 
 from .utility import * 
-from .authenticate import login_required, admin_required, bp
+from .authenticate import login_required, admin_required
+from .database import db
 
 logging.basicConfig(filename=main_dir+'/logs.log',level=logging.DEBUG)
 def create_app(development=False, dataDir=None):
@@ -23,6 +25,19 @@ def create_app(development=False, dataDir=None):
         SECRET_KEY='***REMOVED***',
         DEVELOPMENT=development,
         DATADIR=dataDir,
+
+        # EMAIL_HOST = "localhost",
+        # EMAIL_PORT = "587",
+        # EMAIL_USER = "nickjohnson1207@gmail.com",
+        # EMAIL_PASSWORD = "eniw enui zcza szgm",
+
+        MAIL_SERVER = "smtp.gmail.com",
+        MAIL_PORT = "587",
+        MAIL_USERNAME = "nickjohnson1207@gmail.com",
+        MAIL_PASSWORD = "eniw enui zcza szgm",
+        MAIL_USE_TLS = True,
+
+        SQLALCHEMY_DATABASE_URI = '***REMOVED***'
     )
     app.wsgi_app = ProxyFix( # allows a reverse proxy
         app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
@@ -31,15 +46,26 @@ def create_app(development=False, dataDir=None):
     app.config.from_pyfile('config.py', silent=True)
 
     # ignores login requirements
-    if not development:
-        from . import database as db
-        db.init_app(app)
+    # if not development:
+    #     from . import database as db
+    #     db.init_app(app)
     
     # ensure the instance folder exists
     try:
         os.makedirs(app.instance_path)
     except OSError:
         pass
+
+    mail = Mail()
+    mail.init_app(app)
+
+    db.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+
+    login_manager = LoginManager()
+
 
     # # # routes # # #
 

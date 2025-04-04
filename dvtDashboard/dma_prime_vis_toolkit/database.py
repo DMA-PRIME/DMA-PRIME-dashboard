@@ -4,6 +4,35 @@ import click
 from flask import current_app, g
 from flask_bcrypt import Bcrypt
 import MySQLdb
+from flask_login import UserMixin
+# from . import db, login_manager
+from flask_sqlalchemy import SQLAlchemy
+from dataclasses import dataclass
+
+
+db = SQLAlchemy()
+
+# @login_manager.user_loader
+# def load_user(user_id):
+#     return User.query.filter_by(id=user_id).first()
+@dataclass
+class User(UserMixin, db.Model):
+    __tablename__ = "user"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(200), nullable=False, unique=True)
+    username = db.Column(db.String(200), nullable=True)
+    password = db.Column(db.String(200), nullable=False)
+    access_level = db.Column(db.Integer, default=0)
+    verified_user = db.Column(db.Boolean, default=False)
+
+    def __init__(self, email, username, password, access_level, verified_user):
+        self.email = email
+        self.username = username
+        self.password = password
+        self.access_level = access_level
+    # def serialized(self):
+    #     return({"id": self.id, "email": self.email, "username": self.username})
 
 def get_db():
     # create connection to database if it doesn't exist

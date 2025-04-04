@@ -1,11 +1,13 @@
 import functools
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app
+    Blueprint, abort, flash, g, redirect, render_template, request, session, url_for, current_app, jsonify
 )
 from flask_bcrypt import Bcrypt
+import jwt
+from flask_mailman import EmailMessage
 
-from .database import get_db
+from .database import get_db, User, db
 
 import MySQLdb
 
@@ -21,23 +23,22 @@ def login():
         password = request.form["password"]
         db = get_db().cursor()
         error = None
-        db.execute('SELECT * FROM user WHERE username = %s', [username])
-        user = db.fetchone()
 
-        if user is None:
+        curr_user = User.query.filter_by(username=username).first()
+        # db.execute('SELECT * FROM user WHERE username = %s', [username])
+        # user = db.fetchone()
+
+        if curr_user is None:
             error = "Incorrect username"
         else:
-            columns = [item[0] for item in db.description]
-            user_data = {item[0] : item[1] for item in zip(columns, user)}
-            
-            if not Bcrypt().check_password_hash(user_data["password"], password):
+            if not Bcrypt().check_password_hash(curr_user.password, password):
                 error = "Incorrect password"
 
         if error is None:
             # store the user id in a new session and return to the index
             session.clear()
-            session["user_id"] = int(user_data["id"])
-            session["access_level"] = int(user_data["access_level"])
+            session["user_id"] = int(curr_user.id)
+            session["access_level"] = int(curr_user.access_level)
             return redirect("/")
 
         flash(error)
@@ -57,14 +58,30 @@ def signup():
         username = request.form["username"]
         password = request.form["password"]
         email = request.form["email"]
-        db = get_db()
         
         try:
-            db.cursor().execute(
-                """INSERT INTO user (username, email, password, access_level) VALUES (%s, %s, %s, 0)""", 
-                [username, email, Bcrypt().generate_password_hash(password)]
-            ) # Bcrypt().generate_password_hash('')
-            db.commit()
+            old_user = User.query.filter_by(email=email).first()
+            if old_user:
+                abort(403)
+
+            # user_data_dict = {"email":email, "username":username, "password":Bcrypt().generate_password_hash(password), "access_level":0, "verified":False}
+            temp_user = User(email, username, Bcrypt().generate_password_hash(password), access_level=0, verified_user=False)
+
+            db.session.add(temp_user)
+            db.session.commit()
+
+            # Create a secure token (string) that identifies the user
+            token = jwt.encode({"email": email}, current_app.config["SECRET_KEY"], algorithm='HS256')
+
+            # Send verification email
+            subject, from_email, to = 'Confirm Email', 'nickjohnson1207@gmail.com', email
+            html_content = render_template('email/verify.html', token=token)
+
+
+            msg = EmailMessage(subject, str(html_content), from_email, [to])
+            msg.content_subtype = "html"  # Main content is now text/html
+            msg.send()
+
         except Exception as e:
             flash(e)
             return redirect("/auth/signup")
@@ -74,7 +91,16 @@ def signup():
         return redirect("/auth/login")
     return render_template('sign_up.html')
 
+@bp.route("/verify_email/<token>", methods=["GET", "POST"])
+def verify_email(token):
+    data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
+    email = data["email"]
 
+    user = User.query.filter_by(email=email).first()
+    user.verified_user = True
+    db.session.commit()
+    flash("Email confirmed successfully")
+    return redirect("/auth/login")
 
 @bp.before_app_request
 def load_logged_in_user():
@@ -94,6 +120,13 @@ def login_required(view):
         # if not in development mode, route page to login if not logged in
         if g.user is None:
         # if not current_app.config['DEVELOPMENT'] and g.user is None:
+            flash("You are not logged in. Please log in")
+            return redirect(url_for('auth.login'))
+        
+        old_user = User.query.filter_by(id=session["user_id"]).first()
+        if not old_user.verified_user:
+        # if not current_app.config['DEVELOPMENT'] and g.user is None:
+            flash("You are not verified. Please check your email to verify your account")
             return redirect(url_for('auth.login'))
 
         return view(**kwargs)
