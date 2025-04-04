@@ -19,6 +19,28 @@
   <!-- Style that should load before the rest of the page -->
   {% block style %}
   <style>
+    header {
+      background-color: #333; /* Dark background */
+      position: fixed; /* Sticks to the top */
+      top: 0;
+      left: 0;
+      width: 100%; /* Full width */
+      display: flex;
+      align-items: center; /* Align icons vertically /*
+      z-index: 1000; /* Keeps it above other content */
+      height: 60px; /* Define a fixed height */
+    }
+
+    nav {
+      /* display: flex; */
+      width: 100%;
+      align-items: center;
+    }
+
+    sl-icon-button{
+      font-size: 2rem;
+    }
+
     body {
         width: 100vw;
         height: 100vh;
@@ -63,6 +85,15 @@
 </head>
 
 <body>
+  <header>
+    <nav>
+      <a href="{{ url_for('auth.signup') }}">
+        <sl-button id="signup" style="float: right; font-size: 2rem; margin-top: 3px; margin-right: 6px; align-items: center;" size="medium">
+        Sign Up
+        </sl-button>
+      </a>
+    </nav>
+  </header>
 
   <div id="form-div">
     <h1 id="login-title">Log In</h1>

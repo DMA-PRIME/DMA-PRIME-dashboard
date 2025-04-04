@@ -30,7 +30,7 @@ def login():
             columns = [item[0] for item in db.description]
             user_data = {item[0] : item[1] for item in zip(columns, user)}
             
-            if not Bcrypt().check_password_hash(user_data["password"].decode('utf-8'), password):
+            if not Bcrypt().check_password_hash(user_data["password"], password):
                 error = "Incorrect password"
 
         if error is None:
