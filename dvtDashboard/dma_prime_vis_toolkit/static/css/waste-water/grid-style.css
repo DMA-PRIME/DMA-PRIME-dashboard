@@ -6,7 +6,7 @@
     padding: var(--sl-spacing-large);
     display: grid;
     gap: var(--sl-spacing-large);
-    height: 100%;
+    height: calc(100% - 2em);
 }
 
 .site-svg{
@@ -15,7 +15,7 @@
 }
 
 #grid-legend{
-    position: absolute;
+    position: relative;
     left: 0px;
     bottom: 0px;
     background-color: rgba(255, 255, 255, .35);

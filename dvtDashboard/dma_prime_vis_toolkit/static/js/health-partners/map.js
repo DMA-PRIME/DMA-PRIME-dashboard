@@ -42,7 +42,7 @@ function redraw(highlightIndex=-1) {
       getPosition: d => {return [+d.site_lon, +d.site_lat]},
       getColor: [255, 0, 0],
       getIcon: d => 'mobile_health_clinic',      
-      getSize: d => isNaN(+d.site_lon) || isNaN(+d.site_lat) ? 0 : mapShowAllEventsToggle.checked ? 15 : dateCutoff.isBefore(dayjs.tz(d.event_date)) ? 15 : 0,
+      getSize: getSize,
       highlightedObjectIndex: hIndex,
       highlightColor: [255, 200, 0],
       pickable: true,
@@ -59,7 +59,14 @@ function redraw(highlightIndex=-1) {
     return true
 }
 
-function isVisible(event) {
-  recent = dateCutoff.isBefore(dayjs.tz(event.event_date))
-  hasCoords = event.event_lon 
+function getSize(d) {
+  var size = 15
+  if (isNaN(+d.site_lon) || isNaN(+d.site_lat)){
+    size = 0
+  }
+  if (mapTimeframeSelector.value !== "all" && currentDate.subtract(1, mapTimeframeSelector.value).isAfter(dayjs.tz(d.event_date))) {
+    size = 0
+  }
+
+  return size
 }

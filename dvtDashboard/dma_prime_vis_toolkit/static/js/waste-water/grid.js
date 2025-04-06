@@ -73,9 +73,19 @@ function drawCharts() {
             .selectAll("text")
             .attr("class", "tooltip-label")
             .attr("fill", "var(--sl-color-neutral-1000)")
+        
+        var extraTicks = data.map(d => d.date)
+        extraTicks = extraTicks.filter(d => dayjs(d).isAfter(d3.timeMonth.offset(xScale.domain()[1], -1)))
         xAxis.call(d3.axisBottom(xScale).tickArguments([d3.timeMonth.every(1), d3.timeFormat("%b %Y")]))
             .attr("transform", `translate(0, ${height - margins.bottom})`)
-        
+        svg.append("g").call(
+            d3.axisBottom(xScale)
+            .tickValues(extraTicks)
+            .tickFormat(function (d, i) {
+                if (i == extraTicks.length-1) {return d3.timeFormat("%b %-d")(d)}
+                else {return ""} }))
+            .attr("class", "x-axis")
+            .attr("transform", `translate(0, ${height - margins.bottom})`)
     })
 }
 

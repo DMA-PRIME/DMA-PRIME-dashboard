@@ -47,7 +47,7 @@ function getDataFromFeatures(feature, column, year, rate) {
     var columnData = feature.properties.data[column]
     if (columnData) {
         var val = +columnData[year]
-        if (rate & ["hospitalizations", "deaths"].includes(column))  {
+        if (rate && ["hospitalizations", "deaths"].includes(column))  {
             val = (val/feature.properties.population) * 1000
         } 
         return val  
@@ -181,7 +181,7 @@ function getColor(zcta) {
         var min = threshold[1][0]
         var max = threshold[1][1]
         var val = getDataFromFeatures(zcta, column, mapYearSelector.value, mapRateSwitch.value=="rate")
-        if (val < min || val > max) {
+        if ((val < min || val > max) && !isNaN(parseInt(val))) {
             colormap = a => b => unknownColor
         }
     })
@@ -335,7 +335,7 @@ function drawLegend() {
     }
 }
 
-function updateHistogram(column) {
+async function updateHistogram(column) {
     var svgElement = document.getElementById(`map-${column}-filter`)
     svgElement.innerHTML = ""
     var svg = d3.select(svgElement)
@@ -461,6 +461,8 @@ function clearBrushes() {
 async function changeDisease() {
     dataVersion++
     zctaData = await d3.json(`/data/opioid-hcv-hiv/${mapDiseaseSelector.value}`)
+    zctaFeatures = zctaData.features
+    await Promise.allSettled([updateHistogram("hospitalizations"), updateHistogram("deaths") ])
     clearBrushes()
     if (selectedZCTA.zcta) {
         mobileClinicClick(selectedZCTA.zcta)

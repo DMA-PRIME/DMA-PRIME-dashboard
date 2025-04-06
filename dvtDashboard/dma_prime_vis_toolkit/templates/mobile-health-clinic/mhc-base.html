@@ -26,8 +26,6 @@
     dayjs.extend(window.dayjs_plugin_customParseFormat)
     dayjs.tz.setDefault("America/New_York")
     currentDate = dayjs.tz().startOf("d")
-    // dateCutoff = currentDate.startOf("month")
-    dateCutoff = currentDate.subtract(7, "d")
 </script>
 
 {% endblock %}

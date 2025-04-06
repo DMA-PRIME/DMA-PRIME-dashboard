@@ -1,3 +1,4 @@
+{% set min_width = "350px" %}
 {% extends "subtemplates/panel.html" %}
 
 {% block options %}
@@ -21,6 +22,15 @@
     <p slot="label">Select a disease or group of diseases</p>
     {% for disease, name in metadata['diseases'].items() %}
     <sl-option value="{{ disease }}">{{ name }}</sl-option>
+    {% endfor %}
+  </sl-select>
+
+  <!-- region selector -->
+  <!-- <sl-select value="zcta" id="map-region-selector" class="fill-width"> -->
+  <sl-select value="region" id="map-region-selector" class="fill-width">
+    <p slot="label">Geographic unit</p>
+    {% for region, name in metadata['region_sizes'].items() %}
+    <sl-option value="{{ region }}">{{ name }}</sl-option>
     {% endfor %}
   </sl-select>
 
@@ -49,13 +59,13 @@
 </div>
 
 <div id="map-state-hospitalizations" >
-  <p id="map-state-hospitalizations-title" class="map-state-hospitalizations-title">State Hospitalizations</p>
+  <p id="map-state-hospitalizations-title" class="map-state-hospitalizations-title">CDC-Reported State Hospitalizations</p>
   <sl-resize-observer id="map-state-hospitalizations-resizer">
     <svg id="map-state-hospitalizations-svg"></svg>
   </sl-resize-observer>
 </div>
 <sl-dialog id="map-state-hospitalizations-large" class="dialog-width" >
-  <p id="map-state-hospitalizations-large-title" slot="label">State Hospitalizations</p>
+  <p id="map-state-hospitalizations-large-title" slot="label">CDC-Reported State Hospitalizations</p>
   <sl-resize-observer id="map-state-hospitalizations-large-resizer">
     <svg id="map-state-hospitalizations-large-svg"></svg>
   </sl-resize-observer>
@@ -81,6 +91,7 @@
   mapRateSwitch = document.getElementById("map-rate-switch")
 
   mapDiseaseSelector = document.getElementById("map-disease-selector")
+  mapRegionSelector = document.getElementById("map-region-selector")
   mapDataSourceSelector = document.getElementById("map-data-source-selector")
   hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
   mobileClinicIconsToggle = document.getElementById("map-options-mobile-clinic-icons-toggle")
@@ -98,10 +109,20 @@
   mapDiv = document.getElementById("map-div")
   choroplethLegendSVG = document.getElementById("choropleth-legend-svg")
 
-  set{{panel.name}}Panel()
 </script>
 
 <script src="{{ url_for('static', filename='js/respiratory/map.js') }}" type="module"></script>
 <script src="{{ url_for('static', filename='js/respiratory/map-interactions.js') }}" type="module"></script>
 
+<script type="module">
+  await Promise.allSettled([ // wait for following to be defined/load in
+        customElements.whenDefined('sl-tab-group'),
+        customElements.whenDefined('sl-button'),
+        customElements.whenDefined('sl-resize-observer'),
+        customElements.whenDefined('sl-split-panel'),
+        customElements.whenDefined('sl-tab'),
+    ])
+  set{{panel.name}}Panel()
+
+</script>
 {% endblock %}

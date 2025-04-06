@@ -1,18 +1,23 @@
 
-export { zctaData, startDate, currentWeek, historicalDates, predictionDates, dataSourceColorMap, dataSourceLineStyle, gridItemDataSources, parseDate, parseHospDate, getDataAsArray, drawTooltip }
+export { regionData, zctaData, startDate, currentWeek, endDate, historicalDates, predictionDates, dataSourceColorMap, dataSourceLineStyle, gridItemDataSources, parseDate, getDataAsArray, drawTooltip }
 
 
 // data
 var currentWeek = parseDate(metadata.current_week)
 
 var startDate = parseDate(metadata.start_date)
-var historicalDates = d3.timeSaturday.range(startDate, new Date(currentWeek).setDate(currentWeek.getDate()+1), 1)
+var historicalDates = d3.timeDay.range(startDate, new Date(currentWeek).setDate(currentWeek.getDate()+1), 7)
 
 var endDate = parseDate(metadata.end_date)
-var predictionDates = d3.timeSaturday.range(currentWeek, new Date(endDate).setDate(endDate.getDate()+1), 1)
+var predictionDates = d3.timeDay.range(currentWeek, new Date(endDate).setDate(endDate.getDate()+1), 7)
 
 
-var zctaData = await d3.json(`/data/deckgl-respiratory`)
+var zctaData = await d3.json(`/data/deckgl-respiratory/zcta`)
+await Promise.allSettled([ // wait for following to be defined/load in
+    customElements.whenDefined('sl-select'),
+    customElements.whenDefined('sl-option'),
+])
+var regionData = await d3.json(`/data/deckgl-respiratory/${mapRegionSelector.value}`)
 
 // visualization variables
 var formatInt = d3.format(".0f")
@@ -90,7 +95,7 @@ document.adoptedStyleSheets = [styleSheet]
 
 // data fetching
 function getDataAsArray(disease, dataSource, rate, imputations=true) {
-    var arr = zctaData.features.map((d) => {
+    var arr = regionData.features.map((d) => {
         var data = d.properties.data[disease]
         if (data[dataSource].data.length > 0 && (imputations || !data.imputation)) {
             if (rate) {
@@ -109,10 +114,6 @@ function getDataAsArray(disease, dataSource, rate, imputations=true) {
 // helper functions
 function parseDate(dateString) {
     return dayjs.tz(dateString, "YYYY-MM-DD", "America/New_York").toDate()
-}
-
-function parseHospDate(dateString) {
-    return dayjs.tz(dateString, "M/D/YYYY", "America/New_York").toDate()
 }
 
 function fixName(name) {
@@ -250,8 +251,16 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
     var data = JSON.parse(JSON.stringify(d))
 
     var p = div.select("p")
-    p.select(".tooltip-title").html(`ZCTA: ${data.zcta}`)
-    p.select(".tooltip-subtitle").html(`County: ${data.county[0].toUpperCase()+data.county.substring(1)}`)
+    if (mapRegionSelector.value != "state") {
+        p.select(".tooltip-title").html(`${metadata.region_sizes[mapRegionSelector.value]}: ${data.id}`)
+    } else {
+        p.select(".tooltip-title").html("State")
+    }
+    if (mapRegionSelector.value == "zcta") {
+        p.select(".tooltip-subtitle").html(`County: ${data.county[0].toUpperCase()+data.county.substring(1)}`)
+    } else {
+        p.select(".tooltip-subtitle").html('')
+    }
 
     var ttpLegendTop = ttpHeight - 2.5*em
 
@@ -291,7 +300,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
     
     var predictionData = JSON.parse(JSON.stringify(data["state-prediction"]))
     if (predictionData.data.length > 0 && mapDiseaseSelector.value.includes("influenza")) {
-        predictionData.data = predictionData.data.splice(start=0, end=3)
+        predictionData.data = predictionData.data.splice(0, 3)
     }
     if (rate) {
         predictionData.data = d["state-prediction"].data.map(function(item) { return item/d.population * 1000} )
@@ -323,7 +332,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
 
     // line generators
     var historicalLine = function(data) {
-        var thisStartDate = d3.timeSaturday.round(new Date(data["start-date"]))
+        var thisStartDate = parseDate(data["start-date"])
         var startIndex = historicalDates.findIndex((d) => d.getTime() == thisStartDate.getTime())
 
         return d3.line()
@@ -333,7 +342,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
     }
 
     var predictionLine = function(data) {
-        var thisStartDate = d3.timeSaturday.round(new Date(data["start-date"]))
+        var thisStartDate = parseDate(data["start-date"])
         var startIndex = predictionDates.findIndex((d) => d.getTime() == thisStartDate.getTime())
 
         return d3.line()
@@ -434,7 +443,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
         var thisStartDate = parseDate(thisData["start-date"])
         var thisEndDate = new Date(thisStartDate);
         thisEndDate.setDate(thisEndDate.getDate() + thisData.data.length*7);
-        var datesReconstructed = d3.timeSaturday.range(thisStartDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 1)
+        var datesReconstructed = d3.timeDay.range(startDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 7)
 
         var refDate = new Date(currentWeek)
         refDate.setDate(refDate.getDate() - 7)
@@ -444,16 +453,16 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
         if (index > -1) {
             var circleData = thisData.data.slice(index).map(function(d, i) {
                 return {"count": d, "date": datesReconstructed.slice(index)[i]};
-              })
+            })
 
             historicalLabels.selectAll("circle")
-              .data(circleData)
-              .enter()
-              .append("circle")
-              .attr("r", 3)
-              .attr("cx", (d) => xScaleHistorical(d.date))
-              .attr("cy", (d) => yScale(d.count))
-              .attr("stroke", dataSourceColorMap[dataSource])
+                .data(circleData)
+                .enter()
+                .append("circle")
+                .attr("r", 3)
+                .attr("cx", (d) => xScaleHistorical(d.date))
+                .attr("cy", (d) => yScale(d.count))
+                .attr("stroke", dataSourceColorMap[dataSource])
 
             if (circleData.length > 1) {
                 var yPosition = yScale(circleData[1].count)
@@ -522,85 +531,4 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false) {
 
     temp.remove()
 
-}
-
-
-
-// trying to make a widget but I need to use deck instead of deckgl and npm imports
-class D3Anchor {
-    static #count = 0;
-    constructor(props={}) { //should have options.size
-        var defaultProps = {
-            // interface
-            "id":"d3anchor",
-            "viewId": null,
-            "placement": "top-left",
-            // extra
-            "onHover": () => null,
-            "onClick": () => null,
-            "onDragStart": () => null,
-            "onDrag": () => null,
-            "onDragEnd": () => null,
-            "divId": "div",
-        }
-
-        this.props = Object.assign(defaultProps, props)
-
-        if (this.props.id == "d3anchor") {
-            this.id = `${this.props.id}${D3Anchor.#count}`
-            this.props.id = `${this.props.id}${D3Anchor.#count}`
-            D3Anchor.#count++
-        }
-
-        if (this.props.divId == "div") {
-            this.divId = `${this.props.divId}${D3Anchor.#count}`
-            this.props.divId = `${this.props.divId}${D3Anchor.#count}`
-            D3Anchor.#count++
-        }
-
-        this.props = props
-    }
-
-    onAdd(context) {
-        const el = document.createElement('div');
-        el.id = this.divId
-        el.className = 'd3anchor';
-        // el.style.width = `${this.size}px`;
-        // TODO - create animation for .spinner in the CSS stylesheet
-        this.element = el;
-        return el;
-    }
-
-    onRemove() {
-        this.element = undefined;
-    }
-
-    // update props
-    // may add actions to this afterwards idk
-    setProps(props) {
-        this.props = Object.assign(this.props, props)
-    }
-
-    onViewportChange(viewport){
-
-    }
-    onRedraw(params) {
-        // const isVisible = params.layers.some(layer => !layer.isLoaded);
-        // this.element.style.display = isVisible ? 'block' : 'none';
-    }
-    onHover(info, event) {
-        this.props.onHover(info, event)
-    }
-    onClick(info, event) {
-        this.props.onClick(info, event)
-    }
-    onDragStart(info, event) {
-        this.props.onDragStart(info, event)
-    }
-    onDrag(info, event) {
-        this.props.onDrag(info, event)
-    }
-    onDragEnd(info, event) {
-        this.props.onDragEnd(info, event)
-    }
 }

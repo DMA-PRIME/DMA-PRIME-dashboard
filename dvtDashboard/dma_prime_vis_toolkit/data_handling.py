@@ -25,24 +25,12 @@ def health_care_facility(type):
         return send_file(f'{main_dir}/static/assets/temp/{type}.csv')
 # def health_care_facility(type):
 #     return send_file(f'{main_dir}/static/assets/Health Care Facilities/hospital-cdap_mhc_partners.csv')
-    
-@bp.route('/hospitalizations/<disease>', methods=['GET', 'POST'])
-@login_required
-def getHospitalizations(disease='covid-19'):
-    # hospitalization data based on disease
-    return send_file(f'{current_app.config['DATADIR']}/processed/{disease}_zcta_hospitalization_data.json')
 
-@bp.route('/hospitalizations/state', methods=['GET', 'POST'])
+@bp.route('/deckgl-respiratory/<region_size>', methods=['GET', 'POST'])
 @login_required
-def getHospitalizationsState():
+def getRespiratoryHospitalizations(region_size='zcta'):
     # hospitalization data based on disease
-    return send_file(f'{current_app.config['DATADIR']}/raw/respiratory/Weekly_Hospital_Respiratory_Data.csv')
-
-@bp.route('/deckgl-respiratory', methods=['GET', 'POST'])
-@login_required
-def getRespiratoryHospitalizations(disease='covid-19'):
-    # hospitalization data based on disease
-    return send_file(f'{current_app.config['DATADIR']}/processed/respiratory/respiratory_zcta_hospitalization_data.json')
+    return send_file(f'{current_app.config['DATADIR']}/processed/respiratory/respiratory_{region_size}_hospitalization_data.json')
 
 @bp.route('/opioid-hcv-hiv/<disease>', methods=['GET', 'POST'])
 @login_required
@@ -50,11 +38,11 @@ def getOpioidHcvHiv(disease='opioid'):
     # hospitalization data based on disease
     return send_file(f'{current_app.config['DATADIR']}/processed/opioid_hcv_hiv/{disease}_zcta_hospitalization_data.json')
 
-@bp.route('/other-infectious-diseases/<column>', methods=['GET', 'POST'])
+@bp.route('/other-infectious-diseases/<region_size>/<column>', methods=['GET', 'POST'])
 @login_required
-def getStateDiseaseHospitalizations(column='encounters'):
+def getStateDiseaseHospitalizations(region_size='region',column='encounters'):
     # hospitalization data based on disease
-    return send_file(f'{current_app.config['DATADIR']}/processed/other_infectious_diseases_{column}_data.json')
+    return send_file(f'{current_app.config['DATADIR']}/processed/other_infectious_diseases/{region_size}/{column}_data.json')
 
 @bp.route('/waste-water/<site>', methods=['GET', 'POST'])
 @login_required
@@ -67,7 +55,7 @@ def getWasteWaterData(site):
 @login_required
 def getMobileHealthClinicEvents():
     # hospitalization data based on disease
-    return send_file(f'{current_app.config['DATADIR']}/processed/clemson_rural_health_event_data.json')
+    return send_file(f'{current_app.config['DATADIR']}/processed/mhc/clemson_rural_health_event_data.json')
 
 @bp.route('/icon-pack/<type>', methods=['GET', 'POST'])
 def iconData(type):

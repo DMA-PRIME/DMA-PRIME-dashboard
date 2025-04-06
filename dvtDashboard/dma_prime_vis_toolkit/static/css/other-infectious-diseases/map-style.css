@@ -1,9 +1,5 @@
 
 /* map sidebar/options */
-#map-main-content {
-    /* makes sure state aggregation has enough room */
-    --min: 350px
-}
 
 #map-sidebar {
     /* scroll vertically if the state aggregation overflows vertically */

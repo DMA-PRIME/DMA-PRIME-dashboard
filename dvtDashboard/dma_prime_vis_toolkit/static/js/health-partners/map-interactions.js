@@ -13,7 +13,8 @@ mapResetButton.addEventListener("click", () => {
     
 })
 
-mapShowAllEventsToggle.addEventListener("sl-change", () => {
+
+mapTimeframeSelector.addEventListener("sl-change", () => {
     dataVersion++
     redraw()
 })

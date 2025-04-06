@@ -1,9 +1,9 @@
-import { startDate, currentWeek, drawTooltip, parseHospDate } from "/static/js/respiratory/script.js";
-import { map, popup, deckOverlay, selectedItems, redraw, drawStateHospitalizations } from "/static/js/respiratory/map.js"
+import { regionData, drawTooltip } from "/static/js/respiratory/script.js";
+import { map, popup, deckOverlay, selectedItems, redraw, drawStateHospitalizations, drawLargeStateHospitalizations } from "/static/js/respiratory/map.js"
 
 
 popup.on("close", e => {
-    selectedItems.zcta = undefined
+    selectedItems.feature = undefined
     dataVersion++
     redraw()
 })
@@ -13,12 +13,12 @@ map.on("click", e => {
     var dataObject = deckOverlay.pickObject(temp).object
 
     if (dataObject == null) {
-        selectedItems.zcta = undefined
+        selectedItems.feature = undefined
         popup.remove()
         return
     }
-    if (selectedItems.zcta && selectedItems.zcta.properties.ZCTA == dataObject.properties.ZCTA) {
-        selectedItems.zcta = undefined
+    if (selectedItems.feature && selectedItems.feature.properties.id == dataObject.properties.id) {
+        selectedItems.feature = undefined
         popup.remove()
         map.flyTo({
             center: [-81, 33.65],
@@ -28,7 +28,7 @@ map.on("click", e => {
         return
     }
 
-    selectedItems.zcta = dataObject
+    selectedItems.feature = dataObject
     
     const fullCoords = dataObject.geometry.coordinates;
     const bounds = new maplibregl.LngLatBounds()
@@ -51,6 +51,9 @@ map.on("click", e => {
     });
 
     var coordinates = [dataObject.properties.INTPTLON, dataObject.properties.INTPTLAT]
+    if (!(coordinates[0] || coordinates[1])) {
+        coordinates = bounds.getCenter()
+    }
     popup.setLngLat(coordinates)
         .setHTML("<div id='map-tooltip-div' class='tooltip-div'></div>")
 
@@ -77,8 +80,10 @@ map.on("click", e => {
         .attr("class", `tooltip-outer-svg`)
 
     var tooltipData = dataObject.properties.data[mapDiseaseSelector.value]
-    tooltipData["zcta"] = dataObject.properties.ZCTA
-    tooltipData["county"] = dataObject.properties.county
+    tooltipData["id"] = dataObject.properties.id
+    if (mapRegionSelector.value == "zcta") {
+        tooltipData["county"] = dataObject.properties.county
+    }
     tooltipData["population"] = dataObject.properties.population
 
     var width = mapDiv.clientWidth
@@ -98,7 +103,7 @@ mapResetButton.addEventListener("click", () => {
         essential: true // this animation is considered essential with respect to prefers-reduced-motion
     })
 
-    selectedItems.zcta = undefined
+    selectedItems.feature = undefined
     popup.remove()
     dataVersion++
     redraw()
@@ -108,20 +113,23 @@ mapRateSwitch.addEventListener("sl-change", (event) => {
     // update legend title
     if (mapRateSwitch.value == "rate"){
         d3.select("#map-legend-title")
-            .text("Current Week's Hospitalization Rates by ZCTA")
+            .text(`Current Week's Hospitalization Rates by ${metadata.region_sizes[mapRegionSelector.value]}`)
     } else {
         d3.select("#map-legend-title")
-            .text("Current Week's Hospitalizations by ZCTA")
+            .text(`Current Week's Hospitalizations by ${metadata.region_sizes[mapRegionSelector.value]}`)
     }
 
     // update tooltip
-    if (selectedItems.zcta) {
+    drawStateHospitalizations()
+    if (selectedItems.feature) {
         var ttpDiv = d3.select("#map-tooltip-div")
 
-        var tooltipData = selectedItems.zcta.properties.data[mapDiseaseSelector.value]
-        tooltipData["zcta"] = selectedItems.zcta.properties.ZCTA
-        tooltipData["county"] = selectedItems.zcta.properties.county
-        tooltipData["population"] = selectedItems.zcta.properties.population
+        var tooltipData = selectedItems.feature.properties.data[mapDiseaseSelector.value]
+        tooltipData["id"] = selectedItems.feature.properties.id
+        if (mapRegionSelector.value == "zcta") {
+            tooltipData["county"] = dataObject.properties.county
+        }
+        tooltipData["population"] = selectedItems.feature.properties.population
 
         var width = mapDiv.clientWidth
         var mapTooltipWidth = Math.max(500, width * .3)
@@ -140,29 +148,27 @@ mapDataSourceSelector.addEventListener("sl-change", (event) => {
 
 mapDiseaseSelector.addEventListener("sl-change", (event) => {
     drawStateHospitalizations()
+    selectedItems.feature = undefined
+    popup.remove()
     dataVersion++
     redraw()
+})
 
-    if (selectedItems.zcta) {
-        var ttpDiv = d3.select("#map-tooltip-div")
-
-        var tooltipData = selectedItems.zcta.properties.data[mapDiseaseSelector.value]
-        tooltipData["zcta"] = selectedItems.zcta.properties.ZCTA
-        tooltipData["county"] = selectedItems.zcta.properties.county
-        tooltipData["population"] = selectedItems.zcta.properties.population
-
-        var width = mapDiv.clientWidth
-        var mapTooltipWidth = Math.max(500, width * .3)
-        var mapTooltipHeight = mapTooltipWidth * .65
-        drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, mapRateSwitch.value == "rate")
-    }
+mapRegionSelector.addEventListener("sl-change", (event) => {
+    d3.json(`/data/deckgl-respiratory/${mapRegionSelector.value}`).then((data) => {
+        regionData.features = data.features
+    }).then(() => {
+        dataVersion++
+        redraw()
+    })
+    selectedItems.feature = undefined
+    popup.remove()
 })
 
 mapIncludeImputations.addEventListener("sl-change", () => {
     dataVersion++
     redraw()
 })
-
 
 // adding/removing icons
 hospitalIconsToggle.addEventListener("sl-change", () => {
@@ -203,123 +209,5 @@ mapStateHospitalizationsSvg.addEventListener("click", () => {
 })
 
 mapStateHospitalizationsLargeResizer.addEventListener("sl-resize", () => {
-    var disease_crosswalk = {
-        "covid-19": d => +d["Total.COVID.19.Admissions"],
-        "influenza-1": d => +d["Total.Influenza.Admissions"],
-        "RSV": d => +d["Total.RSV.Admissions"], 
-        "respiratory-diseases": d => (parseFloat(d["Total.COVID.19.Admissions"]) || 0) + (parseFloat(d["Total.Influenza.Admissions"]) || 0) + (parseFloat(d["Total.RSV.Admissions"]) || 0),
-        "respiratory-diseases-2": d => (parseFloat(d["Total.COVID.19.Admissions"]) || 0) + (parseFloat(d["Total.Influenza.Admissions"]) || 0) + (parseFloat(d["Total.RSV.Admissions"]) || 0),
-    }
-
-    var disease_display_names = {
-        "covid-19": "COVID-19",
-        "influenza-1": "Influenza",
-        "RSV": "RSV", 
-        "respiratory-diseases": "COVID-19, Flu, RSV",
-        "respiratory-diseases-2": "COVID-19, Flu, RSV"
-    }
-    
-    mapStateHospitalizationsLargeSvg.innerHTML = ""
-    var stateHeight = mapStateHospitalizationsLargeSvg.clientHeight
-    var stateWidth = mapStateHospitalizationsLargeSvg.clientWidth
-    
-    var svg = d3.select(mapStateHospitalizationsLargeSvg)
-
-    d3.csv("/data/hospitalizations/state").then(function(stateData) {
-        stateData = stateData.filter(d => {
-            var thisDate = dayjs(parseHospDate(d["Week.Ending.Date"]))
-            return thisDate.isSameOrAfter(startDate) && thisDate.isSameOrBefore(currentWeek)})
-        var yAxis = svg.append("g")
-            .attr("class", "y-axis")
-        var xAxis = svg.append("g")
-            .attr("class", "x-axis")
-
-        
-        var maxVal = d3.max(stateData.map(d => disease_crosswalk[mapDiseaseSelector.value](d)))
-
-        var temp = svg.append("text").text(d3.format(".2r")(maxVal)).attr("x", 0).attr("y", 0)
-        var stateMargins = {
-            "top": .5*em, 
-            "bottom": 3.5*em,
-            "left": Math.max(20, temp.node().getBBox().width) + 1.75*em,
-            "right": 2*em,
-        }
-
-        var stateXScale = d3.scaleUtc()
-                    .domain([startDate, d3.timeSaturday.offset(currentWeek, 1)]).range([stateMargins.left, stateWidth - stateMargins.right])    
-
-        var stateYScale = d3.scaleLinear()
-            .domain([0, maxVal])
-            .nice()
-            .range([stateHeight-stateMargins.bottom, stateMargins.top])
-
-        svg.append("g")
-            .selectAll("rect")
-            .data(stateData)
-            .enter()
-            .append("rect")
-            .attr("x", (d) => stateXScale(parseHospDate(d["Week.Ending.Date"])))
-            .attr("y", d => stateYScale(disease_crosswalk[mapDiseaseSelector.value](d)))
-            .attr("height", d => stateYScale(0) - stateYScale(disease_crosswalk[mapDiseaseSelector.value](d)))
-            .attr("width", (stateWidth - (stateMargins.left + stateMargins.right)) / stateData.length)
-            .attr("stroke", "var(--sl-color-neutral-1000)")
-            .attr("stroke-width", 1)
-            .attr("fill", "var(--sl-color-neutral-100)")
-
-        yAxis.append("text")
-            .attr("id", "map-state-hospitalizations-large-yaxis-title")
-            .attr("transform", `translate(${1*em},${d3.mean(stateYScale.range())})rotate(-90)`)
-            .attr("text-anchor", "middle")
-            .attr("fill", "var(--sl-color-neutral-1000)")
-            .attr("font-size", "var(--sl-font-size-small)")
-            .text(disease_display_names[mapDiseaseSelector.value])
-            
-        var svgYAxis = yAxis.append("g")
-            .attr("transform", `translate(${stateMargins.left},0)`)
-            .call(d3.axisLeft(stateYScale).ticks(5).tickSize(4))
-            
-        svgYAxis.select("path")
-            .attr("stroke-width", 3)
-        svgYAxis.selectAll("g.tick line")
-            .attr("x2", -8)
-            .attr("stroke-width", 3)
-        svgYAxis.selectAll("text")
-            .attr("class", "tooltip-label")
-            .attr("transform", `translate(-4, 0)`)
-            .attr("fill", "var(--sl-color-neutral-1000)")
-
-        var svgMajorXAxis = xAxis.append("g")
-            .attr("id", "map-state-hospitalizations-large-major-xaxis")
-            .call(d3.axisBottom(stateXScale)
-                .tickValues(d3.timeMonth.every(1).range(stateXScale.domain()[0], stateXScale.domain()[1]).map(d => d3.timeSaturday.ceil(d)))
-                .tickFormat(d3.timeFormat("")))
-                // .tickFormat(d3.timeFormat("%b %Y")))
-            .attr("transform", `translate(0, ${stateHeight - stateMargins.bottom})`)  
-        
-        svgMajorXAxis.selectAll("path")
-            .attr("stroke-width", 3)
-        svgMajorXAxis.selectAll("g.tick line")
-            .attr("y2", (_,i) => 28)
-            .attr("stroke-width", 3)
-        svgMajorXAxis.selectAll("text").each(function(d, i, a) {
-            var thisText = d3.select(this)
-            thisText.append("tspan")
-                .style("text-anchor", "middle")
-                .attr("x", i < a.length-1 ? (stateXScale(a[i+1].__data__)-stateXScale(d))/2 : stateXScale.range()[1]-stateXScale(d))
-                .html(d3.timeFormat("%b")(d))
-
-            thisText.append("tspan")
-                .style("text-anchor", "middle")
-                .attr("dy", 12)
-                .attr("x", i < a.length-1 ? (stateXScale(a[i+1].__data__)-stateXScale(d))/2 : stateXScale.range()[1]-stateXScale(d))
-                .html(d3.timeFormat("%Y")(d))
-        })
-
-        xAxis.append("g")
-            .attr("id", "map-state-hospitalizations-large-minor-xaxis")
-            .call(d3.axisBottom(stateXScale).tickArguments([d3.timeSaturday.every(1), d3.timeFormat("")]))
-            .attr("transform", `translate(0, ${stateHeight - stateMargins.bottom})`)
-
-        temp.remove()
-    })
+    drawLargeStateHospitalizations()
 })
