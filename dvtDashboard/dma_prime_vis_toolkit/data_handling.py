@@ -55,7 +55,7 @@ def getWasteWaterData(site):
 @login_required
 def getMobileHealthClinicEvents():
     # hospitalization data based on disease
-    return send_file(f'{current_app.config['DATADIR']}/processed/clemson_rural_health_event_data.json')
+    return send_file(f'{current_app.config['DATADIR']}/processed/mhc/clemson_rural_health_event_data.json')
 
 @bp.route('/icon-pack/<type>', methods=['GET', 'POST'])
 def iconData(type):

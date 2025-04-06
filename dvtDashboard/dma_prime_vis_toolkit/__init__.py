@@ -172,18 +172,9 @@ def create_app(development=False, dataDir=None):
     @app.route('/other-infectious-diseases')
     @login_required
     def other_infectious_diseases():
-        disease_files = os.listdir(f'{app.config['DATADIR']}/raw/other_diseases')
+        with open(f'{app.config['DATADIR']}/processed/other_infectious_diseases/metadata.json') as f:
+            diseases = list(json.load(f))
 
-        diseases = []
-
-        for file in disease_files:
-            disease_display_name = file.split(',')[0]
-            disease = disease_display_name.split(',')[0]
-            disease = disease.lower()
-            disease = disease.split('(')[0]
-            disease = disease.strip()
-            disease = '-'.join(disease.split(' '))
-            diseases.append({'display-name': disease_display_name, 'disease-name': disease})
         panels = [
             {
                 'name': 'main',
