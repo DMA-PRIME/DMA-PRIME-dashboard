@@ -135,16 +135,17 @@ def login_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         # if not in development mode, route page to login if not logged in
-        if g.user is None:
+        if not current_app.config['DEVELOPMENT'] and g.user is None:
         # if not current_app.config['DEVELOPMENT'] and g.user is None:
             flash("You are not logged in. Please log in")
             return redirect(url_for('auth.login'))
         
-        old_user = User.query.filter_by(id=session["user_id"]).first()
-        if not old_user.verified_user:
-        # if not current_app.config['DEVELOPMENT'] and g.user is None:
-            flash("You are not verified. Please check your email to verify your account")
-            return redirect(url_for('auth.login'))
+        if not current_app.config['DEVELOPMENT']:
+            old_user = User.query.filter_by(id=session["user_id"]).first()
+            if not old_user.verified_user:
+            # if not current_app.config['DEVELOPMENT'] and g.user is None:
+                flash("You are not verified. Please check your email to verify your account")
+                return redirect(url_for('auth.login'))
 
         return view(**kwargs)
 
@@ -155,8 +156,7 @@ def admin_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         # if not in development mode, route page to login if not logged in
-        if session["access_level"] != 1:
-        # if not current_app.config['DEVELOPMENT'] and session["access_level"] != 1:
+        if not current_app.config['DEVELOPMENT'] and session["access_level"] != 1:
             flash("Access Denied: Admin access required")
             return redirect(url_for('index'))
 

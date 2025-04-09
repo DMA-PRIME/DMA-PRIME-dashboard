@@ -10,7 +10,7 @@ dependencies:
   - flask_mailman
   - flask_login
   - flask_sqlalchemy
-  - jwt
+  - pyjwt
   - pandas
   - numpy
   - mysqlclient

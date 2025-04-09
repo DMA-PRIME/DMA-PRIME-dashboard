@@ -6,6 +6,9 @@ dependencies = [
     "waitress",
     "flask<2.4",
     "flask-bcrypt",
+    "flask_mailman",
+    "flask_login",
+    "flask_sqlalchemy",
 
     "mysqlclient",
 
@@ -16,6 +19,7 @@ dependencies = [
     "glob2",
 
     "requests",
+    "pyjwt",
 
     "google-api-python-client",
     "google-auth",

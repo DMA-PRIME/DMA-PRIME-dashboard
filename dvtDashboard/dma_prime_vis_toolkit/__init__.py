@@ -26,11 +26,6 @@ def create_app(development=False, dataDir=None):
         DEVELOPMENT=development,
         DATADIR=dataDir,
 
-        # EMAIL_HOST = "localhost",
-        # EMAIL_PORT = "587",
-        # EMAIL_USER = "nickjohnson1207@gmail.com",
-        # EMAIL_PASSWORD = "eniw enui zcza szgm",
-
         MAIL_SERVER = "smtp.gmail.com",
         MAIL_PORT = "587",
         MAIL_USERNAME = "nickjohnson1207@gmail.com",
@@ -44,11 +39,6 @@ def create_app(development=False, dataDir=None):
     )
 
     app.config.from_pyfile('config.py', silent=True)
-
-    # ignores login requirements
-    # if not development:
-    #     from . import database as db
-    #     db.init_app(app)
     
     # ensure the instance folder exists
     try:
@@ -59,10 +49,13 @@ def create_app(development=False, dataDir=None):
     mail = Mail()
     mail.init_app(app)
 
-    db.init_app(app)
+    # ignores login requirements
+    if not development:
+        from . import database as db
+        db.init_app(app)
 
-    with app.app_context():
-        db.create_all()
+        with app.app_context():
+            db.create_all()
 
     login_manager = LoginManager()
 
