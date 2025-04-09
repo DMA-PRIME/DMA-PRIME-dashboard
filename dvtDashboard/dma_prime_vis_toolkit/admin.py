@@ -30,18 +30,20 @@ def add_user():
             token = jwt.encode({"email": email}, current_app.config["SECRET_KEY"], algorithm='HS256')
 
             # Send verification email
-            subject, from_email, to = 'Reset Password', 'nickjohnson1207@gmail.com', email
-            html_content = render_template('email/reset_pwd_email.html', token=token)
+            # subject, from_email, to = 'Reset Password', 'nickjohnson1207@gmail.com', email
+            # html_content = render_template('email/reset_pwd_email.html', token=token)
 
 
-            msg = EmailMessage(subject, str(html_content), from_email, [to])
-            msg.content_subtype = "html"  # Main content is now text/html
-            msg.send()
+            # msg = EmailMessage(subject, str(html_content), from_email, [to])
+            # msg.content_subtype = "html"  # Main content is now text/html
+            # msg.send()
+            reset_password_url = url_for("auth.reset_password", token=token, _external=True)
+            flash(f"User added successfully. Verification link: {reset_password_url}")
         except Exception as e:
             flash(e)
             return redirect("/admin")
             
-        flash("User added successfully")
+        # flash("User added successfully")
         return redirect("/admin")
     return render_template('admin_access_user.html', action="add")
 

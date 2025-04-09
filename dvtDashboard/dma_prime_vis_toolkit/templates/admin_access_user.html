@@ -195,10 +195,7 @@
 
   <footer>
     {% for message in get_flashed_messages() %}
-        <sl-alert duration="2000" closable open>
-            <sl-icon slot="icon" name="info-circle"></sl-icon>
-            {{ message }}
-        </sl-alert>
+      <text>{{ message }}</text>
     {% endfor %}
   </footer>
   
