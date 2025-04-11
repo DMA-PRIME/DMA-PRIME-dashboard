@@ -87,7 +87,7 @@ def change_user():
                 the_user.password = Bcrypt().generate_password_hash(new_value)
                 db.session.commit()
             elif field == "access_level":
-                the_user.access_level = 1
+                the_user.access_level = int(new_value)
                 db.session.commit()
 
         except Exception as e:
