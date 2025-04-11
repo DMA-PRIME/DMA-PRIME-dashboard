@@ -21,9 +21,10 @@ bp = Blueprint('admin', __name__, url_prefix='/admin') # allow admin.py to impor
 def add_user():
     if request.method == "POST":
         email = request.form["email"]
+        access_level = int(request.form["access_level"])
   
         try:
-            temp_user = User(email, email[:4]+"123", Bcrypt().generate_password_hash(email[:4]+"789"), access_level=1, verified_user=False)
+            temp_user = User(email, email[:4]+"123", Bcrypt().generate_password_hash(email[:4]+"789"), access_level=access_level, verified_user=False)
             db.session.add(temp_user)
             db.session.commit()
 
