@@ -63,7 +63,7 @@
       margin-bottom: var(--sl-spacing-2x-large)
     }
 
-    #username {
+    #email {
       margin-bottom: var(--sl-spacing-small)
     }
 
@@ -103,7 +103,12 @@
     #drop-btn {
         width: 100%;
     }
-
+    a {
+      font-family: var(--sl-font-sans);
+      font-size: var(--sl-font-size-x-large);
+      text-decoration: none;
+      color: white;
+    }
   </style>
   {% endblock %}
 
@@ -121,7 +126,7 @@
             </a>
 
             {% if session["access_level"] == 1 %}
-            <a style="float: right ;" href="{{ url_for('admin_controls') }}">
+            <a style="float: right; margin-right: 17px;" href="{{ url_for('admin_controls') }}">
             <sl-icon-button name="database-gear"></sl-icon-button>
             </a>
             {% endif %}
@@ -138,8 +143,12 @@
     {% if action == "add" %}
     <div id="form-div">
       <h1 id="admin-user-title">Add User</h1>
-      <form onsubmit="return confirm('Do you really want to add this user as admin?');" method="post" id="user-add-form">
+      <form onsubmit="return confirm('Do you really want to add this user? Verify access level before submitting.');" method="post" id="user-add-form">
         <sl-input label="Email" id="email" name="email" required></sl-input>
+        <sl-select label="Access Level" id="access_level_id" name="access_level" required>
+          <sl-option value="0">0 - Regular</sl-option>
+          <sl-option value="1" selected>1 - Admin</sl-option>
+        </sl-select>
         
         <p id="signup-error"> 
           <!-- if there is an error passed through flask, display it -->
@@ -156,7 +165,7 @@
     <div id="form-div">
       <h1 id="admin-user-title">Delete User</h1>
       <form onsubmit="return confirm('Do you really want to delete this user?');" method="post" id="user-delete-form">
-        <sl-input label="Username" id="username" name="username" required></sl-input>
+        <sl-input label="Email" id="email" name="email" required></sl-input>
         
         <p id="signup-error"> 
           <!-- if there is an error passed through flask, display it -->
@@ -176,7 +185,7 @@
         <sl-select label="Field to Change" id="field_id" name="field" required>
           <sl-option value="username" selected>Username</sl-option>
           <sl-option value="password">Password</sl-option>
-          <sl-option value="access_level">Upgrade Access Level</sl-option>
+          <sl-option value="access_level">Update Access Level</sl-option>
         </sl-select>
         
         <sl-input label="New Value" id="change_entry" name="changed_field" required></sl-input>
@@ -195,10 +204,7 @@
 
   <footer>
     {% for message in get_flashed_messages() %}
-        <sl-alert duration="2000" closable open>
-            <sl-icon slot="icon" name="info-circle"></sl-icon>
-            {{ message }}
-        </sl-alert>
+      <text>{{ message }}</text>
     {% endfor %}
   </footer>
   

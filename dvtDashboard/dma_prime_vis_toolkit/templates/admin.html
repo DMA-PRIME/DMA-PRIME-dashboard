@@ -32,6 +32,19 @@
       align-items: center;
     }
 
+    footer {
+      background-color: #333; /* Dark background */
+      padding: 10px 20px; 
+      position: fixed; /* Sticks to the top */
+      bottom: 0;
+      left: 0;
+      width: 100%; /* Full width */
+      display: flex;
+      align-items: center; /* Align icons vertically /*
+      z-index: 1000; /* Keeps it above other content */
+      height: 60px; /* Define a fixed height */
+    }
+
     sl-icon-button{
       font-size: 2rem;
     }
@@ -123,10 +136,7 @@
   </div>
   <footer>
     {% for message in get_flashed_messages() %}
-        <sl-alert duration="2000" closable open>
-            <sl-icon slot="icon" name="info-circle"></sl-icon>
-            {{ message }}
-        </sl-alert>
+      <text>{{ message + "\n" }}</text>
     {% endfor %}
   </footer>
 </body>

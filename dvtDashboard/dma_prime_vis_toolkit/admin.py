@@ -21,27 +21,36 @@ bp = Blueprint('admin', __name__, url_prefix='/admin') # allow admin.py to impor
 def add_user():
     if request.method == "POST":
         email = request.form["email"]
+        access_level = int(request.form["access_level"])
   
         try:
-            temp_user = User(email, email[:4]+"123", Bcrypt().generate_password_hash(email[:4]+"789"), access_level=1, verified_user=False)
+            # Check if the user already exists
+            existing_user = User.query.filter_by(email=email).first()
+            if existing_user:
+                flash("User already exists")
+                return redirect("/admin")
+
+            temp_user = User(email, email[:4]+"123", Bcrypt().generate_password_hash(email[:4]+"789"), access_level=access_level, verified_user=False)
             db.session.add(temp_user)
             db.session.commit()
 
             token = jwt.encode({"email": email}, current_app.config["SECRET_KEY"], algorithm='HS256')
 
             # Send verification email
-            subject, from_email, to = 'Reset Password', 'nickjohnson1207@gmail.com', email
-            html_content = render_template('email/reset_pwd_email.html', token=token)
+            # subject, from_email, to = 'Reset Password', 'nickjohnson1207@gmail.com', email
+            # html_content = render_template('email/reset_pwd_email.html', token=token)
 
 
-            msg = EmailMessage(subject, str(html_content), from_email, [to])
-            msg.content_subtype = "html"  # Main content is now text/html
-            msg.send()
+            # msg = EmailMessage(subject, str(html_content), from_email, [to])
+            # msg.content_subtype = "html"  # Main content is now text/html
+            # msg.send()
+            reset_password_url = url_for("auth.reset_password", token=token, _external=True)
+            flash(f"User added successfully. Verification link: {reset_password_url}")
         except Exception as e:
             flash(e)
             return redirect("/admin")
             
-        flash("User added successfully")
+        # flash("User added successfully")
         return redirect("/admin")
     return render_template('admin_access_user.html', action="add")
 
@@ -51,10 +60,16 @@ def add_user():
 @admin_required
 def delete_user():
     if request.method == "POST":
-        username = request.form["username"]
-  
+        email = request.form["email"]
+
         try:
-            User.query.filter_by(username=username).delete()
+            # Check if the user exists
+            existing_user = User.query.filter_by(email=email).first()
+            if not existing_user:
+                flash("User does not exist")
+                return redirect("/admin")
+
+            User.query.filter_by(email=email).delete()
             db.session.commit()
 
         except Exception as e:
@@ -84,7 +99,7 @@ def change_user():
                 the_user.password = Bcrypt().generate_password_hash(new_value)
                 db.session.commit()
             elif field == "access_level":
-                the_user.access_level = 1
+                the_user.access_level = int(new_value)
                 db.session.commit()
 
         except Exception as e:
