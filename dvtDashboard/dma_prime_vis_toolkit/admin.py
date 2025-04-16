@@ -45,7 +45,8 @@ def add_user():
             # msg.content_subtype = "html"  # Main content is now text/html
             # msg.send()
             reset_password_url = url_for("auth.reset_password", token=token, _external=True)
-            flash(f"User added successfully. Verification link: {reset_password_url}")
+            # flash(f"User added successfully. Verification link: {reset_password_url}")
+            flash(f"User added successfully. Verification link: {'https://dmaprime.clemson.edu/auth' + reset_password_url.split("/auth")[-1]}")
         except Exception as e:
             flash(e)
             return redirect("/admin")
