@@ -6,7 +6,7 @@ from flask import (
 
 bp = Blueprint('data', __name__, url_prefix='/data')
 
-from .authenticate import login_required
+from flask_login import login_required
 
 
 @bp.route('/map/<type>', methods=['GET'])

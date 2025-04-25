@@ -1,53 +1,75 @@
 import functools
 
 from flask import (
-    Blueprint, abort, flash, g, redirect, render_template, request, session, url_for, current_app, jsonify
+    Blueprint, abort, flash, redirect, render_template, request, session, url_for, current_app, jsonify
 )
+
+from flask_login import LoginManager, login_user, logout_user, login_url, current_user
+
 from flask_bcrypt import Bcrypt
 import jwt
 
-from .database import get_db, User, db
-
-import MySQLdb
-
-
+from .database import User, db
 
 bp = Blueprint('auth', __name__, url_prefix='/auth') # allow __init__.py to import these routes
 
+login_manager = LoginManager()
+login_manager.login_view = 'auth.login'
+
+@login_manager.user_loader
+def load_user(user_id):
+    return User.query.get(int(user_id))
+
+@login_manager.unauthorized_handler
+def unauthorized():
+
+    if request.blueprint in login_manager.blueprint_login_views:
+        login_view = login_manager.blueprint_login_views[request.blueprint]
+    else:
+        login_view = login_manager.login_view
+
+    if not login_view:
+        abort(401)
+
+    if login_manager.login_message:
+        if login_manager.localize_callback is not None:
+            flash(
+                login_manager.localize_callback(login_manager.login_message),
+                category=login_manager.login_message_category,
+            )
+        else:
+            flash(login_manager.login_message, category=login_manager.login_message_category)
+
+    redirect_url = login_url(login_view, next_url=request.url)
+
+    return redirect(redirect_url)
+
+
 @bp.route("/login", methods=("GET", "POST"))
 def login():
-    """Log in a registered user by adding the user id to the session."""
     if request.method == "POST":
         email_username = request.form["email_username"]
         password = request.form["password"]
-        error = None
 
-        # curr_user = User.query.filter_by(email=email).first()
         curr_user = User.query.filter((User.email == email_username) | (User.username == email_username)).first()
-        # db.execute('SELECT * FROM user WHERE username = %s', [username])
-        # user = db.fetchone()
 
         if curr_user is None:
-            error = "Incorrect username or email"
-        else:
-            if not Bcrypt().check_password_hash(curr_user.password, password):
-                error = "Incorrect password"
+            flash("Incorrect username or email")
 
-        if error is None:
-            # store the user id in a new session and return to the index
-            session.clear()
-            session["user_id"] = int(curr_user.id)
-            session["access_level"] = int(curr_user.access_level)
-            flash("Logged in successfully. Welcome {}".format(curr_user.username))
-            return redirect("/")
-
-        flash(error)
-
+        if curr_user is not None:
+            if Bcrypt().check_password_hash(curr_user.password, password):
+                flash("Logged in successfully. Welcome {}".format(curr_user.username))
+                login_user(curr_user)
+                next = request.args.get('next')
+                return redirect(next or url_for('index'))
+            else:
+                flash("Incorrect password")
+    
     return render_template('login.html')
 
 @bp.route("/logout", methods=["GET"])
 def logout():
-    session.clear()
+    logout_user()
     return redirect("/auth/login")
 
 
@@ -125,45 +147,11 @@ def reset_password(token):
     flash("Password Changed Succesfully. Please Log in")
     return redirect("/auth/login")
 
-@bp.before_app_request
-def load_logged_in_user():
-    session.permanent = True
-    # if user is logged in, store in python side of session
-    user_id = session.get('user_id')
-
-    if user_id is None:
-        g.user = None
-    else:
-        db = get_db().cursor()
-        db.execute('SELECT * FROM user WHERE id = %s', [user_id])
-        g.user = db.fetchone()
-
-def login_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        # if not in development mode, route page to login if not logged in
-        if not current_app.config['DEVELOPMENT'] and g.user is None:
-        # if not current_app.config['DEVELOPMENT'] and g.user is None:
-            flash("You are not logged in. Please log in")
-            return redirect(url_for('auth.login'))
-        
-        if not current_app.config['DEVELOPMENT']:
-            old_user = User.query.filter_by(id=session["user_id"]).first()
-            if not old_user.verified_user:
-            # if not current_app.config['DEVELOPMENT'] and g.user is None:
-                flash("You are not verified. Please check your email to verify your account")
-                return redirect(url_for('auth.login'))
-
-        return view(**kwargs)
-
-    return wrapped_view
-
-
 def admin_required(view):
     @functools.wraps(view)
     def wrapped_view(**kwargs):
         # if not in development mode, route page to login if not logged in
-        if not current_app.config['DEVELOPMENT'] and session["access_level"] != 1:
+        if current_user.access_level != 1:
             flash("Access Denied: Admin access required")
             return redirect(url_for('index'))
 

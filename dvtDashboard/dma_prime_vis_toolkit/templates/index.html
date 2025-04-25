@@ -88,13 +88,13 @@
         <sl-icon-button name="house"></sl-icon-button>
       </a>
 
-      {% if session["access_level"] == 1 %}
+      {% if current_user["access_level"] == 1 %}
       <a style="float: right ;" href="{{ url_for('admin_controls') }}">
         <sl-icon-button name="database-gear"></sl-icon-button>
       </a>
       {% endif %}
 
-      {% if session["user_id"] %}
+      {% if current_user %}
       <sl-button id="log_out" style="float: right; font-size: 2rem; margin-top: 3px; align-items: center;" size="medium">
         <a href="{{ url_for('auth.logout') }}">Logout</a>
       </sl-button>
@@ -133,6 +133,20 @@
       <p>Mobile Health Clinic Tracking</p>    
     </a>
   </div>
+
+  <script>
+    let timer;
+    function resetTimer() {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        window.location.href = "auth/logout";
+      }, 15 * 60 * 1000 + 1);  // 15 minutes, 1 second
+    }
+  
+    window.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+  </script>
 </body>
 
 

@@ -56,6 +56,19 @@
     }
     window.addEventListener("keydown", swapTheme);
   </script>
+  <script>
+    let timer;
+    function resetTimer() {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        window.location.href = "auth/logout";
+      }, 15 * 60 * 1000 + 1);  // 15 minutes, 1 second
+    }
+  
+    window.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+  </script>
   <sl-tab-group id="nav-bar">
     <sl-tab id="main-tab" slot="nav" panel="main" disabled><a href="{{ url_for('index') }}" id="main-tab-link">DMA-PRIME</a></sl-tab>
 

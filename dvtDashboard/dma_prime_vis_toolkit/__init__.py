@@ -1,18 +1,19 @@
 # This is where the main flask code should lie
-from flask_mailman import Mail
-from flask import Flask, render_template, request, send_file
-from flask_login import LoginManager
+from flask import Flask, render_template
+from flask_login import login_required
 from werkzeug.middleware.proxy_fix import ProxyFix
 import logging
 
 import os
 import datetime
 import pandas as pd
-import numpy as np
 import json
 
+from flask_bcrypt import Bcrypt
+
 from .utility import * 
-from .authenticate import login_required, admin_required
+from .authenticate import login_manager, admin_required #login_required,
+from .database import User
 
 logging.basicConfig(filename=main_dir+'/logs.log',level=logging.DEBUG)
 def create_app(development=False, dataDir=None):
@@ -25,8 +26,8 @@ def create_app(development=False, dataDir=None):
         DEVELOPMENT=development,
         DATADIR=dataDir,
 
-        PERMANENT_SESSION_LIFETIME=datetime.timedelta(days=7),
-        SESSION_COOKIE_SECURE=True, 
+        PERMANENT_SESSION_LIFETIME=datetime.timedelta(minutes=15),
+        SESSION_REFRESH_EACH_REQUEST=True, 
 
         # SQLALCHEMY_DATABASE_URI = '***REMOVED***'
     )
@@ -34,8 +35,6 @@ def create_app(development=False, dataDir=None):
     app.wsgi_app = ProxyFix( # allows a reverse proxy
         app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
     )
-
-    app.config.from_pyfile('config.py', silent=True)
     
     # ensure the instance folder exists
     try:
@@ -44,15 +43,22 @@ def create_app(development=False, dataDir=None):
         pass
 
     # ignores login requirements
-    if not development:
-        from .database import db
-        db.init_app(app)
+    # if not development:
+    from .database import db
+    db.init_app(app)
 
-        with app.app_context():
-            db.create_all()
+    with app.app_context():
+        db.create_all()
+    
+        if app.config['DEVELOPMENT']:
+            User.query.delete()
+            test_user = User("admintest", "admintesttest", Bcrypt().generate_password_hash("adminpassword"), access_level=1, verified_user=True)
+            db.session.add(test_user)
+            test_user = User("usertest", "usertest", Bcrypt().generate_password_hash("userpassword"), access_level=0, verified_user=True)
+            db.session.add(test_user)
+            db.session.commit()
 
-    login_manager = LoginManager()
-
+    login_manager.init_app(app)
 
     # # # routes # # #
 

@@ -1,15 +1,14 @@
-import functools
 
 from flask import (
-    Blueprint, flash, g, redirect, render_template, request, session, url_for, current_app
+    Blueprint, flash, redirect, render_template, request, url_for, current_app
 )
 from flask_bcrypt import Bcrypt
 
+from flask_login import login_required
+
 from .database import db, User
-from .authenticate import login_required, admin_required
+from .authenticate import admin_required #login_required, 
 import jwt
-import time
-import MySQLdb
 
 bp = Blueprint('admin', __name__, url_prefix='/admin') # allow admin.py to import these routes
 

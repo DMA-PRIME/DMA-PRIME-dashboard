@@ -1,9 +1,4 @@
-import sqlite3
-
 import click
-from flask import current_app, g
-from flask_bcrypt import Bcrypt
-import MySQLdb
 from flask_login import UserMixin
 # from . import db, login_manager
 from flask_sqlalchemy import SQLAlchemy
@@ -29,32 +24,6 @@ class User(UserMixin, db.Model):
         self.password = password
         self.access_level = access_level
 
-def get_db():
-    # create connection to database if it doesn't exist
-    if 'db' not in g:
-        g.db = MySQLdb.connect(user=current_app.config['DB_USERNAME'], password=current_app.config['DB_PASSWORD'], database=current_app.config['DB_NAME'])
-    return g.db
-
-
-def close_db(e=None):
-    cursor = g.pop('db_cursor', None)
-    db = g.pop('db', None)
-
-    if cursor is not None:
-        cursor.close()
-
-    if db is not None:
-        db.close()
-
-
-def init_db():
-    db = get_db().cursor()
-
-    with current_app.open_resource('schema.sql') as f:
-        string = f.read().decode('utf8')
-        db.execute(string)
-
-
 @click.command('init-db')
 def init_db_command():
     """Clear the existing data and create new tables."""
@@ -72,5 +41,4 @@ def init_db_command():
 
 
 def init_app(app):
-    app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)

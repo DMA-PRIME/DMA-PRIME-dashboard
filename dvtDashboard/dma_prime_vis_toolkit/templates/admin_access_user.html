@@ -208,6 +208,19 @@
     {% endfor %}
   </footer>
   
+  <script>
+    let timer;
+    function resetTimer() {
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        window.location.href = "auth/logout";
+      }, 15 * 60 * 1000 + 1);  // 15 minutes, 1 second
+    }
+  
+    window.onload = resetTimer;
+    document.onmousemove = resetTimer;
+    document.onkeypress = resetTimer;
+  </script>
 
 </body>
 
