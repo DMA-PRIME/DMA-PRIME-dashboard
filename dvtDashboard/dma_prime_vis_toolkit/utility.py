@@ -31,5 +31,5 @@ def decrypt(file_name):
         return json.loads(plaintext)
         
     except (ValueError, KeyError) as e:
-        print("Incorrect decryption of ", file_name)
+        current_app.logger.error("Incorrect decryption of ", file_name)
         raise e
