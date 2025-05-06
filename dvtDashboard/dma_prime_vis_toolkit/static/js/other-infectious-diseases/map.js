@@ -2,7 +2,7 @@ const { GeoJsonLayer, IconLayer, MapboxOverlay, Widget } = deck;
 
 export { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn, update }
 
-var regionData = await d3.json(`/data/other-infectious-diseases/zcta/pos_tests`)
+var regionData = await d3.json(`/data/other-infectious-diseases/zcta/pos_tests?${parseInt(Math.random()*9999999999)}`)
 var stateFeature = regionData.features.find(d => d.properties.identifier == "state")
 
 var selectedItems = {
@@ -604,7 +604,7 @@ function drawLargeAggregation() {
 }
 
 async function changeRegionSize() {
-    regionData = await d3.json(`/data/other-infectious-diseases/${mapRegionSelector.value}/${mapColumnSwitch.value}`)
+    regionData = await d3.json(`/data/other-infectious-diseases/${mapRegionSelector.value}/${mapColumnSwitch.value}?${parseInt(Math.random()*9999999999)}`)
     stateFeature = regionData.features.find(d => d.properties.identifier == "state")
 
     selectedItems.region = undefined
@@ -613,7 +613,7 @@ async function changeRegionSize() {
 }
 
 async function changeDataColumn() {
-    regionData = await d3.json(`/data/other-infectious-diseases/${mapRegionSelector.value}/${mapColumnSwitch.value}`)
+    regionData = await d3.json(`/data/other-infectious-diseases/${mapRegionSelector.value}/${mapColumnSwitch.value}?${parseInt(Math.random()*9999999999)}`)
     stateFeature = regionData.features.find(d => d.properties.identifier == "state")
 
     if (selectedItems.region) {

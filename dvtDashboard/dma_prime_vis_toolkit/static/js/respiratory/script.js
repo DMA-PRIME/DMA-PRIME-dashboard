@@ -12,12 +12,12 @@ var endDate = parseDate(metadata.end_date)
 var predictionDates = d3.timeDay.range(currentWeek, new Date(endDate).setDate(endDate.getDate()+1), 7)
 
 
-var zctaData = await d3.json(`/data/deckgl-respiratory/zcta`)
+var zctaData = await d3.json(`/data/deckgl-respiratory/zcta?${parseInt(Math.random()*9999999999)}`)
 await Promise.allSettled([ // wait for following to be defined/load in
     customElements.whenDefined('sl-select'),
     customElements.whenDefined('sl-option'),
 ])
-var regionData = await d3.json(`/data/deckgl-respiratory/${mapRegionSelector.value}`)
+var regionData = await d3.json(`/data/deckgl-respiratory/${mapRegionSelector.value}?${parseInt(Math.random()*9999999999)}`)
 
 // visualization variables
 var formatInt = d3.format(".0f")

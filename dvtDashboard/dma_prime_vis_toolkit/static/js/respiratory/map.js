@@ -47,7 +47,7 @@ function redraw(first=false) {
                 id: 'respiratory_choropleth',
                 depthTest: false,
                 pickable: true,
-                data: d3.json(`/data/deckgl-respiratory/${mapRegionSelector.value}`),
+                data: d3.json(`/data/deckgl-respiratory/${mapRegionSelector.value}?${parseInt(Math.random()*9999999999)}`),
                 stroked: false,
                 stroked: true,
                 filled: true,
@@ -329,7 +329,7 @@ async function drawStateBarChart(svgDOM, subtitleDOM, stateMargins, yAxisDisplay
 
     var stateData
     try {
-        stateData = await d3.json(`/data/deckgl-respiratory/state-cdc`) 
+        stateData = await d3.json(`/data/deckgl-respiratory/state-cdc?${parseInt(Math.random()*9999999999)}`) 
         stateData = Object.entries(stateData[mapDiseaseSelector.value]).map(d => {
             temp = {"Date": d[0], "count": d[1]}
             if (mapRateSwitch.value == "rate") {

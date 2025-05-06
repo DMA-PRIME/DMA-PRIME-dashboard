@@ -131,6 +131,7 @@ def verify_email(token):
     user = User.query.filter_by(email=email).first()
     user.verified_user = True
     db.session.commit()
+    current_app.logger.info(f'{email} verified account email')
     flash("Email confirmed successfully")
     return redirect("/auth/login")
 
@@ -142,9 +143,7 @@ def reset_password(token):
         return render_template("reset_password.html", email=email)
     password = request.form["password"]
     username = request.form["username"]
-    # password_reset_token = request.form["pwd_reset_token"]
-    
-    
+    # password_reset_token = request.form["pwd_reset_token"]    
 
     curr_user = User.query.filter_by(email=email).first()
     curr_user.password = Bcrypt().generate_password_hash(password)
@@ -153,6 +152,7 @@ def reset_password(token):
     db.session.commit()
     session.clear()
 
+    current_app.logger.info(f'{email} changed account password')
 
     flash("Password Changed Succesfully. Please Log in")
     return redirect("/auth/login")
@@ -162,6 +162,7 @@ def admin_required(view):
     def wrapped_view(**kwargs):
         # if not in development mode, route page to login if not logged in
         if current_user.access_level != 1:
+            current_app.logger.info(f'{current_user.email} attempted to view admin page')
             flash("Access Denied: Admin access required")
             return redirect(url_for('index'))
 
