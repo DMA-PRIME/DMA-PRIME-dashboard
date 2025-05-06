@@ -128,13 +128,13 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false, grid=false) {
         if (data['state-testing'].data.length > 0) {
             let tempDate = parseDate(data['state-testing']['start-date'])
             let tempEndDate = d3.timeDay.offset(tempDate, (data['state-testing'].data.length-1)*7)
-            let tempStartDate = d3.timeDay.offset(tempEndDate, -6)
             var formatDate = d3.timeFormat("%b %d, %Y")
-            let tempVal = data['state-testing'].data.at(-1)
-            if (rate) {
-                tempVal = tempVal/d.population * 1000
+            var tooltipString = `Predicted Hospitalizations from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
+            if (data["state-prediction"].data.length) {
+                tempDate = parseDate(data['state-prediction']['start-date'])
+                tempEndDate = d3.timeDay.offset(tempDate, (data['state-prediction'].data.length-1)*7)
+                tooltipString += `<br/>and Projected Hospitalizations from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
             }
-            var tooltipString = `Cases from ${formatDate(tempStartDate)} to ${formatDate(tempEndDate)}: ${parseFloat(tempVal.toFixed(1))}`
             if (rate) {
                 tooltipString = 'Rate of ' + tooltipString + ' (per 1000 people)'
             }
@@ -147,14 +147,17 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false, grid=false) {
         if (data['state-testing'].data.length > 0) {
             let tempDate = parseDate(data['state-testing']['start-date'])
             let tempEndDate = d3.timeDay.offset(tempDate, (data['state-testing'].data.length-1)*7)
-            let tempStartDate = d3.timeDay.offset(tempEndDate, -6)
             var formatDate = d3.timeFormat("%b %d, %Y")
-            let tempVal = data['state-testing'].data.at(-1)
-            if (rate) {
-                tempVal = tempVal/d.population * 1000
+            var tooltipString = `Predicted Hospitalizations from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
+            if (data["state-prediction"].data.length) {
+                tempDate = parseDate(data['state-prediction']['start-date'])
+                tempEndDate = d3.timeDay.offset(tempDate, (data['state-prediction'].data.length-1)*7)
+                tooltipString += `<br/>and Projected Hospitalizations from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
             }
-            p.select(".tooltip-subtitle").html(`Cases from ${formatDate(tempStartDate)} to ${formatDate(tempEndDate)}: ${parseFloat(tempVal.toFixed(1))}`)  
-
+            if (rate) {
+                tooltipString = 'Rate of ' + tooltipString + ' (per 1000 people)'
+            }
+            p.select(".tooltip-subtitle").html(tooltipString)
         } else {
             p.select(".tooltip-subtitle").html('')
         }
@@ -277,6 +280,7 @@ function drawTooltip(d, div, ttpHeight, ttpWidth, rate=false, grid=false) {
 
     var stateCurrentLabelPositionAbove = null
     if (predictionData.data.length) {
+        
         graphSVG.append("rect")
             .attr("class", "tooltip-prediction-highlighter")
 
