@@ -94,8 +94,8 @@
   <div id="form-div">
     <h1 id="twofa-title">Two Factor Authentication</h1>
     <form method="post" id="twofa-form">
-      <p>You are almost done! Please start Google Auth on your smartphone and scan the following QR Code with it:</p>
-    <p><img id="qrcode" src="../static/two_factor_qr.png"></p>
+      <p>Please start Google Authenticator on your smartphone and scan the following QR Code with it:</p>
+    <p><img src="data:image/png;base64,{{ img }}"></p> 
     <p>Done, go to <a href="{{ url_for('auth.login') }}">Login</a> page!</p>
 
     </form>

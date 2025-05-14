@@ -25,7 +25,6 @@ def create_app(development=False, dataDir=None):
 
         PERMANENT_SESSION_LIFETIME=datetime.timedelta(minutes=15),
         SESSION_REFRESH_EACH_REQUEST=True, 
-        DMAPRIME_CONFIG = "secrets.cfg"
 
         # SQLALCHEMY_DATABASE_URI = '***REMOVED***'
     )

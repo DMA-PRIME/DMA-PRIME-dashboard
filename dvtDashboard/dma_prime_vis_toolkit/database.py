@@ -1,6 +1,5 @@
 import click
 from flask_login import UserMixin
-# from . import db, login_manager
 from flask_sqlalchemy import SQLAlchemy
 from dataclasses import dataclass
 
