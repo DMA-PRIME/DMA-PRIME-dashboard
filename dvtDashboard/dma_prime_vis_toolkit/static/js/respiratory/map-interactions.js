@@ -8,6 +8,8 @@ popup.on("close", e => {
     redraw()
 })
 
+map.on('zoom', _ => {if (mapRegionSelector.value == "zcta") { redraw() }})
+
 map.on("click", e => {
     var temp = {x: e.point.x, y: e.point.y}
     var dataObject = deckOverlay.pickObject(temp).object

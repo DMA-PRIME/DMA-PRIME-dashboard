@@ -47,7 +47,7 @@ def add_user():
             
         # flash("User added successfully")
         return redirect("/admin")
-    return render_template('admin_access_user.html', action="add")
+    return render_template('admin/admin_access_user.html', action="add")
 
 
 @bp.route("/delete-user", methods=("GET", "POST"))
@@ -76,7 +76,7 @@ def delete_user():
             
         flash("User deleted successfully")
         return redirect("/admin")
-    return render_template('admin_access_user.html', action="delete")
+    return render_template('admin/admin_access_user.html', action="delete")
 
 @bp.route("/change-user", methods=("GET", "POST"))
 @login_required
@@ -110,4 +110,4 @@ def change_user():
   
         flash("User changed successfully")
         return redirect("/admin")
-    return render_template('admin_access_user.html', action="change")
+    return render_template('admin/admin_access_user.html', action="change")

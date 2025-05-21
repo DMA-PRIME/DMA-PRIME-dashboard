@@ -1,11 +1,3 @@
-#prediction-modelling-button-link {
-  /* Styling for link to the prediction modeling part of the site
-    The link is floating on the right side of the navbar
-  */
-  margin: auto var(--sl-spacing-small) auto auto;
-  display: block;
-}
-
 .tooltip-div {
   background-color: white;
 }

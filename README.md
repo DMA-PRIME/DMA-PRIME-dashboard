@@ -1,13 +1,32 @@
 # DMA-PRIME-dashboard
 
+dvtDashboard contains the code for the DMA-PRIME visualization toolkit. The flask app is found in dma_prime_vis_toolkit directory. The python code for the backend is found in the top level of this directory. The templates directory contains the html files for the toolkit. The static directory contains the css and js files. Within templates, static/css, and static/js there are corresponding directories that are responsible for each dashboard within the toolkit. For example, the respiratory dashboard's html/css/js files are founding templates/respiratory, static/css/respiratory, and static/js/respiratory. Additionally, the files tend to be separated by panel in each dashboard. The respiratory dashboard has a map and grid panel and therefore has a html, css, and js file for each. Furthermore, the js for each dashboard's panel is roughly separated into a file for visualization and another for interactions. 
 
-dvtDashboard contains the code for the DMA-PRIME dashboard. The flask app is found in mainApp directory. To run this flask app, navigate to the dvtDashboard directory and run `flask --app mainApp run` in the command line. Then, open the link localhost:5000 in any browser. This will bring you to the always on current data visualization. 
+To further develop the toolkit:
+1. Use one of the requirements.txt files to create a virtual environment. 
+1. Create a cfg file. Mine I named secrets.cfg and it's at the top of the git repo (DMA-PRIME-dashboard/secrets.cfg). This is already in the gitignore. Use the following configurations:
+    - SECRET_KEY (this can be any bytes object)
+    - DB_NAME
+    - DB_USERNAME
+    - DB_PASSWORD
+    - SQLALCHEMY_DATABASE_URI (I just use "sqlite:///project.db" for local stuff)
+1. Set the environment variable named DMAPRIME_CONFIG to the full path of your cfg file.
+1. Download the data directories from Palmetto Indigo store. **DO NOT COMMIT THEM TO THE GITHUB**. Make sure they are in the same directory. I used the testing directory in this git repo as testing/processed and testing/supplementary are already included in the gitignore. Data directories:
+    - /project/liorr/dmaprime/visualization_data/download/processed
+    - /project/liorr/dmaprime/visualization_data/download/supplementary
+1. Navigate to the dvtDashboard directory
+1. Run the following command: `flask --debug --app "dma_prime_vis_toolkit:create_app(True, 'full path to directory containing processed and supplementary directories')" run`
 
-If you don't have Flask downloaded, you can use an anaconda environment: conda create --name test pandas numpy flask. Activate the environment before running the app as specified above.
+Notes:
+- The first parameter in the above command runs this app in development mode which clears the db and creates two users:
+    - usertest
+        - userpassword
+    - admintest
+        - adminpassword
+- The website will be at localhost:5000. It works in chrome, edge, or firefox. It's broken in safari for reasons I cannot discern, lacking a mac
+- If you're having import issues, the requirements files may be old, sorry. dvtdashboard/pyproject.toml should pretty much always be up to date.
 
 Web components courtesy of [Shoelace](https://shoelace.style/) 
-
-Note: To automatically reload flask applications on changes, run it with the --debug flag :) (p.s. don't put it at the end, I put it before --app - `flask --debug --app mainApp run`)
 
 # Data Sources
 - SC county map and SC zip code map
@@ -31,7 +50,3 @@ Note: To automatically reload flask applications on changes, run it with the --d
 - Jinja: https://jinja.palletsprojects.com/en/3.0.x/api/
 - Pandas: https://pandas.pydata.org/docs/index.html
 - Numpy: https://numpy.org/doc/stable/index.html
-
-
-update.cmd: 
- - https://devblogs.microsoft.com/oldnewthing/20120801-00/?p=6993

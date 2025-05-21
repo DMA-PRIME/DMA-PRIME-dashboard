@@ -50,7 +50,7 @@ def create_app(development=False, dataDir=None):
     
         if app.config['DEVELOPMENT']:
             User.query.delete()
-            test_user = User("admintest", "admintesttest", Bcrypt().generate_password_hash("adminpassword"), access_level=1, verified_user=True)
+            test_user = User("admintest", "admintest", Bcrypt().generate_password_hash("adminpassword"), access_level=1, verified_user=True)
             db.session.add(test_user)
             test_user = User("usertest", "usertest", Bcrypt().generate_password_hash("userpassword"), access_level=0, verified_user=True)
             db.session.add(test_user)
@@ -78,7 +78,7 @@ def create_app(development=False, dataDir=None):
     @login_required
     @admin_required
     def admin_controls():
-        return render_template("admin.html")
+        return render_template("admin/admin.html")
 
     @app.route('/respiratory')
     @login_required
@@ -143,23 +143,6 @@ def create_app(development=False, dataDir=None):
         ]
         return render_template('mobile-health-clinic/mhc-base.html', panels=panels)
 
-    @app.route('/modeling')
-    @login_required
-    def modeling():
-        panels = [
-            {
-                'name': 'main',
-                'displayName': 'DMA-PRIME',
-            },
-            {
-                'name': 'map',
-                'displayName': 'Map View',
-                'active': True,
-                'html': 'modeling/modeling-map-panel.html'
-            },
-        ]
-        return render_template('modeling/modeling-base.html', panels=panels)
-    
     @app.route('/opioid-hcv-hiv')
     @login_required
     def opioid_hcv_hiv():
@@ -195,7 +178,7 @@ def create_app(development=False, dataDir=None):
         ]
         return render_template('opioid-hcv-hiv/opioid-hcv-hiv-base.html', panels=panels, metadata=metadata)
 
-    @app.route('/other-infectious-diseases')
+    @app.route('/outbreak-detection')
     @login_required
     def other_infectious_diseases():
         diseases = list(decrypt(f"{app.config['DATADIR']}/processed/other_infectious_diseases/metadata.json"))
@@ -209,10 +192,10 @@ def create_app(development=False, dataDir=None):
                 'name': 'map',
                 'displayName': 'Map View',
                 'active': True,
-                'html': 'other-infectious-diseases/other-infectious-diseases-map-panel.html'
+                'html': 'outbreak-detection/outbreak-detection-map-panel.html'
             },
         ]
-        return render_template('other-infectious-diseases/other-infectious-diseases-base.html', panels=panels, diseases=diseases)
+        return render_template('outbreak-detection/outbreak-detection-base.html', panels=panels, diseases=diseases)
 
     @app.route('/waste-water')
     @login_required

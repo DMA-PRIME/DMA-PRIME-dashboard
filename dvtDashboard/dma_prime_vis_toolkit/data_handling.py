@@ -32,7 +32,7 @@ def getOpioidHcvHiv(disease='opioid'):
     # hospitalization data based on disease
     return decrypt(f"{current_app.config['DATADIR']}/processed/opioid_hcv_hiv/{disease}_zcta_hospitalization_data.json")
 
-@bp.route('/other-infectious-diseases/<region_size>/<column>', methods=['GET', 'POST'])
+@bp.route('/outbreak-detection/<region_size>/<column>', methods=['GET', 'POST'])
 @login_required
 def getStateDiseaseHospitalizations(region_size='region',column='encounters'):
     # hospitalization data based on disease

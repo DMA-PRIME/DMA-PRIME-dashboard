@@ -3,7 +3,7 @@
 {% block style %}
 <!-- Linking stylesheets -->
 <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}" />
-<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/other-infectious-diseases/map-style.css') }}" />
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/outbreak-detection/map-style.css') }}" />
 <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/respiratory/map-style.css') }}" /> -->
 <!-- <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/respiratory/grid-style.css') }}" /> -->
 {% endblock %}
@@ -34,5 +34,5 @@
 <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
 
 <!-- Contains helper functions/data/constants -->
-<script src="{{ url_for('static', filename='js/other-infectious-diseases/script.js') }}"></script>
+<script src="{{ url_for('static', filename='js/outbreak-detection/script.js') }}"></script>
 {% endblock %}

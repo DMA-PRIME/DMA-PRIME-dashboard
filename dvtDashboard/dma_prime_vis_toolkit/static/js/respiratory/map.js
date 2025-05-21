@@ -32,8 +32,6 @@ const map = new maplibregl.Map({
 
 await map.once('load')
 
-map.on('zoom', _ => {if (mapRegionSelector.value == "zcta") { redraw() }})
-
 var popup = new maplibregl.Popup({focusAfterOpen: false, closeOnClick: false})
 
 const deckOverlay = new MapboxOverlay({
