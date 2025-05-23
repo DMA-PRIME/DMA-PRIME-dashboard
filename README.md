@@ -5,7 +5,7 @@ dvtDashboard contains the code for the DMA-PRIME visualization toolkit. The flas
 To further develop the toolkit:
 1. Use one of the requirements.txt files to create a virtual environment. 
 1. Create a cfg file. Mine I named secrets.cfg and it's at the top of the git repo (DMA-PRIME-dashboard/secrets.cfg). This is already in the gitignore. Use the following configurations:
-    - SECRET_KEY (this can be any bytes object)
+    - SECRET_KEY (32 byte bytes object)
     - DB_NAME
     - DB_USERNAME
     - DB_PASSWORD
