@@ -154,7 +154,7 @@
     function resetActivityTimer() {
       clearTimeout(activityTimer);
       activityTimer = setTimeout(() => {
-        window.location.href = "auth/logout";
+        window.location.href = "/auth/logout";
       }, (15 * 60 - 2) * 1000 + 1);  // 14 minutes, 58 seconds
     }
   

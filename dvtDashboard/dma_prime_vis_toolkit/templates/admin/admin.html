@@ -135,9 +135,12 @@
     </a>
   </div>
   <footer>
-    {% for message in get_flashed_messages() %}
-      <text>{{ message + "\n" }}</text>
-    {% endfor %}
+    {% with link = get_flashed_messages(category_filter=["link"]) %}
+    {% if link %}
+    {% set link = link[0] %}
+      <text>User added successfully. Verification link: {{ link }} <sl-copy-button value="{{ link }}"></sl-copy-button></text>
+    {% endif %}
+    {% endwith %}
   </footer>
 
   <script>
@@ -160,7 +163,7 @@
     function resetActivityTimer() {
       clearTimeout(activityTimer);
       activityTimer = setTimeout(() => {
-        window.location.href = "auth/logout";
+        window.location.href = "/auth/logout";
       }, (15 * 60 - 2) * 1000 + 1);  // 14 minutes, 58 seconds
     }
   

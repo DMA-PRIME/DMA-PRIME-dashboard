@@ -37,9 +37,12 @@ def add_user():
 
             token = jwt.encode({"email": email}, current_app.config["SECRET_KEY"], algorithm='HS256')
 
-            reset_password_url = url_for("auth.reset_password", token=token, _external=True)
-            # flash(f"User added successfully. Verification link: {reset_password_url}")
-            flash(f"User added successfully. Verification link: {'https://dmaprime.clemson.edu/auth' + reset_password_url.split("/auth")[-1]}")
+            reset_password_url =  url_for("auth.reset_password", token=token, _external=True)
+            
+            if not current_app.config['DEVELOPMENT']:
+                reset_password_url = 'https://dmaprime.clemson.edu/auth' + reset_password_url.split("/auth")[-1]
+
+            flash(reset_password_url, 'link')
         except Exception as e:
             current_app.logger.info(f'{current_user.email} failed to create user {email} (error)')
             flash(str(e))

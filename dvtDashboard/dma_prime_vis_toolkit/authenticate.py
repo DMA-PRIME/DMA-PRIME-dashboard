@@ -66,7 +66,7 @@ def two_factor_setup():
     qrcode.make(uri).save(imgIO, 'PNG')
     imgIO.seek(0, 0)
     imgB64 = b64encode(imgIO.getvalue()).decode('utf-8')
-    return render_template("authenticatation/two_factor_setup.html", img=imgB64)
+    return render_template("authentication/two_factor_setup.html", img=imgB64)
 
 @bp.route("/two_factor_auth", methods=["GET", "POST"])
 def two_factor_auth():
@@ -86,7 +86,7 @@ def two_factor_auth():
             flash("Incorrect 2FA code")
             current_app.logger.info(f'Failed 2FA of user {curr_user.email}')
             session['email'] = session['email']
-    return render_template('authenticatation/two_factor_auth.html')
+    return render_template('authentication/two_factor_auth.html')
 
 @bp.route("/login", methods=("GET", "POST"))
 def login():
@@ -155,7 +155,7 @@ def signup():
             session.clear()
             session['email'] = email
             return redirect(url_for('auth.two_factor_setup'))
-        return render_template('authenticatation/sign_up.html')
+        return render_template('authentication/sign_up.html')
     else:
         return abort(404)
 
@@ -176,7 +176,7 @@ def reset_password(token):
     data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
     email = data["email"]
     if request.method == "GET":
-        return render_template("authenticatation/reset_password.html", email=email)
+        return render_template("authentication/reset_password.html", email=email)
     password = request.form["password"]
     username = request.form["username"]
 
