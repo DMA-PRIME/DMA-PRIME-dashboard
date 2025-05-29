@@ -1,3 +1,3 @@
 function parseDate(datestring) {
-    return dayjs.tz(datestring, "YYYY-MM-DD", "America/New_York").toDate()
+    return dayjs(datestring, "YYYY-MM-DD").toDate()
 }

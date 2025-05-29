@@ -1,6 +1,17 @@
-const { GeoJsonLayer, IconLayer, MapboxOverlay, Widget } = deck;
-import { startDate, currentWeek, endDate, regionData,  dataSourceColorMap, parseDate } from "/static/js/respiratory/script.js";
+const { GeoJsonLayer, IconLayer, TextLayer, MapboxOverlay } = deck;
+const { load, ImageLoader } = loaders
+import { startDate, currentWeek, endDate, dataSourceColorMap, parseDate, getCenter } from "/static/js/respiratory/script.js";
 export { map, popup, selectedItems, deckOverlay, redraw, drawStateHospitalizations, drawLargeStateHospitalizations }
+
+loaders.registerLoaders(loaders.ImageLoader);
+
+var regionData
+
+var icons = {
+    "data": await d3.csv('/data/health-care-facility') ,
+    "iconAtlas": await load('/data/icon-pack/png', ImageLoader),
+    "iconMapping": await d3.json('/data/icon-pack/json'),
+}
 
 var selectedItems = {
     "feature": undefined,
@@ -38,35 +49,40 @@ await Promise.allSettled([ // wait for following to be defined/load in
 redraw(true)
 drawStateHospitalizations()
 
-function redraw(first=false) {
-    createChoropleth(regionData, mapDiseaseSelector.value, mapDataSourceSelector.value, mapRateSwitch.value == "rate", mapIncludeImputations.checked)
+async function redraw(fetchData=false) {
     drawLegend()
-    deckOverlay.setProps({
-        layers: [
-            new GeoJsonLayer({
-                id: 'respiratory_choropleth',
-                depthTest: false,
-                pickable: true,
-                data: d3.json(`/data/deckgl-respiratory/${mapRegionSelector.value}`),
-                stroked: false,
-                stroked: true,
-                filled: true,
-                pointType: 'circle+text',
-                pickable: true,
-                getFillColor: d => getColor(d),
-                lineWidthMinPixels: .75,
-                getLineWidth: 20,
-                getLineColor: [127, 127, 127],
-                updateTriggers: {
-                    data: { dataVersion },
-                    getFillColor: { dataVersion },
-                },
-            }),
+    if (fetchData == true) {
+        regionData = await d3.json(`/data/deckgl-respiratory/${mapRegionSelector.value}?${parseInt(Math.random()*9999999999)}`) 
+    }
+    createChoropleth(regionData, mapDiseaseSelector.value, mapDataSourceSelector.value, mapRateSwitch.value == "rate", mapIncludeImputations.checked)
+    var layers = [
+        new GeoJsonLayer({
+            id: 'respiratory_choropleth',
+            depthTest: false,
+            pickable: true,
+            data: regionData,
+            stroked: false,
+            stroked: true,
+            filled: true,
+            pointType: 'circle+text',
+            pickable: true,
+            getFillColor: d => getColor(d),
+            lineWidthMinPixels: .75,
+            getLineWidth: 20,
+            getLineColor: [127, 127, 127],
+            updateTriggers: {
+                data: [mapRegionSelector.value, dataVersion],
+                getFillColor: [ mapRegionSelector.value, dataVersion ],
+            },
+        })
+    ]
+    if (selectedItems.icons.length) {
+        layers.push(
             new IconLayer({
                 id: 'hospital-and-cdap',
-                data: d3.csv('/data/health-care-facility/all'),
-                iconAtlas: '/data/icon-pack/png',
-                iconMapping: '/data/icon-pack/json',
+                data: icons.data,
+                iconAtlas: icons.iconAtlas,
+                iconMapping: icons.iconMapping,
                 getPosition: d => {return [+d.longitude, +d.latitude]},
                 getIcon: d => {if(selectedItems.icons.includes(d.type)) return d.type},
                 getSize: 15,
@@ -74,8 +90,38 @@ function redraw(first=false) {
                 parameters: {
                     depthTest: false
                 },
+                updateTriggers: {
+                    getIcon: [ hospitalIconsToggle.checked, mobileClinicIconsToggle.checked, communityPartnerIconsToggle.checked ]  
+                }
+            }),
+        )
+    }
+    if (mapRegionSelector.value != "state" && mapOptionsGeographicLabelsToggle.checked) {
+        layers.push(
+            new TextLayer({
+                id: 'labels',
+                data: regionData.features,
+                getPosition: d => getCenter(d),
+                getText: d => d.properties.id.toString(),
+                getAlignmentBaseline: 'center',
+                getTextAnchor: 'middle',
+                getColor: [0, 0, 0],
+                background: true,
+                getBackgroundColor: [255, 255, 255, 32],
+                backgroundBorderRadius: 2,
+                backgroundPadding: [4, 4],
+                getSize: mapRegionSelector.value == "zcta" ? Math.min(Math.max(8, map.getZoom()*1.5), 16) : 16,
+                fontFamily:getComputedStyle(document.head).getPropertyValue("--sl-font-sans").replace(/\s/g,'').split(',') ,
+                collisionGroup: 'labels',
+                collisionTestProps: {sizeScale: 2.5},
+                updateTriggers: {
+                    getSize: [map.getZoom()],
+                },
             })
-        ]
+        )
+    }
+    deckOverlay.setProps({
+        layers: layers
     })
 
 }
@@ -234,7 +280,7 @@ function drawStateHospitalizations() {
             .style("text-anchor", "end")
             .attr("transform", `translate(-12, 6) rotate(-90)`)
     }
-    drawStateBarChart(mapStateHospitalizationsSvg, stateMargins, yAxisDisplayFunc, xAxisDisplayFunc)
+    drawStateBarChart(mapStateHospitalizationsSvg, mapStateHospitalizationsSubtitle, stateMargins, yAxisDisplayFunc, xAxisDisplayFunc)
     
 }
 
@@ -276,7 +322,7 @@ function drawLargeStateHospitalizations() {
         var svgMajorXAxis = xAxis.append("g")
             .attr("id", "map-state-hospitalizations-large-major-xaxis")
             .call(d3.axisBottom(stateXScale)
-                .tickValues(allWeeks.filter(d => d.getDate() < 7))
+                .tickValues(allWeeks.filter(d => d.getDate() <= 7))
                 .tickFormat(d3.timeFormat("")))
             .attr("transform", `translate(0, ${stateHeight - stateMargins.bottom})`)  
         
@@ -305,10 +351,10 @@ function drawLargeStateHospitalizations() {
             .attr("transform", `translate(0, ${stateHeight - stateMargins.bottom})`)
 
     }
-    drawStateBarChart(mapStateHospitalizationsLargeSvg, stateMargins, yAxisDisplayFunc, xAxisDisplayFunc)
+    drawStateBarChart(mapStateHospitalizationsLargeSvg, mapStateHospitalizationsLargeSubtitle, stateMargins, yAxisDisplayFunc, xAxisDisplayFunc)
 }
 
-async function drawStateBarChart(svgDOM, stateMargins, yAxisDisplayFunc, xAxisDisplayFunc) {
+async function drawStateBarChart(svgDOM, subtitleDOM, stateMargins, yAxisDisplayFunc, xAxisDisplayFunc) {
     var diseaseDisplayNames = {
         "covid-19": "COVID-19",
         "influenza-1": "Influenza",
@@ -329,7 +375,7 @@ async function drawStateBarChart(svgDOM, stateMargins, yAxisDisplayFunc, xAxisDi
 
     var stateData
     try {
-        stateData = await d3.json(`/data/deckgl-respiratory/state-cdc`) 
+        stateData = await d3.json(`/data/deckgl-respiratory/state-cdc?${parseInt(Math.random()*9999999999)}`) 
         stateData = Object.entries(stateData[mapDiseaseSelector.value]).map(d => {
             temp = {"Date": d[0], "count": d[1]}
             if (mapRateSwitch.value == "rate") {
@@ -337,8 +383,10 @@ async function drawStateBarChart(svgDOM, stateMargins, yAxisDisplayFunc, xAxisDi
             }
             return temp
         })
+        subtitleDOM.innerHTML = `Data from ${d3.timeFormat("%b %d, %Y")(parseDate(d3.min(stateData, d => d.Date)))} to ${d3.timeFormat("%b %d, %Y")(parseDate(d3.max(stateData, d => d.Date)))}`
     } catch (error) {
         stateData = [{"Date": "2020-01-01", "count": 1}]
+        subtitleDOM.innerHTML = "N/A"
     }
     
     var maxVal = d3.max(stateData.map(d => d.count)) || 1
@@ -346,7 +394,7 @@ async function drawStateBarChart(svgDOM, stateMargins, yAxisDisplayFunc, xAxisDi
     var temp = svg.append("text").text(d3.format(".2r")(maxVal)).attr("x", 0).attr("y", 0)
     stateMargins.left += Math.max(20, temp.node().getBBox().width)
 
-    var stateXScale = d3.scaleUtc()
+    var stateXScale = d3.scaleTime()
                 .domain([startDate, d3.timeDay.offset(endDate, 7)]).range([stateMargins.left, stateWidth - stateMargins.right])    
 
     var stateYScale = d3.scaleLinear()

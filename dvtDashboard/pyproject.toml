@@ -1,26 +1,22 @@
 [project]
 name = "dma_prime_vis_toolkit"
-version = "1.5.13"
-description = "DMA-PRIME March 2025"
+version = "1.7.6"
+description = "DMA-PRIME May 2025 - 5 dashboards, user login/roles/creation/2fa, encryption + logging"
 dependencies = [
     "waitress",
-    "flask<2.4",
+    "werkzeug",
+    "flask",
+
+    "flask_login",
     "flask-bcrypt",
+    "pyotp",
+    "qrcode[pil]",
 
-    "mysqlclient",
+    "flask_sqlalchemy",
 
-    "pandas",
-    "openpyxl",
-    "numpy",
-    "geojson",
-    "glob2",
-
-    "requests",
-
-    "google-api-python-client",
-    "google-auth",
-    "google-auth-oauthlib",
-    "google-auth-httplib2",
+    "pyjwt",
+    
+    "pycryptodomex",
 ]
 
 [build-system]

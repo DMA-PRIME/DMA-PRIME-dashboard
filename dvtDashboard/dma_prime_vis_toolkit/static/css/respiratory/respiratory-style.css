@@ -1,9 +1,5 @@
-#prediction-modelling-button-link {
-  /* Styling for link to the prediction modeling part of the site
-    The link is floating on the right side of the navbar
-  */
-  margin: auto var(--sl-spacing-small) auto auto;
-  display: block;
+.tooltip-div {
+  background-color: white;
 }
 
 p.tooltip-title {
@@ -11,6 +7,7 @@ p.tooltip-title {
   margin: 0;
   padding-top: var(--sl-spacing-x-small);
   text-align: center;
+  color: black;
 }
 
 .tooltip-title {
@@ -18,7 +15,7 @@ p.tooltip-title {
   font-size: var(--sl-font-size-small);
 }
 
-.tooltip-subtitle {
+.tooltip-subtitle, .tooltip-subtitle-2 {
   /* subtitle span */
   font-size: var(--sl-font-size-x-small);
 }
@@ -34,11 +31,18 @@ p.tooltip-title {
 .tooltip-prediction-separator {
   /* line indicating the difference between prediction and reality */
   stroke-width: 1.5;
-  stroke: var(--sl-color-neutral-1000);
+  stroke: black;
 }
 
 .tooltip-prediction-highlighter {
   /* grey rectangle that highlights the prediction in the tooltip */
   opacity: .5;
-  fill: var(--sl-color-neutral-600);
+  fill: hsl(240 5.3% 58%);
+}
+
+.y-axis:not(.map-state-hospitalizations *) text, :is(.x-axis-historical, .x-axis-prediction) text {
+  fill: black;
+}
+.y-axis:not(.map-state-hospitalizations *) :is(path,line), :is(.x-axis-historical, .x-axis-prediction) :is(path,line) {
+  stroke: black
 }

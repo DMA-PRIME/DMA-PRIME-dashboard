@@ -12,7 +12,6 @@
 <!-- Adding datetime package timejs (allows timezone date instantiation) -->
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/dayjs.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/utc.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/timezone.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/customParseFormat.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isSameOrAfter.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dayjs@1/plugin/isSameOrBefore.js"></script>
@@ -20,7 +19,6 @@
 <script>
     // Ensuring the timejs additional plugins are linked
     dayjs.extend(window.dayjs_plugin_utc)
-    dayjs.extend(window.dayjs_plugin_timezone)
     dayjs.extend(window.dayjs_plugin_customParseFormat)
     dayjs.extend(window.dayjs_plugin_isSameOrAfter)
     dayjs.extend(window.dayjs_plugin_isSameOrBefore)
@@ -30,8 +28,6 @@
     // TODO: Find source for value
     scPopulation = 5118425
 
-    zctaData = {}
-    // zctaData = null
 </script>
 
 <!-- maplibre gl -->
@@ -40,6 +36,7 @@
 
 <!-- deck gl -->
 <script src="https://unpkg.com/deck.gl@latest/dist.min.js"></script>
+<script src="https://unpkg.com/@loaders.gl/images@latest/dist/dist.min.js"></script>
 
 <!-- Contains helper functions/data/constants -->
 <script>
@@ -51,9 +48,6 @@
 {% endblock %}
 
 {% block linkout %}
-<!-- Link to prediction modelling/model exploration page -->
-<sl-button slot="nav" id="prediction-modelling-button-link" href="{{ url_for('modeling') }}" target="_blank"
-    variant="text">Prediction Modelling <sl-icon name="box-arrow-up-right"></sl-icon></sl-button>
 {% endblock %}
 
 {% block bodyScripts %}

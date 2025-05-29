@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en" class="sl-theme-dark">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, maximum-scale=1.0" />
+
+  <title>{% block title %}DMA-PRIME{% endblock %}</title>
+
+  <!-- Shoelace -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/themes/dark.css" />
+  <script type="module"
+    src="https://cdn.jsdelivr.net/npm/@shoelace-style/shoelace@2.15.1/cdn/shoelace-autoloader.js"></script>
+
+  <!-- D3 -->
+  <script src="https://d3js.org/d3.v7.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3-geo@3"></script>
+
+  <!-- Style that should load before the rest of the page -->
+  {% block style %}
+  <style>
+    header {
+      background-color: #333; /* Dark background */
+      position: fixed; /* Sticks to the top */
+      top: 0;
+      left: 0;
+      width: 100%; /* Full width */
+      display: flex;
+      align-items: center; /* Align icons vertically /*
+      z-index: 1000; /* Keeps it above other content */
+      height: 60px; /* Define a fixed height */
+    }
+
+    nav {
+      /* display: flex; */
+      width: 100%;
+      align-items: center;
+    }
+
+    sl-icon-button{
+      font-size: 2rem;
+    }
+
+    body {
+        width: 100vw;
+        height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        margin: 0px;
+        padding: 0px;
+    }
+
+    #form-div {
+        height: fit-content;
+        width: 30%;
+        font-family: var(--sl-font-sans); 
+    }
+
+    #login-title {
+      margin-bottom: var(--sl-spacing-2x-large)
+    }
+
+    #email_username {
+      margin-bottom: var(--sl-spacing-small)
+    }
+
+    #password {
+      margin-bottom: var(--sl-spacing-2x-small)
+    }
+
+    #login-error {
+      height: 1em;
+      margin-top: 0;
+      margin-bottom: var(--sl-spacing-x-large)
+    }
+
+  </style>
+  {% endblock %}
+
+  <!-- code that should run before the rest of the page -->
+  {% block headScripts %}
+  {% endblock %}
+
+</head>
+
+<body>
+  <header>
+    <nav>
+      
+    </nav>
+  </header>
+
+  <div id="form-div">
+    <h1 id="login-title">Two Factor Authentication</h1>
+    <form method="post" id="login-form">
+      <sl-input label="2FA Code" type="text" name="2fa_code" id="2fa-input" autocomplete="off" required></sl-input>
+      <p id="login-error"> 
+        <!-- if there is an error passed through flask, display it -->
+        {% for message in get_flashed_messages() %}
+        <text>{{ message }}</text>
+        {% endfor %}
+      </p>
+      <sl-button type="submit" variant="primary">Submit</sl-button>
+    </form>
+  </div>
+
+  <footer>
+    {% for message in get_flashed_messages() %}
+        <sl-alert duration="2000" closable open>
+            <sl-icon slot="icon" name="info-circle"></sl-icon>
+            {{ message }}
+        </sl-alert>
+    {% endfor %}
+  </footer>
+</body>
+
+</html>

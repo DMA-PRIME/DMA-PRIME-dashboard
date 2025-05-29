@@ -1,4 +1,4 @@
-import { regionData, drawTooltip } from "/static/js/respiratory/script.js";
+import { getBoundsOfCoords, drawTooltip } from "/static/js/respiratory/script.js";
 import { map, popup, deckOverlay, selectedItems, redraw, drawStateHospitalizations, drawLargeStateHospitalizations } from "/static/js/respiratory/map.js"
 
 
@@ -8,9 +8,15 @@ popup.on("close", e => {
     redraw()
 })
 
+map.on('zoom', _ => {if (mapRegionSelector.value == "zcta") { redraw() }})
+
 map.on("click", e => {
     var temp = {x: e.point.x, y: e.point.y}
     var dataObject = deckOverlay.pickObject(temp).object
+
+    var width = mapDiv.clientWidth
+    var mapTooltipWidth = Math.max(500, width * .3)
+    var mapTooltipHeight = mapTooltipWidth * .65
 
     if (dataObject == null) {
         selectedItems.feature = undefined
@@ -31,27 +37,17 @@ map.on("click", e => {
     selectedItems.feature = dataObject
     
     const fullCoords = dataObject.geometry.coordinates;
-    const bounds = new maplibregl.LngLatBounds()
-    function addCoordToBounds(bounds, arr) {
-        if (Array.isArray(arr[0])) {
-            arr.forEach(a => {
-                addCoordToBounds(bounds, a)
-            })
-        } else {
-            bounds.extend(arr)
-            return
-        }
-    }
-    addCoordToBounds(bounds, fullCoords)
+    const bounds = getBoundsOfCoords(fullCoords)
 
     map.fitBounds(bounds, {
         padding: Math.min(mapDiv.clientWidth/3, mapDiv.clientHeight/3),
         maxZoom: 12,
-        screenSpeed: .7
+        screenSpeed: .7,
+        offset: [0, -mapTooltipHeight/3]
     });
 
     var coordinates = [dataObject.properties.INTPTLON, dataObject.properties.INTPTLAT]
-    if (!(coordinates[0] || coordinates[1])) {
+    if (!(coordinates[0] && coordinates[1])) {
         coordinates = bounds.getCenter()
     }
     popup.setLngLat(coordinates)
@@ -74,6 +70,9 @@ map.on("click", e => {
     ttpTitle.append("br")
     ttpTitle.append("span")
         .attr("class", "tooltip-subtitle")
+    ttpTitle.append("br")
+    ttpTitle.append("span")
+        .attr("class", "tooltip-subtitle-2")
 
     ttpDiv.append("svg")
         .attr("id", `map-tooltip-svg`)
@@ -86,9 +85,6 @@ map.on("click", e => {
     }
     tooltipData["population"] = dataObject.properties.population
 
-    var width = mapDiv.clientWidth
-    var mapTooltipWidth = Math.max(500, width * .3)
-    var mapTooltipHeight = mapTooltipWidth * .65
     drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, mapRateSwitch.value == "rate")
     dataVersion++
     redraw()
@@ -127,7 +123,7 @@ mapRateSwitch.addEventListener("sl-change", (event) => {
         var tooltipData = selectedItems.feature.properties.data[mapDiseaseSelector.value]
         tooltipData["id"] = selectedItems.feature.properties.id
         if (mapRegionSelector.value == "zcta") {
-            tooltipData["county"] = dataObject.properties.county
+            tooltipData["county"] = selectedItems.feature.properties.county
         }
         tooltipData["population"] = selectedItems.feature.properties.population
 
@@ -155,17 +151,20 @@ mapDiseaseSelector.addEventListener("sl-change", (event) => {
 })
 
 mapRegionSelector.addEventListener("sl-change", (event) => {
-    d3.json(`/data/deckgl-respiratory/${mapRegionSelector.value}`).then((data) => {
-        regionData.features = data.features
-    }).then(() => {
-        dataVersion++
-        redraw()
-    })
+    dataVersion++
+    redraw(true)
     selectedItems.feature = undefined
     popup.remove()
 })
 
 mapIncludeImputations.addEventListener("sl-change", () => {
+    dataVersion++
+    redraw()
+})
+
+// adding/removing labels
+mapOptionsGeographicLabelsToggle.addEventListener("sl-change", () => {
+    // toggle geographic unit labels
     dataVersion++
     redraw()
 })

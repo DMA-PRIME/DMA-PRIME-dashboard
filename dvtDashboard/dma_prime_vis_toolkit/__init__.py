@@ -1,39 +1,38 @@
 # This is where the main flask code should lie
-
-from flask import Flask, render_template, request, send_file
-from werkzeug.middleware.proxy_fix import ProxyFix
-import logging
-
 import os
 import datetime
 import pandas as pd
-import numpy as np
-import json
+
+from flask import Flask, render_template
+from flask_login import login_required
+from flask_bcrypt import Bcrypt
+
+from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .utility import * 
-from .authenticate import login_required, bp
+from .authenticate import login_manager, admin_required #login_required,
+from .database import User
 
-logging.basicConfig(filename=main_dir+'/logs.log',level=logging.DEBUG)
 def create_app(development=False, dataDir=None):
     if dataDir is None:
         exit("No data directory")
     # create and configure the app
     app = Flask(__name__, instance_relative_config=True)
     app.config.from_mapping(
-        SECRET_KEY='***REMOVED***',
+        # SECRET_KEY='***REMOVED***',
         DEVELOPMENT=development,
         DATADIR=dataDir,
+
+        PERMANENT_SESSION_LIFETIME=datetime.timedelta(minutes=15),
+        SESSION_REFRESH_EACH_REQUEST=True, 
+
+        # SQLALCHEMY_DATABASE_URI = '***REMOVED***'
     )
+    app.config.from_envvar('DMAPRIME_CONFIG')
+    
     app.wsgi_app = ProxyFix( # allows a reverse proxy
         app.wsgi_app, x_for=1, x_proto=1, x_host=1, x_prefix=1
     )
-
-    app.config.from_pyfile('config.py', silent=True)
-
-    # ignores login requirements
-    if not development:
-        from . import database as db
-        db.init_app(app)
     
     # ensure the instance folder exists
     try:
@@ -41,18 +40,45 @@ def create_app(development=False, dataDir=None):
     except OSError:
         pass
 
+    # ignores login requirements
+    # if not development:
+    from .database import db
+    db.init_app(app)
+
+    with app.app_context():
+        db.create_all()
+    
+        if app.config['DEVELOPMENT']:
+            User.query.delete()
+            test_user = User("admintest", "admintest", Bcrypt().generate_password_hash("adminpassword"), access_level=1, verified_user=True)
+            db.session.add(test_user)
+            test_user = User("usertest", "usertest", Bcrypt().generate_password_hash("userpassword"), access_level=0, verified_user=True)
+            db.session.add(test_user)
+            db.session.commit()
+
+    login_manager.init_app(app)
+
     # # # routes # # #
 
     app.register_blueprint(authenticate.bp)
 
     from . import data_handling
     app.register_blueprint(data_handling.bp)
+
+    from . import admin
+    app.register_blueprint(admin.bp)
     
     # landing page, though now respiratory
     @app.route('/')
     @login_required
     def index():
         return render_template('index.html')
+
+    @app.route('/admin')
+    @login_required
+    @admin_required
+    def admin_controls():
+        return render_template("admin/admin.html")
 
     @app.route('/respiratory')
     @login_required
@@ -73,8 +99,7 @@ def create_app(development=False, dataDir=None):
             'end_date': (current_week + pd.DateOffset(weeks=4)).strftime('%Y-%m-%d')
         }
 
-        with open(f'{app.config['DATADIR']}/processed/respiratory/metadata.json') as f:
-            metadata = dict(json.load(f))
+        metadata = dict(decrypt(f"{app.config['DATADIR']}/processed/respiratory/metadata.json"))
 
         panels = [
             {
@@ -118,23 +143,6 @@ def create_app(development=False, dataDir=None):
         ]
         return render_template('mobile-health-clinic/mhc-base.html', panels=panels)
 
-    @app.route('/modeling')
-    @login_required
-    def modeling():
-        panels = [
-            {
-                'name': 'main',
-                'displayName': 'DMA-PRIME',
-            },
-            {
-                'name': 'map',
-                'displayName': 'Map View',
-                'active': True,
-                'html': 'modeling/modeling-map-panel.html'
-            },
-        ]
-        return render_template('modeling/modeling-base.html', panels=panels)
-    
     @app.route('/opioid-hcv-hiv')
     @login_required
     def opioid_hcv_hiv():
@@ -153,8 +161,9 @@ def create_app(development=False, dataDir=None):
                 'median_income': 'Median Income',
             }
         }
-        with open(f'{app.config['DATADIR']}/processed/opioid_hcv_hiv/metadata.json') as f:
-            metadata = dict(json.load(f))
+        
+        metadata = dict(decrypt(f"{app.config['DATADIR']}/processed/opioid_hcv_hiv/metadata.json"))
+        
         panels = [
             {
                 'name': 'main',
@@ -169,11 +178,10 @@ def create_app(development=False, dataDir=None):
         ]
         return render_template('opioid-hcv-hiv/opioid-hcv-hiv-base.html', panels=panels, metadata=metadata)
 
-    @app.route('/other-infectious-diseases')
+    @app.route('/outbreak-detection')
     @login_required
-    def other_infectious_diseases():
-        with open(f'{app.config['DATADIR']}/processed/other_infectious_diseases/metadata.json') as f:
-            diseases = list(json.load(f))
+    def outbreak_detection():
+        diseases = list(decrypt(f"{app.config['DATADIR']}/processed/other_infectious_diseases/metadata.json"))
 
         panels = [
             {
@@ -184,10 +192,10 @@ def create_app(development=False, dataDir=None):
                 'name': 'map',
                 'displayName': 'Map View',
                 'active': True,
-                'html': 'other-infectious-diseases/other-infectious-diseases-map-panel.html'
+                'html': 'outbreak-detection/outbreak-detection-map-panel.html'
             },
         ]
-        return render_template('other-infectious-diseases/other-infectious-diseases-base.html', panels=panels, diseases=diseases)
+        return render_template('outbreak-detection/outbreak-detection-base.html', panels=panels, diseases=diseases)
 
     @app.route('/waste-water')
     @login_required
@@ -200,8 +208,9 @@ def create_app(development=False, dataDir=None):
             'min_display_date': pd.to_datetime('today').strftime('%A, %B %d, %Y'),
             'max_display_date': pd.to_datetime('today').strftime('%A, %B %d, %Y'),
         }
-        with open(f'{app.config['DATADIR']}/processed/waste_water/metadata.json') as f:
-            metadata = dict(json.load(f))
+        
+        metadata = dict(decrypt(f"{app.config['DATADIR']}/processed/waste_water/metadata.json"))
+
         panels = [
             {
                 'name': 'main',

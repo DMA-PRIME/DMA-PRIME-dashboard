@@ -37,8 +37,12 @@
   <!-- data source/hospitalization level selector -->
   <sl-select value="state-testing" id="map-data-source-selector" class="fill-width">
     <p slot="label">Select hospitalization level</p>
-    <sl-option value="state-testing" >State</sl-option>
-    <sl-option value="health-system-data">Health System</sl-option>
+    <sl-tooltip content="Hospitalizations based on statewide projections" trigger="hover" hoist>
+      <sl-option value="state-testing" >State</sl-option>
+    </sl-tooltip>
+    <sl-tooltip content="Hospitalizations based on Prisma Health and MUSC EHR" trigger="hover" hoist>
+      <sl-option value="health-system-data">Health System</sl-option>
+    </sl-tooltip>
   </sl-select>
   
   <!-- imputation inclusion checkbox -->
@@ -46,9 +50,10 @@
 
   <!-- map icon inclusion checkboxes (hospital, mobile health clinic, community partners) -->
   <sl-divider class="options-divider"></sl-divider>
-  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle" style="display: initial;">Hospitals</sl-checkbox>
-  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle" style="display: initial;">Mobile Health Clinics</sl-checkbox>
-  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-icons-toggle" style="display: initial;">Community Partners</sl-checkbox>
+  <sl-checkbox id="map-options-geographic-labels-toggle" class="map-toggle" style="display: initial;">Geography Labels</sl-checkbox>
+  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-toggle" style="display: initial;">Hospitals</sl-checkbox>
+  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-toggle" style="display: initial;">Mobile Health Clinics</sl-checkbox>
+  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-toggle" style="display: initial;">Community Partners</sl-checkbox>
   
   <!-- TODO Fix the below -->
   <!-- <p id="map-summary" class="panel-summary center-self">
@@ -58,16 +63,20 @@
   </p> -->
 </div>
 
-<div id="map-state-hospitalizations" >
+<div id="map-state-hospitalizations">
   <p id="map-state-hospitalizations-title" class="map-state-hospitalizations-title">CDC-Reported State Hospitalizations</p>
+  <p id="map-state-hospitalizations-subtitle" class="map-state-hospitalizations-title">N/A</p>
   <sl-resize-observer id="map-state-hospitalizations-resizer">
-    <svg id="map-state-hospitalizations-svg"></svg>
+    <svg id="map-state-hospitalizations-svg" class="map-state-hospitalizations"></svg>
   </sl-resize-observer>
 </div>
 <sl-dialog id="map-state-hospitalizations-large" class="dialog-width" >
-  <p id="map-state-hospitalizations-large-title" slot="label">CDC-Reported State Hospitalizations</p>
+  <div slot="label">
+    <p id="map-state-hospitalizations-large-title">CDC-Reported State Hospitalizations</p>
+    <p id="map-state-hospitalizations-large-subtitle">N/A</p>
+  </div>
   <sl-resize-observer id="map-state-hospitalizations-large-resizer">
-    <svg id="map-state-hospitalizations-large-svg"></svg>
+    <svg id="map-state-hospitalizations-large-svg" class="map-state-hospitalizations"></svg>
   </sl-resize-observer>
 </sl-dialog>
 
@@ -93,18 +102,20 @@
   mapDiseaseSelector = document.getElementById("map-disease-selector")
   mapRegionSelector = document.getElementById("map-region-selector")
   mapDataSourceSelector = document.getElementById("map-data-source-selector")
+  mapOptionsGeographicLabelsToggle = document.getElementById("map-options-geographic-labels-toggle")
   hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
   mobileClinicIconsToggle = document.getElementById("map-options-mobile-clinic-icons-toggle")
   communityPartnerIconsToggle = document.getElementById("map-options-community-partner-icons-toggle")
   mapIncludeImputations = document.getElementById("map-include-imputations")
 
   // aggregation visualization elements
+  mapStateHospitalizationsSubtitle = document.getElementById("map-state-hospitalizations-subtitle")
   mapStateHospitalizationsResizer = document.getElementById("map-state-hospitalizations-resizer")
   mapStateHospitalizationsSvg = document.getElementById("map-state-hospitalizations-svg")
   mapStateHospitalizationsLarge = document.getElementById("map-state-hospitalizations-large")
+  mapStateHospitalizationsLargeSubtitle = document.getElementById("map-state-hospitalizations-large-subtitle")
   mapStateHospitalizationsLargeResizer = document.getElementById("map-state-hospitalizations-large-resizer")
   mapStateHospitalizationsLargeSvg = document.getElementById("map-state-hospitalizations-large-svg")
-  
   
   mapDiv = document.getElementById("map-div")
   choroplethLegendSVG = document.getElementById("choropleth-legend-svg")

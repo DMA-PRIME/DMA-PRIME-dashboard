@@ -1,36 +1,28 @@
-import sqlite3
-
 import click
-from flask import current_app, g
-from flask_bcrypt import Bcrypt
-import MySQLdb
-
-def get_db():
-    # create connection to database if it doesn't exist
-    if 'db' not in g:
-        g.db = MySQLdb.connect(user="***REMOVED***", password="***REMOVED***", database="")
-        g.db_cursor = g.db.cursor()
-    return g.db_cursor
+from flask_login import UserMixin
+from flask_sqlalchemy import SQLAlchemy
+from dataclasses import dataclass
 
 
-def close_db(e=None):
-    cursor = g.pop('db_cursor', None)
-    db = g.pop('db', None)
+db = SQLAlchemy()
 
-    if cursor is not None:
-        cursor.close()
+@dataclass
+class User(UserMixin, db.Model):
+    __tablename__ = "user"
+    
+    id = db.Column(db.Integer, primary_key=True)
+    email = db.Column(db.String(200), nullable=False, unique=True)
+    username = db.Column(db.String(200), nullable=True)
+    password = db.Column(db.String(200), nullable=False)
+    access_level = db.Column(db.Integer, default=0)
+    verified_user = db.Column(db.Boolean, default=False)
+    two_factor_auth = db.Column(db.String(200), nullable=True)
 
-    if db is not None:
-        db.close()
-
-
-def init_db():
-    db = get_db()
-
-    with current_app.open_resource('schema.sql') as f:
-        string = f.read().decode('utf8')
-        db.execute(string)
-
+    def __init__(self, email, username, password, access_level, verified_user):
+        self.email = email
+        self.username = username
+        self.password = password
+        self.access_level = access_level
 
 @click.command('init-db')
 def init_db_command():
@@ -49,5 +41,4 @@ def init_db_command():
 
 
 def init_app(app):
-    app.teardown_appcontext(close_db)
     app.cli.add_command(init_db_command)

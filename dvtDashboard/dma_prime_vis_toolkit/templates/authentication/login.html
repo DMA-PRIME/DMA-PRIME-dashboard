@@ -19,6 +19,28 @@
   <!-- Style that should load before the rest of the page -->
   {% block style %}
   <style>
+    header {
+      background-color: #333; /* Dark background */
+      position: fixed; /* Sticks to the top */
+      top: 0;
+      left: 0;
+      width: 100%; /* Full width */
+      display: flex;
+      align-items: center; /* Align icons vertically /*
+      z-index: 1000; /* Keeps it above other content */
+      height: 60px; /* Define a fixed height */
+    }
+
+    nav {
+      /* display: flex; */
+      width: 100%;
+      align-items: center;
+    }
+
+    sl-icon-button{
+      font-size: 2rem;
+    }
+
     body {
         width: 100vw;
         height: 100vh;
@@ -39,7 +61,7 @@
       margin-bottom: var(--sl-spacing-2x-large)
     }
 
-    #username {
+    #email_username {
       margin-bottom: var(--sl-spacing-small)
     }
 
@@ -63,11 +85,16 @@
 </head>
 
 <body>
+  <header>
+    <nav>
+      
+    </nav>
+  </header>
 
   <div id="form-div">
     <h1 id="login-title">Log In</h1>
     <form method="post" id="login-form">
-      <sl-input label="Username" id="username" name="username" required></sl-input>
+      <sl-input type="text" label="Email/Username" id="email_username" name="email_username" required></sl-input>
       <sl-input label="Password" type="password" name="password" id="password-input" password-toggle required></sl-input>
       <p id="login-error"> 
         <!-- if there is an error passed through flask, display it -->
@@ -79,6 +106,14 @@
     </form>
   </div>
 
+  <footer>
+    {% for message in get_flashed_messages() %}
+        <sl-alert duration="2000" closable open>
+            <sl-icon slot="icon" name="info-circle"></sl-icon>
+            {{ message }}
+        </sl-alert>
+    {% endfor %}
+  </footer>
 </body>
 
 </html>

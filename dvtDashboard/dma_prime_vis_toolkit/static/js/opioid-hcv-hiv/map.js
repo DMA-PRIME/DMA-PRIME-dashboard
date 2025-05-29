@@ -14,7 +14,7 @@ await Promise.allSettled([ // wait for following to be defined/load in
     customElements.whenDefined('sl-button'),
 ])
 
-var zctaData = await d3.json(`/data/opioid-hcv-hiv/${mapDiseaseSelector.value}`)
+var zctaData = await d3.json(`/data/opioid-hcv-hiv/${mapDiseaseSelector.value}?${parseInt(Math.random()*9999999999)}`)
 var zctaFeatures = zctaData.features
 var countyData = await d3.json(`/data/map/county`)
 
@@ -147,7 +147,7 @@ function redraw(first=false) {
             }),
             new IconLayer({
                 id: 'hospital-and-cdap',
-                data: d3.csv('/data/health-care-facility/all'),
+                data: d3.csv('/data/health-care-facility'),
                 iconAtlas: '/data/icon-pack/png',
                 iconMapping: '/data/icon-pack/json',
                 getPosition: d => {return [+d.longitude, +d.latitude]},
@@ -460,7 +460,7 @@ function clearBrushes() {
 
 async function changeDisease() {
     dataVersion++
-    zctaData = await d3.json(`/data/opioid-hcv-hiv/${mapDiseaseSelector.value}`)
+    zctaData = await d3.json(`/data/opioid-hcv-hiv/${mapDiseaseSelector.value}?${parseInt(Math.random()*9999999999)}`)
     zctaFeatures = zctaData.features
     await Promise.allSettled([updateHistogram("hospitalizations"), updateHistogram("deaths") ])
     clearBrushes()

@@ -37,7 +37,7 @@ function drawCharts() {
             .nice()
             .range([height-margins.bottom, margins.top])
 
-        xScale = d3.scaleUtc()
+        xScale = d3.scaleTime()
             .domain([metadata['min_date'], metadata['max_date']])
             .nice()
             .range([margins.left, width - margins.right])
@@ -78,14 +78,29 @@ function drawCharts() {
         extraTicks = extraTicks.filter(d => dayjs(d).isAfter(d3.timeMonth.offset(xScale.domain()[1], -1)))
         xAxis.call(d3.axisBottom(xScale).tickArguments([d3.timeMonth.every(1), d3.timeFormat("%b %Y")]))
             .attr("transform", `translate(0, ${height - margins.bottom})`)
-        svg.append("g").call(
-            d3.axisBottom(xScale)
-            .tickValues(extraTicks)
-            .tickFormat(function (d, i) {
-                if (i == extraTicks.length-1) {return d3.timeFormat("%b %-d")(d)}
-                else {return ""} }))
-            .attr("class", "x-axis")
-            .attr("transform", `translate(0, ${height - margins.bottom})`)
+
+        var lastPointLabel = svg.append("g")
+        var lastPointX = xScale(data.at(-1).date)
+        var lastPointY = yScale(data.at(-1).val)
+        var labelY = lastPointY - em < yScale.range()[0] ? lastPointY - em : lastPointY + em
+        var lastPointLabelText = lastPointLabel.append("text")
+            .attr("class", "last-point-label")
+            .attr("x", lastPointX)
+            .attr("y", labelY)
+            .text(d3.timeFormat(" %b %-d ")(data.at(-1).date))
+
+        lastPointLabel.append("line")
+            .attr("class", "last-point-label-line")
+            .attr("x1", lastPointX)
+            .attr("x2", lastPointX)
+            .attr("y1", lastPointY)
+            .attr("y2", labelY)
+
+        if (lastPointLabelText.node().getBBox().x + lastPointLabel.node().getBBox().width > xScale.range()[1]) {
+            lastPointLabelText.attr("text-anchor", "end")
+        } else if (lastPointLabelText.node().getBBox().x + lastPointLabel.node().getBBox().width/2 > xScale.range()[1]) {
+            lastPointLabelText.attr("text-anchor", "central")
+        }
     })
 }
 
