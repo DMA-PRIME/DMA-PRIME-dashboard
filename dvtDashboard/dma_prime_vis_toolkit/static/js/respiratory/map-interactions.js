@@ -85,7 +85,7 @@ map.on("click", e => {
     }
     tooltipData["population"] = dataObject.properties.population
 
-    drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, mapRateSwitch.value == "rate")
+    drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, mapTypeSwitch.value == "rate")
     dataVersion++
     redraw()
 })
@@ -105,9 +105,9 @@ mapResetButton.addEventListener("click", () => {
     redraw()
 })
 
-mapRateSwitch.addEventListener("sl-change", (event) => {
+mapTypeSwitch.addEventListener("sl-change", (event) => {
     // update legend title
-    if (mapRateSwitch.value == "rate"){
+    if (mapTypeSwitch.value == "rate"){
         d3.select("#map-legend-title")
             .text(`Current Week's Hospitalization Rates by ${metadata.region_sizes[mapRegionSelector.value]}`)
     } else {
@@ -130,7 +130,7 @@ mapRateSwitch.addEventListener("sl-change", (event) => {
         var width = mapDiv.clientWidth
         var mapTooltipWidth = Math.max(500, width * .3)
         var mapTooltipHeight = mapTooltipWidth * .65
-        drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, mapRateSwitch.value == "rate")
+        drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, mapTypeSwitch.value == "rate")
     }
     dataVersion++
     redraw()

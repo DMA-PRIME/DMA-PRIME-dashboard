@@ -8,12 +8,15 @@
   <sl-divider class="options-divider"></sl-divider>
 
   <!-- count vs rate switch -->
-  <sl-radio-group value="count" id="map-rate-switch" class="center-self" size="small">
+  <sl-radio-group value="count" id="map-type-switch" class="center-self" size="small">
     <sl-tooltip content="Count of hospitalizations">
       <sl-radio-button pill value="count">Count</sl-radio-button>
     </sl-tooltip>
     <sl-tooltip content="Hospitalizations per 1000 people">
       <sl-radio-button pill value="rate">Rate</sl-radio-button>
+    </sl-tooltip>
+    <sl-tooltip content="Percent difference from last week">
+      <sl-radio-button pill value="percentDifference">Percent Difference</sl-radio-button>
     </sl-tooltip>
   </sl-radio-group>
 
@@ -97,7 +100,7 @@
 <script>
   dataVersion = 0
   mapResetButton = document.getElementById("map-reset-button")
-  mapRateSwitch = document.getElementById("map-rate-switch")
+  mapTypeSwitch = document.getElementById("map-type-switch")
 
   mapDiseaseSelector = document.getElementById("map-disease-selector")
   mapRegionSelector = document.getElementById("map-region-selector")

@@ -1,7 +1,7 @@
 
 export { zctaData, 
     startDate, currentWeek, endDate, historicalDates, predictionDates, 
-    dataSourceColorMap, dataSourceLineStyle, 
+    dataSourceColorMap, dataSourceLineStyle, unknownColor,
     gridItemDataSources, 
     parseDate, getDataAsArray, getBoundsOfCoords, getCenter,
     drawTooltip }
@@ -30,6 +30,8 @@ let dataVersion = 0
 
 var gridItemDataSources = ["health-system-data", "state-training", "state-testing"]
 var ttpDataSources = ["health-system-data", "state-training", "state-testing", "state-data"]
+
+var unknownColor = d3.hsl("#CCCCCC")
 
 var dataSourceColorMap = {
     "health-system-data": "#648FFF",

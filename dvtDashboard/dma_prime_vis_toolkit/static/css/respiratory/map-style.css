@@ -77,7 +77,7 @@ path.map-zcta {
     fill-opacity: .5;
 }
 
-.map-legend text {
+text.map-legend  {
     /* legend text */
     font-size: var(--sl-font-size-x-small);
 }
@@ -87,6 +87,10 @@ path.map-zcta {
     font-size: var(--sl-font-size-medium);
     text-anchor: middle;
     fill: currentColor;
+}
+
+.legend-other-colors {
+    font-size: var(--sl-font-size-x-small)
 }
 
 /* tooltip */
