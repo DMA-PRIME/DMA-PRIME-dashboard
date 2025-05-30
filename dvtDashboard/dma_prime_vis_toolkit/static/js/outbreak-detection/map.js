@@ -16,6 +16,12 @@ var choroplethColorMap = d3.scaleLinear()
     .range(d3.reverse(d3.schemeRdYlGn[10]).slice(1))
     .unknown(unknownColor).nice()
 
+var countRateColorMap = d3.scaleSequential()
+    .interpolator(d3.interpolateYlOrRd)
+    .domain([0, 100])  // Adjust this upper limit if needed
+    .unknown(unknownColor)
+    .nice()
+
 const map = new maplibregl.Map({
     container: mapDiv,
     style: "https://basemaps.cartocdn.com/gl/positron-nolabels-gl-style/style.json",
@@ -109,101 +115,150 @@ function redraw(first=false) {
 }
 
 function getColor(feature) {
-    // ——— 1) Percent Difference Mode ———
+    // —— 1) Percent Difference Mode ——
     if (mapRateSwitch.value === 'percent') {
-      const thisWeek  = getLatestDatum(feature, mapTimeSwitch.value).data
-      const lastWeek  = getLastWeekDatum(feature, mapTimeSwitch.value).data
-      let   colorObj
+      const thisWeek = getLatestDatum(feature, mapTimeSwitch.value).data;
+      const lastWeek = getLastWeekDatum(feature, mapTimeSwitch.value).data;
+      let colorObj;
   
       // only compute % change if lastWeek is a valid non-zero number
       if (!isNaN(thisWeek) && !isNaN(lastWeek) && lastWeek !== 0) {
-        const pct = (thisWeek - lastWeek) / Math.abs(lastWeek) * 100
-        colorObj = d3.rgb( choroplethColorMap(pct) )
+        const pct = (thisWeek - lastWeek) / Math.abs(lastWeek) * 100;
+        colorObj = d3.rgb(choroplethColorMap(pct));
       }
       // no encounters at all this week → white
       else if (thisWeek === 0) {
-        colorObj = d3.rgb('white')
+        colorObj = d3.rgb('white');
       }
       // new encounters (lastWeek = 0 but thisWeek > 0) → light pink
       else {
-        colorObj = d3.rgb('#ffddff')
+        colorObj = d3.rgb('#ffddff');
       }
   
-      return [colorObj.r, colorObj.g, colorObj.b]
+      return [colorObj.r, colorObj.g, colorObj.b];
     }
   
-    // ——— 2) Count vs Rate Mode (Count = raw, Rate = per 1000) ———
-    // (we’ll restore the old continuous‐scale logic for these in the next task)
-    const val = getLatestDatum(feature, mapTimeSwitch.value).data
-    // for now, fall back to “unknown” until you wire up count/rate scales
-    const fallback = d3.rgb(unknownColor)
-    return [fallback.r, fallback.g, fallback.b]
+    // —— 2) Count or Rate Mode ——
+    const val = getLatestDatum(feature, mapTimeSwitch.value).data;
+    const colorObj = d3.rgb(countRateColorMap(val));
+    return [colorObj.r, colorObj.g, colorObj.b];
   }
+  
   
 
 function drawLegend() {
-    var colors = d3.reverse(d3.schemeRdYlGn[10]).slice(1)
-    var labels = [-100, -50, -10, 0, 10, 50, 100, 500]
-    var legendLength = 350
-    choroplethLegendSVG.innerHTML = ""
-    var legend = d3.select(choroplethLegendSVG)
+    choroplethLegendSVG.innerHTML = "";
+    const legend = d3.select(choroplethLegendSVG)
         .attr("overflow", "visible")
+        .attr("transform", "translate(40, 0)")
+        .attr("width", 350)
+        .attr("height", 50);
 
-    legend.attr("transform", `translate(40, 0)`)
-        .attr("width", legendLength)
-        .attr("height", 50)
+    const legendLength = 350;
+    const columnLabel = d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html();
 
-    legend.append("text")
-        .attr("x", legendLength/2)
-        .attr("y", -em/2)
-        .attr("text-anchor", "middle")
-        .style("font-size", 'var(--sl-font-size-x-small)')
-        .text(`Percent Change of ${d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html()} from Last Period`)
-    
-    legend.append("g").selectAll("rect")
-        .data(colors)
-        .enter()
-        .append("rect")
-        .attr("x", (d, i) => legendLength * i / colors.length)
-        .attr("y", 0)
-        .attr("width", legendLength / colors.length)
-        .attr("height", 15)
-        .attr("fill", d => d)
-    
-    legend.append("g").selectAll("text")
-        .data(labels)
-        .enter()
-        .append("text")
-        .attr("x", (d, i) => legendLength * (i + 1) / colors.length)
-        .attr("y", 15 + em*.75)
-        .attr("text-anchor", "middle")
-        .html(d => `${d}%`)
+    if (mapRateSwitch.value === "percent") {
+        // ======== PERCENT DIFFERENCE LEGEND ========
+        const colors = d3.reverse(d3.schemeRdYlGn[10]).slice(1);
+        const labels = [-100, -50, -10, 0, 10, 50, 100, 500];
 
-    var otherColors = legend.append("g")
-    var others = [["white", `No ${d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html()}`], 
-    ["#ffddff", `New ${d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html()} from Last Period`],
-    [unknownColor, "Unknown"]]
+        legend.append("text")
+            .attr("x", legendLength / 2)
+            .attr("y", -em / 2)
+            .attr("text-anchor", "middle")
+            .style("font-size", 'var(--sl-font-size-x-small)')
+            .text(`Percent Change of ${columnLabel} from Last Period`);
 
-    others.forEach((d, i) => {
-        let group = otherColors.append("g")
-            .attr("transform", `translate(0, ${(i+1) * -20 - 2*em})`)
-        group.append("rect")
+        legend.append("g").selectAll("rect")
+            .data(colors)
+            .enter()
+            .append("rect")
+            .attr("x", (d, i) => legendLength * i / colors.length)
+            .attr("y", 0)
+            .attr("width", legendLength / colors.length)
+            .attr("height", 15)
+            .attr("fill", d => d);
+
+        legend.append("g").selectAll("text")
+            .data(labels)
+            .enter()
+            .append("text")
+            .attr("x", (d, i) => legendLength * (i + 1) / colors.length)
+            .attr("y", 15 + em * 0.75)
+            .attr("text-anchor", "middle")
+            .html(d => `${d}%`);
+
+        const otherColors = legend.append("g");
+        const others = [
+            ["white", `No ${columnLabel}`],
+            ["#ffddff", `New ${columnLabel} from Last Period`],
+            [unknownColor, "Unknown"]
+        ];
+
+        others.forEach((d, i) => {
+            const group = otherColors.append("g")
+                .attr("transform", `translate(0, ${(i + 1) * -20 - 2 * em})`);
+            group.append("rect")
+                .attr("x", 0)
+                .attr("y", 0)
+                .attr("height", 15)
+                .attr("width", 15)
+                .attr("fill", d[0])
+                .attr("stroke", "black")
+                .attr("stroke-width", 1);
+            group.append("text")
+                .attr("class", "legend-other-colors")
+                .attr("x", 20)
+                .attr("y", 7.5)
+                .attr("dominant-baseline", "middle")
+                .text(d[1]);
+        });
+
+    } else {
+        // ======== COUNT/RATE CONTINUOUS GRADIENT LEGEND ========
+        const gradientId = "countRateGradient";
+
+        const defs = legend.append("defs");
+        const gradient = defs.append("linearGradient")
+            .attr("id", gradientId)
+            .attr("x1", "0%")
+            .attr("x2", "100%");
+
+        const stops = 10;
+        for (let i = 0; i <= stops; i++) {
+            const t = i / stops;
+            gradient.append("stop")
+                .attr("offset", `${t * 100}%`)
+                .attr("stop-color", countRateColorMap(t * 100));
+        }
+
+        legend.append("text")
+            .attr("x", legendLength / 2)
+            .attr("y", -em / 2)
+            .attr("text-anchor", "middle")
+            .style("font-size", 'var(--sl-font-size-x-small)')
+            .text(`${mapRateSwitch.value === "rate" ? "Rate (per 1000)" : "Count"} of ${columnLabel}`);
+
+        legend.append("rect")
             .attr("x", 0)
             .attr("y", 0)
+            .attr("width", legendLength)
             .attr("height", 15)
-            .attr("width", 15)
-            .attr("fill", d[0])
-            .attr("stroke", "black")
-            .attr("stroke-width", 1)
-        group.append("text")
-            .attr("class", "legend-other-colors")
-            .attr("x", 20)
-            .attr("y", 7.5)
-            .attr("dominant-baseline", "middle")
-            .text(d[1])
-    })
+            .style("fill", `url(#${gradientId})`);
 
+        legend.append("text")
+            .attr("x", 0)
+            .attr("y", 15 + em)
+            .text("0");
+
+        legend.append("text")
+            .attr("x", legendLength)
+            .attr("y", 15 + em)
+            .attr("text-anchor", "end")
+            .text("100");
+    }
 }
+
 
 function drawTooltip(dataObject) {
     if(!dataObject || !popup.isOpen()) {
