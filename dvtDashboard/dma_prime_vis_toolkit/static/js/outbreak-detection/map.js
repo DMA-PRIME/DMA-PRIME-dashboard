@@ -109,19 +109,37 @@ function redraw(first=false) {
 }
 
 function getColor(feature) {
-    var thisWeekDatum = getLatestDatum(feature, mapTimeSwitch.value).data
-    var lastWeekDatum = getLastWeekDatum(feature, mapTimeSwitch.value).data
-    var c = d3.rgb(unknownColor)
-    if (isNaN(thisWeekDatum) || lastWeekDatum) {
-        c = d3.rgb(choroplethColorMap((thisWeekDatum - lastWeekDatum) / Math.abs(lastWeekDatum) * 100))
-    } else if (thisWeekDatum == 0) {
-        c = d3.rgb("white")
-    } else {
-        c = d3.rgb("#ffddff")
+    // ——— 1) Percent Difference Mode ———
+    if (mapRateSwitch.value === 'percent') {
+      const thisWeek  = getLatestDatum(feature, mapTimeSwitch.value).data
+      const lastWeek  = getLastWeekDatum(feature, mapTimeSwitch.value).data
+      let   colorObj
+  
+      // only compute % change if lastWeek is a valid non-zero number
+      if (!isNaN(thisWeek) && !isNaN(lastWeek) && lastWeek !== 0) {
+        const pct = (thisWeek - lastWeek) / Math.abs(lastWeek) * 100
+        colorObj = d3.rgb( choroplethColorMap(pct) )
+      }
+      // no encounters at all this week → white
+      else if (thisWeek === 0) {
+        colorObj = d3.rgb('white')
+      }
+      // new encounters (lastWeek = 0 but thisWeek > 0) → light pink
+      else {
+        colorObj = d3.rgb('#ffddff')
+      }
+  
+      return [colorObj.r, colorObj.g, colorObj.b]
     }
-
-    return [c.r, c.g, c.b]
-}
+  
+    // ——— 2) Count vs Rate Mode (Count = raw, Rate = per 1000) ———
+    // (we’ll restore the old continuous‐scale logic for these in the next task)
+    const val = getLatestDatum(feature, mapTimeSwitch.value).data
+    // for now, fall back to “unknown” until you wire up count/rate scales
+    const fallback = d3.rgb(unknownColor)
+    return [fallback.r, fallback.g, fallback.b]
+  }
+  
 
 function drawLegend() {
     var colors = d3.reverse(d3.schemeRdYlGn[10]).slice(1)
