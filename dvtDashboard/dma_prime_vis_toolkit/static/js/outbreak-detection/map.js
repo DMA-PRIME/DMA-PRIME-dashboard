@@ -191,7 +191,7 @@ function getColor(feature) {
   
   
 
-function drawLegend() {
+  function drawLegend() {
     choroplethLegendSVG.innerHTML = "";
     const legend = d3.select(choroplethLegendSVG)
         .attr("overflow", "visible")
@@ -207,6 +207,7 @@ function drawLegend() {
         const colors = d3.reverse(d3.schemeRdYlGn[10]).slice(1);
         const labels = [-100, -50, -10, 0, 10, 50, 100, 500];
 
+        // 1) Title centered above the swatch bar
         legend.append("text")
             .attr("x", legendLength / 2)
             .attr("y", -em / 2)
@@ -214,6 +215,7 @@ function drawLegend() {
             .style("font-size", 'var(--sl-font-size-x-small)')
             .text(`Percent Change of ${columnLabel} from Last Period`);
 
+        // 2) Draw the colored rectangles (8 bins)
         legend.append("g").selectAll("rect")
             .data(colors)
             .enter()
@@ -224,6 +226,7 @@ function drawLegend() {
             .attr("height", 15)
             .attr("fill", d => d);
 
+        // 3) Draw each percentage tick label below the corresponding bin boundary
         legend.append("g").selectAll("text")
             .data(labels)
             .enter()
@@ -231,8 +234,10 @@ function drawLegend() {
             .attr("x", (d, i) => legendLength * (i + 1) / colors.length)
             .attr("y", 15 + em * 0.75)
             .attr("text-anchor", "middle")
+            .style("font-size", 'var(--sl-font-size-x-small)')
             .html(d => `${d}%`);
 
+        // 4) “Other colors” group (white, light‐pink, unknown) with explanatory labels
         const otherColors = legend.append("g");
         const others = [
             ["white", `No ${columnLabel}`],
@@ -256,38 +261,38 @@ function drawLegend() {
                 .attr("x", 20)
                 .attr("y", 7.5)
                 .attr("dominant-baseline", "middle")
+                .style("font-size", 'var(--sl-font-size-x-small)')
                 .text(d[1]);
         });
 
     } else {
-        // ======== COUNT/RATE CONTINUOUS GRADIENT LEGEND (old‐style) ========
+        // ======== COUNT/RATE CONTINUOUS GRADIENT LEGEND ========
         const gradientId = "countRateGradient";
 
-        // 1) Build a <defs> / <linearGradient> with only two stops (white → maroon)
+        // 1) Build <defs> / <linearGradient> (white → maroon)
         const defs = legend.append("defs");
         const linearGradient = defs.append("linearGradient")
             .attr("id", gradientId)
             .attr("x1", "0%")
             .attr("x2", "100%");
-
-        // 2) Stop at 0% = “white”
         linearGradient.append("stop")
             .attr("offset", "0%")
             .attr("stop-color", "white");
-        // 3) Stop at 100% = “maroon”
         linearGradient.append("stop")
             .attr("offset", "100%")
             .attr("stop-color", "maroon");
 
-        // 4) Title in the middle (same as before)
+        // 2) Title in the middle
         legend.append("text")
             .attr("x", legendLength / 2)
             .attr("y", -em / 2)
             .attr("text-anchor", "middle")
             .style("font-size", 'var(--sl-font-size-x-small)')
-            .text(`${mapRateSwitch.value === "rate" ? "Rate (per 1000)" : "Count"} of ${columnLabel}`);
+            .text(
+              `${mapRateSwitch.value === "rate" ? "Rate (per 1000)" : "Count"} of ${columnLabel}`
+            );
 
-        // 5) Draw the gradient rectangle
+        // 3) Draw the gradient rectangle
         legend.append("rect")
             .attr("x", 0)
             .attr("y", 0)
@@ -295,24 +300,86 @@ function drawLegend() {
             .attr("height", 15)
             .style("fill", `url(#${gradientId})`);
 
-        // 6) Put “0” on the left and the actual max value on the right
-        //    We know from createCountRateChoropleth() that domain = [0, maxVal]
-        const [d0, d1] = countRateColorMap.domain();
+        // 4) Compute domain endpoints
+        const [d0, d1] = countRateColorMap.domain();  // e.g. [0, maxVal]
 
-        legend.append("text")
-            .attr("x", 0)
-            .attr("y", 15 + em)
-            .text(d0);
+        // 5) Build a linear scale from [0..d1] → [0..legendLength]
+        const linearScale = d3.scaleLinear()
+            .domain([d0, d1])
+            .range([0, legendLength]);
 
-        legend.append("text")
-            .attr("x", legendLength)
-            .attr("y", 15 + em)
-            .attr("text-anchor", "end")
-            .text(d1);
+        // 6) Ask D3 for up to 5 “nice” ticks, then clamp anything > d1
+        let rawTicks = linearScale.ticks(5).filter(v => v <= d1);
+
+        // 7) Guarantee that d1 (maxVal) appears exactly as the last tick
+        if (!rawTicks.includes(d1)) {
+          rawTicks.push(d1);
+        }
+        rawTicks.sort((a, b) => a - b);
+
+        //
+        // ─── FILTER OUT DUPLICATE‐FORMATTED TICKS ───
+        // Choose a formatter based on the magnitude of d1
+        let formatTick;
+        if (d1 >= 100) {
+          // large numbers → “1,234”
+          formatTick = d3.format(",.0f");
+        } else if (d1 >= 1) {
+          // moderate numbers → one decimal place, e.g. “12.3”
+          formatTick = d3.format(",.1f");
+        } else {
+          // small numbers → two decimal places, e.g. “0.12”
+          formatTick = d3.format(".2f");
+        }
+
+        const filteredTicks = [];
+        rawTicks.forEach((v, i) => {
+          const label = formatTick(v);
+          if (i === 0 || label !== formatTick(rawTicks[i - 1])) {
+            filteredTicks.push(v);
+          }
+        });
+
+        // ─── ENSURE AT LEAST TWO TICKS WHEN POSSIBLE ───
+        if (filteredTicks.length <= 1) {
+          if (d1 === 0) {
+            // If everything is zero, show only a single tick at 0
+            filteredTicks.splice(0, filteredTicks.length, 0);
+            formatTick = d3.format(",.0f"); // force "0"
+          } else {
+            // Otherwise show both 0 and d1
+            filteredTicks.splice(0, filteredTicks.length, d0, d1);
+          }
+        }
+
+        // 8) Draw a short vertical line (“tick”) at each filtered/clamped tick value
+        legend.append("g").selectAll("line.tick")
+            .data(filteredTicks)
+            .enter()
+            .append("line")
+              .attr("class", "tick")
+              .attr("x1", d => Math.min(linearScale(d), legendLength))
+              .attr("x2", d => Math.min(linearScale(d), legendLength))
+              .attr("y1", 15)                  // bottom edge of gradient
+              .attr("y2", 15 + em * 0.25)      // short downward stroke
+              .attr("stroke", "black");
+
+        // 9) Draw each tick’s label beneath its tick line, centered
+        legend.append("g").selectAll("text.tick-label")
+            .data(filteredTicks)
+            .enter()
+            .append("text")
+              .attr("class", "tick-label")
+              .attr("x", d => Math.min(linearScale(d), legendLength))
+              .attr("y", 15 + em)             // same baseline as before
+              .attr("text-anchor", "middle")
+              .attr("fill", "black")
+              .style("font-size", 'var(--sl-font-size-x-small)')
+              .text(d => formatTick(d));
     }
-
-    
 }
+
+
 
 
 function drawTooltip(dataObject) {
@@ -322,9 +389,10 @@ function drawTooltip(dataObject) {
       return;
     }
   
-    // 2) Compute “latest” and “previous” values (for percent‐change)
-    const latestDatum = getLatestDatum(dataObject, mapTimeSwitch.value).data;
-    const prevDatum   = getLastWeekDatum(dataObject, mapTimeSwitch.value).data;
+    // 2) Compute “latest” and “previous” values (for percent‐change),
+    //    forcing weekly data regardless of the selector.
+    const latestDatum = getLatestDatum(dataObject, "weekly").data;
+    const prevDatum   = getLastWeekDatum(dataObject, "weekly").data;
   
     // 3) Build a percent‐change label
     let percentLabel;
@@ -336,13 +404,14 @@ function drawTooltip(dataObject) {
       percentLabel = "Change: New cases";
     } else {
       const rawPct  = ((latestDatum - prevDatum) / Math.abs(prevDatum)) * 100;
-      const rounded = Math.round(rawPct * 10) / 10;   // one decimal place
+      const rounded = Math.round(rawPct * 10) / 10; // one decimal place
       const sign    = rounded >= 0 ? "+" : "";
       percentLabel  = `Change: ${sign}${rounded} %`;
     }
   
-    // 4) Grab the entire time series for the bar chart
-    const thisData = getData(dataObject, mapTimeSwitch.value);
+    // 4) Grab the entire time series for the bar chart,
+    //    forcing weekly data regardless of the selector.
+    const thisData = getData(dataObject, "weekly");
   
     // 5) Build the “Encounters … from X to Y: N” string
     let encounterString = "";
@@ -358,19 +427,24 @@ function drawTooltip(dataObject) {
         break;
     }
     encounterString += " from ";
+  
     const endDate = thisData.end_date;
     const fmt     = d3.timeFormat("%b %d, %Y");
   
     if (mapTimeSwitch.value === "weekly") {
+      // If the user has “Week” selected, show exactly that 7‐day window
       encounterString += `${fmt(endDate)}<br/>to ${fmt(d3.timeDay.offset(endDate, 6))}`;
     } else if (mapTimeSwitch.value === "monthly") {
+      // If the user has “Month” selected, still show the last four weeks (28 days)
       const startDate = d3.timeDay.offset(endDate, -4 * 7);
       encounterString += `${fmt(startDate)}<br/>to ${fmt(d3.timeDay.offset(endDate, 6))}`;
     } else {
+      // If the user has “Year” selected, still show the last 52 weeks
       const startDate = d3.timeDay.offset(endDate, -52 * 7);
       encounterString += `${fmt(startDate)}<br/>to ${fmt(d3.timeDay.offset(endDate, 6))}`;
     }
     encounterString += ": ";
+  
     if (mapRateSwitch.value === "rate") {
       const lastVal = thisData.data.at(-1);
       encounterString += `${Math.round(lastVal * 1000) / 1000} (per 1000 people)`;
@@ -399,7 +473,7 @@ function drawTooltip(dataObject) {
       .style("align-items", "baseline")   // keep left & right on same baseline
       .style("margin-bottom", "8px");
   
-    // 7a) LEFT SIDE of header: Zip Code
+    // 7a) LEFT SIDE of header: Zip Code (or whatever region)
     const leftHeaderCol = headerContainer
       .append("div")
       .attr("class", "tooltip-left-col")
@@ -470,7 +544,8 @@ function drawTooltip(dataObject) {
       .attr("height", ttpHeight);
   
     createBarGraph(ttpSVG, thisData, regionData.metadata, ttpHeight, ttpWidth);
-  }
+}
+
   
   
 

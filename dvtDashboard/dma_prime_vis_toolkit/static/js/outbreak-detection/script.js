@@ -1,4 +1,3 @@
-
 var unknownColor = d3.hsl("#CCCCCC")
 
 function parseDate(datestring) {
@@ -79,9 +78,40 @@ function createBarGraph(svg, data, metadata, height, width, altMargins) {
         .attr("font-size", "var(--sl-font-size-small)")
         .text(mapColumnSwitch.value == "pos_tests" ? "Tests" : d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html())
         
+    // ────────────────────────────────────────────────
+    // Replace the single-axis call with filtering-out duplicate labels:
+    // ────────────────────────────────────────────────
+
+    // 1) Ask D3 for up to 5 “nice” tick values
+    let rawTicks = yScale.ticks(5) // e.g. [0, 0.005, 0.01, 0.015, 0.02]
+    
+    // 2) Choose a formatting function based on how large maxVal is
+    let formatTick
+    if (maxVal >= 100) {
+      formatTick = d3.format(",.0f")  // e.g. “1,234”
+    } else if (maxVal >= 1) {
+      formatTick = d3.format(",.1f")  // e.g. “12.3”
+    } else {
+      formatTick = d3.format(".2f")   // e.g. “0.12”
+    }
+
+    // 3) Filter out any tick whose formatted label duplicates the previous
+    const filteredTicks = []
+    rawTicks.forEach((v, i) => {
+      const label = formatTick(v)
+      if (i === 0 || label !== formatTick(rawTicks[i - 1])) {
+        filteredTicks.push(v)
+      }
+    })
+
+    // 4) Draw only those unique-label ticks
     yAxis.append("g")
         .attr("transform", `translate(${margins.left},0)`)
-        .call(d3.axisLeft(yScale).ticks(5).tickSize(4))
+        .call(
+          d3.axisLeft(yScale)
+            .tickValues(filteredTicks)  // only unique values
+            .tickSize(4)
+        )
         .selectAll("text")
         .attr("class", "tooltip-label")
         .attr("fill", "var(--sl-color-neutral-1000)")
