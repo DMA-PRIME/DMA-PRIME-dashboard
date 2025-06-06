@@ -406,9 +406,8 @@ function drawTooltip(dataObject) {
     }
 
     // 2) Compute “latest” and “previous” values (for percent‐change),
-    //    forcing weekly data regardless of the selector.
-    const latestDatum = getLatestDatum(dataObject, "weekly").data;
-    const prevDatum   = getLastWeekDatum(dataObject, "weekly").data;
+    const latestDatum = getLatestDatum(dataObject, mapTimeSwitch.value).data;
+    const prevDatum   = getLastWeekDatum(dataObject, mapTimeSwitch.value).data;
 
     // 3) Build a percent‐change label
     let percentLabel;
@@ -935,7 +934,8 @@ function drawLargeAggregation() {
         .attr("text-anchor", "middle")
         .attr("fill", "var(--sl-color-neutral-1000)")
         .attr("font-size", "var(--sl-font-size-small)")
-        .text(mapColumnSwitch.value == "pos_tests" ? "Tests" : d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html())
+        // .text(mapColumnSwitch.value == "pos_tests" ? "Tests" : d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html())
+        .text(d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html())
         
     yAxis.append("g")
         .attr("transform", `translate(${margins.left},0)`)
@@ -1000,23 +1000,24 @@ function drawLargeAggregation() {
             .attr("fill", "var(--sl-color-neutral-1000)")
             .style("font-size", "var(--sl-font-size-small)")
             .text("Positive Tests")
-        var test = legend.append("g")
-        test.attr("transform", `translate(0, ${em})`)
-        test.append("rect")
-            .attr("height", .5*em)
-            .attr("width", .5*em)
-            .attr("x", 0)
-            .attr("y", .5*em/4)
-            .attr("fill", "var(--sl-color-neutral-400)")
-        test.append("text")
-            .attr("x", .5*1.5*em)
-            .attr("y", em/2)
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "var(--sl-color-neutral-1000)")
-            .style("font-size", "var(--sl-font-size-small)")
-            .text("Tests")
+        // var test = legend.append("g")
+        // test.attr("transform", `translate(0, ${em})`)
+        // test.append("rect")
+        //     .attr("height", .5*em)
+        //     .attr("width", .5*em)
+        //     .attr("x", 0)
+        //     .attr("y", .5*em/4)
+        //     .attr("fill", "var(--sl-color-neutral-400)")
+        // test.append("text")
+        //     .attr("x", .5*1.5*em)
+        //     .attr("y", em/2)
+        //     .attr("dominant-baseline", "middle")
+        //     .attr("fill", "var(--sl-color-neutral-1000)")
+        //     .style("font-size", "var(--sl-font-size-small)")
+        //     .text("Tests")
         var percentPosTest = legend.append("g")
-        percentPosTest.attr("transform", `translate(0, ${2*em})`)
+        percentPosTest.attr("transform", `translate(0, ${em})`)
+        // percentPosTest.attr("transform", `translate(0, ${2*em})`)
         percentPosTest.append("line")
             .attr("x1", 0)
             .attr("x2", .5*em)

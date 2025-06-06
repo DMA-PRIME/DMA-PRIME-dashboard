@@ -21,7 +21,7 @@ function createBarGraph(svg, data, metadata, height, width, altMargins) {
     
     var minMaxVal = mapRateSwitch.value == "rate" ? 1000.0/data.population : 1
     var maxVal = d3.max(data.data) ? d3.max(data.data) : minMaxVal
-    maxVal = d3.max(data.other) ? Math.max(maxVal, d3.max(data.other)) : maxVal
+    // maxVal = d3.max(data.other) ? Math.max(maxVal, d3.max(data.other)) : maxVal
 
     // figure out how much space is needed for the y-axis text
     var temp = svg.append("text").text(d3.format(".2r")(maxVal)).attr("x", 0).attr("y", 0)
@@ -51,15 +51,15 @@ function createBarGraph(svg, data, metadata, height, width, altMargins) {
         .nice()
         .range([margins.left, width - margins.right])
 
-    graphSVG.append("g").selectAll("rect")
-        .data(data.other)
-        .enter()
-        .append("rect")
-        .attr("x", (d, i) => xScale(d3.timeDay.offset(start_date, (7 * i))))
-        .attr("y", d => yScale(d))
-        .attr("height", d => yScale(0) - yScale(d))
-        .attr("width", (width - (margins.left + margins.right)) / data.data.length)
-        .attr("fill", "var(--sl-color-neutral-400)")
+    // graphSVG.append("g").selectAll("rect")
+    //     .data(data.other)
+    //     .enter()
+    //     .append("rect")
+    //     .attr("x", (d, i) => xScale(d3.timeDay.offset(start_date, (7 * i))))
+    //     .attr("y", d => yScale(d))
+    //     .attr("height", d => yScale(0) - yScale(d))
+    //     .attr("width", (width - (margins.left + margins.right)) / data.data.length)
+    //     .attr("fill", "var(--sl-color-neutral-400)")
 
     graphSVG.append("g").selectAll("rect")
         .data(data.data)
@@ -76,7 +76,8 @@ function createBarGraph(svg, data, metadata, height, width, altMargins) {
         .attr("text-anchor", "middle")
         .attr("fill", "var(--sl-color-neutral-1000)")
         .attr("font-size", "var(--sl-font-size-small)")
-        .text(mapColumnSwitch.value == "pos_tests" ? "Tests" : d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html())
+        // .text(mapColumnSwitch.value == "pos_tests" ? "Tests" : d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html())
+        .text(d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html())
         
     // ────────────────────────────────────────────────
     // Replace the single-axis call with filtering-out duplicate labels:
@@ -173,22 +174,23 @@ function createBarGraph(svg, data, metadata, height, width, altMargins) {
             .style("font-size", "var(--sl-font-size-small)")
             .text("Positive Tests")
         var test = legend.append("g")
-        test.attr("transform", `translate(0, ${em})`)
-        test.append("rect")
-            .attr("height", .5*em)
-            .attr("width", .5*em)
-            .attr("x", 0)
-            .attr("y", .5*em/4)
-            .attr("fill", "var(--sl-color-neutral-400)")
-        test.append("text")
-            .attr("x", .5*1.5*em)
-            .attr("y", em/2)
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "var(--sl-color-neutral-1000)")
-            .style("font-size", "var(--sl-font-size-small)")
-            .text("Tests")
+        // test.attr("transform", `translate(0, ${em})`)
+        // test.append("rect")
+        //     .attr("height", .5*em)
+        //     .attr("width", .5*em)
+        //     .attr("x", 0)
+        //     .attr("y", .5*em/4)
+        //     .attr("fill", "var(--sl-color-neutral-400)")
+        // test.append("text")
+        //     .attr("x", .5*1.5*em)
+        //     .attr("y", em/2)
+        //     .attr("dominant-baseline", "middle")
+        //     .attr("fill", "var(--sl-color-neutral-1000)")
+        //     .style("font-size", "var(--sl-font-size-small)")
+        //     .text("Tests")
         var percentPosTest = legend.append("g")
-        percentPosTest.attr("transform", `translate(0, ${2*em})`)
+        percentPosTest.attr("transform", `translate(0, ${em})`)
+        // percentPosTest.attr("transform", `translate(0, ${2*em})`)
         percentPosTest.append("line")
             .attr("x1", 0)
             .attr("x2", .5*em)
