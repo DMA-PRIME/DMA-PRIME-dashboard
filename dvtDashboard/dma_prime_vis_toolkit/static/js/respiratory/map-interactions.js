@@ -1,5 +1,5 @@
 import { getBoundsOfCoords, drawTooltip } from "/static/js/respiratory/script.js";
-import { map, popup, deckOverlay, selectedItems, redraw, drawStateHospitalizations, drawLargeStateHospitalizations } from "/static/js/respiratory/map.js"
+import { map, popup, deckOverlay, selectedItems, redraw, drawStateHospitalizations, drawLargeStateHospitalizations, updateMapTitle } from "/static/js/respiratory/map.js"
 
 
 popup.on("close", e => {
@@ -51,7 +51,12 @@ map.on("click", e => {
         coordinates = bounds.getCenter()
     }
     popup.setLngLat(coordinates)
-        .setHTML("<div id='map-tooltip-div' class='tooltip-div'></div>")
+        .setHTML(`<div id='map-tooltip-div' class='tooltip-div'>
+            <div class="tooltip-region-info"></div>
+            <div class="tooltip-data-info"></div>
+            <svg id="map-tooltip-svg" class="tooltip-outer-svg"></svg>
+            <div class="tooltip-options"></div>
+            </div>`)
 
     if (!popup.isOpen()) {
         popup.addTo(map)
@@ -59,24 +64,8 @@ map.on("click", e => {
     popup.setMaxWidth(`${mapDiv.clientWidth}px`)
 
     var ttpDiv = d3.select("#map-tooltip-div")
-
-    ttpDiv.style("display", "initial")
-    ttpDiv.style("border-style", "none")
-        
-    var ttpTitle = ttpDiv.append("p")
-        .attr("class", "tooltip-title")
-    ttpTitle.append("span")
-        .attr("class", "tooltip-title")
-    ttpTitle.append("br")
-    ttpTitle.append("span")
-        .attr("class", "tooltip-subtitle")
-    ttpTitle.append("br")
-    ttpTitle.append("span")
-        .attr("class", "tooltip-subtitle-2")
-
-    ttpDiv.append("svg")
-        .attr("id", `map-tooltip-svg`)
-        .attr("class", `tooltip-outer-svg`)
+        .style("display", "initial")
+        .style("border-style", "none")
 
     var tooltipData = dataObject.properties.data[mapDiseaseSelector.value]
     tooltipData["id"] = dataObject.properties.id
@@ -85,7 +74,7 @@ map.on("click", e => {
     }
     tooltipData["population"] = dataObject.properties.population
 
-    drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, mapRateSwitch.value == "rate")
+    drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, mapTypeSwitch.value == "rate", false, [])
     dataVersion++
     redraw()
 })
@@ -105,9 +94,9 @@ mapResetButton.addEventListener("click", () => {
     redraw()
 })
 
-mapRateSwitch.addEventListener("sl-change", (event) => {
+mapTypeSwitch.addEventListener("sl-change", (event) => {
     // update legend title
-    if (mapRateSwitch.value == "rate"){
+    if (mapTypeSwitch.value == "rate"){
         d3.select("#map-legend-title")
             .text(`Current Week's Hospitalization Rates by ${metadata.region_sizes[mapRegionSelector.value]}`)
     } else {
@@ -130,7 +119,7 @@ mapRateSwitch.addEventListener("sl-change", (event) => {
         var width = mapDiv.clientWidth
         var mapTooltipWidth = Math.max(500, width * .3)
         var mapTooltipHeight = mapTooltipWidth * .65
-        drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, mapRateSwitch.value == "rate")
+        drawTooltip(tooltipData, ttpDiv, mapTooltipHeight, mapTooltipWidth, mapTypeSwitch.value == "rate", false, ttpDiv.datum()["extraDataSources"])
     }
     dataVersion++
     redraw()
@@ -160,6 +149,10 @@ mapRegionSelector.addEventListener("sl-change", (event) => {
 mapIncludeImputations.addEventListener("sl-change", () => {
     dataVersion++
     redraw()
+})
+
+mapOptionsTitleToggle.addEventListener("sl-change", () => {
+    updateMapTitle()
 })
 
 // adding/removing labels

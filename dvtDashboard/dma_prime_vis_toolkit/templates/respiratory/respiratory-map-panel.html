@@ -4,16 +4,19 @@
 {% block options %}
 <div id="map-options" class="sidebar-container">
   <!-- reset map button (zoom & zcta selection) -->
-  <sl-button pill id="map-reset-button" class="center-self">Reset Map</sl-button>
+  <sl-button pill id="map-reset-button" class="center-self" size="small">Reset Map</sl-button>
   <sl-divider class="options-divider"></sl-divider>
 
   <!-- count vs rate switch -->
-  <sl-radio-group value="count" id="map-rate-switch" class="center-self" size="small">
+  <sl-radio-group value="count" id="map-type-switch" class="center-self" size="small">
     <sl-tooltip content="Count of hospitalizations">
       <sl-radio-button pill value="count">Count</sl-radio-button>
     </sl-tooltip>
     <sl-tooltip content="Hospitalizations per 1000 people">
       <sl-radio-button pill value="rate">Rate</sl-radio-button>
+    </sl-tooltip>
+    <sl-tooltip content="Percent difference from last week">
+      <sl-radio-button pill value="percentDifference">Percent Difference</sl-radio-button>
     </sl-tooltip>
   </sl-radio-group>
 
@@ -50,10 +53,11 @@
 
   <!-- map icon inclusion checkboxes (hospital, mobile health clinic, community partners) -->
   <sl-divider class="options-divider"></sl-divider>
-  <sl-checkbox id="map-options-geographic-labels-toggle" class="map-toggle" style="display: initial;">Geography Labels</sl-checkbox>
-  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-toggle" style="display: initial;">Hospitals</sl-checkbox>
-  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-toggle" style="display: initial;">Mobile Health Clinics</sl-checkbox>
-  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-toggle" style="display: initial;">Community Partners</sl-checkbox>
+  <sl-checkbox id="map-options-title-toggle" class="map-toggle" checked>Map Title</sl-checkbox>
+  <sl-checkbox id="map-options-geographic-labels-toggle" class="map-toggle">Geography Labels</sl-checkbox>
+  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-toggle">Hospitals</sl-checkbox>
+  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-toggle">Mobile Health Clinics</sl-checkbox>
+  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-toggle">Community Partners</sl-checkbox>
   
   <!-- TODO Fix the below -->
   <!-- <p id="map-summary" class="panel-summary center-self">
@@ -91,17 +95,22 @@
 <div id="choropleth-legend">
   <svg id="choropleth-legend-svg"></svg>
 </div>
+<div id="map-title-container" class="fill-width">
+  <p id="map-title">Count of Covid-19 Hospitalizations in South Carolina by Region</p>
+</div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
   dataVersion = 0
   mapResetButton = document.getElementById("map-reset-button")
-  mapRateSwitch = document.getElementById("map-rate-switch")
+  mapTypeSwitch = document.getElementById("map-type-switch")
 
   mapDiseaseSelector = document.getElementById("map-disease-selector")
   mapRegionSelector = document.getElementById("map-region-selector")
   mapDataSourceSelector = document.getElementById("map-data-source-selector")
+  mapOptionsTitleToggle = document.getElementById("map-options-title-toggle")
   mapOptionsGeographicLabelsToggle = document.getElementById("map-options-geographic-labels-toggle")
   hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
   mobileClinicIconsToggle = document.getElementById("map-options-mobile-clinic-icons-toggle")
@@ -117,6 +126,7 @@
   mapStateHospitalizationsLargeResizer = document.getElementById("map-state-hospitalizations-large-resizer")
   mapStateHospitalizationsLargeSvg = document.getElementById("map-state-hospitalizations-large-svg")
   
+  mapTitle = document.getElementById("map-title")
   mapDiv = document.getElementById("map-div")
   choroplethLegendSVG = document.getElementById("choropleth-legend-svg")
 
