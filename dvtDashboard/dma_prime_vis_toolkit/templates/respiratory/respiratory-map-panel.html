@@ -99,6 +99,21 @@
   <p id="map-title">Count of Covid-19 Hospitalizations in South Carolina by Region</p>
 </div>
 
+<sl-dialog id="map-tooltip-large" class="dialog-width" >
+  <div>
+    <div class="tooltip-header">
+      <div class="tooltip-region-info"></div>
+      <div class="tooltip-data-info"></div>
+    </div>
+    <sl-resize-observer id="map-tooltip-large-resizer">
+      <svg id="map-tooltip-large-svg" class="tooltip-outer-svg"></svg>
+    </sl-resize-observer>
+    <div class="tooltip-footer">
+      <div class="tooltip-options"></div>
+    </div>
+  </div>  
+</sl-dialog>
+
 {% endblock %}
 
 {% block scripts %}
@@ -125,10 +140,11 @@
   mapStateHospitalizationsLargeSubtitle = document.getElementById("map-state-hospitalizations-large-subtitle")
   mapStateHospitalizationsLargeResizer = document.getElementById("map-state-hospitalizations-large-resizer")
   mapStateHospitalizationsLargeSvg = document.getElementById("map-state-hospitalizations-large-svg")
-  
+
   mapTitle = document.getElementById("map-title")
   mapDiv = document.getElementById("map-div")
   choroplethLegendSVG = document.getElementById("choropleth-legend-svg")
+  mapTooltipLarge = document.getElementById("map-tooltip-large")
 
 </script>
 
