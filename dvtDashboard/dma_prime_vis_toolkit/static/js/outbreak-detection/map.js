@@ -1,4 +1,4 @@
-const { GeoJsonLayer, IconLayer, MapboxOverlay, Widget } = deck;
+const { GeoJsonLayer, TextLayer, MapboxOverlay, Widget } = deck;
 
 export { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn, update, updateMapTitle }
 
@@ -84,9 +84,9 @@ styleSheet.insertRule(`
 document.adoptedStyleSheets = [styleSheet]
 drawAggregation()
 updateDiseaseCountDisplay()
-redraw(true)
+redraw()
 
-function redraw(first = false) {
+function redraw() {
     // 1) Recompute the Count/Rate color scale from the actual data:
     createCountRateChoropleth(regionData);
   
@@ -94,51 +94,77 @@ function redraw(first = false) {
     drawLegend();
   
     // 3) Then set the layers
+    var layers = [
+      new GeoJsonLayer({
+        id: 'disease_choropleth',
+        depthTest: false,
+        pickable: true,
+        data: regionData,
+        stroked: true,
+        filled: true,
+        pointType: 'circle+text',
+        pickable: true,
+        getFillColor: d => getColor(d),
+        lineWidthMinPixels: .75,
+        getLineWidth: 20,
+        getLineColor: [64, 64, 64],
+        updateTriggers: {
+          getFillColor: [
+            mapRateSwitch.value,
+            mapColumnSwitch.value,
+            mapTimeSwitch.value,
+            selectedItems.diseases,
+            selectedItems.dataVersion,
+          ],
+        },
+      }),
+      new GeoJsonLayer({
+        id: 'region_highlight',
+        depthTest: false,
+        data: selectedItems.region,
+        stroked: true,
+        filled: false,
+        pointType: 'circle+text',
+        pickable: true,
+        lineWidthMinPixels: .5,
+        getLineWidth: 1000,
+        getLineColor: [128, 128, 128],
+        getPointRadius: 4,
+        getTextSize: 12,
+        updateTriggers: {
+          data: selectedItems.region
+            ? selectedItems.region.properties.identifier
+            : selectedItems.region,
+        },
+      }),
+    ]
+
+    if (mapRegionSelector.value != "state" && mapOptionsGeographicLabelsToggle.checked) {
+      layers.push(
+        new TextLayer({
+          id: 'labels',
+          data: regionData.features,
+          getPosition: d => getCenter(d),
+          getText: d => {return d.properties.identifier.toString() != "state" ? d.properties.identifier.toString() : ""},
+          getAlignmentBaseline: 'center',
+          getTextAnchor: 'middle',
+          getColor: [0, 0, 0],
+          background: true,
+          getBackgroundColor: [255, 255, 255, 32],
+          backgroundBorderRadius: 2,
+          backgroundPadding: [4, 4],
+          getSize: mapRegionSelector.value == "zcta" ? Math.min(Math.max(8, map.getZoom()*1.5), 16) : 16,
+          fontFamily:getComputedStyle(document.head).getPropertyValue("--sl-font-sans").replace(/\s/g,'').split(',') ,
+          collisionGroup: 'labels',
+          collisionTestProps: {sizeScale: 2.5},
+          updateTriggers: {
+              getSize: [map.getZoom()],
+          },
+        })
+      )
+    }
     deckOverlay.setProps({
-      layers: [
-        new GeoJsonLayer({
-          id: 'disease_choropleth',
-          depthTest: false,
-          pickable: true,
-          data: regionData,
-          stroked: true,
-          filled: true,
-          pointType: 'circle+text',
-          pickable: true,
-          getFillColor: d => getColor(d),
-          lineWidthMinPixels: .75,
-          getLineWidth: 20,
-          getLineColor: [64, 64, 64],
-          updateTriggers: {
-            getFillColor: [
-              mapRateSwitch.value,
-              mapColumnSwitch.value,
-              mapTimeSwitch.value,
-              selectedItems.diseases,
-              selectedItems.dataVersion,
-            ],
-          },
-        }),
-        new GeoJsonLayer({
-          id: 'region_highlight',
-          depthTest: false,
-          data: selectedItems.region,
-          stroked: true,
-          filled: false,
-          pointType: 'circle+text',
-          pickable: true,
-          lineWidthMinPixels: .5,
-          getLineWidth: 1000,
-          getLineColor: [128, 128, 128],
-          getPointRadius: 4,
-          getTextSize: 12,
-          updateTriggers: {
-            data: selectedItems.region
-              ? selectedItems.region.properties.identifier
-              : selectedItems.region,
-          },
-        }),
-      ],
+      layers: layers
     });
   }
   
@@ -909,15 +935,15 @@ function drawLargeAggregation() {
         .nice()
         .range([margins.left, width - margins.right])
 
-    graphSVG.append("g").selectAll("rect")
-        .data(data.other)
-        .enter()
-        .append("rect")
-        .attr("x", (d, i) => xScale(d3.timeDay.offset(start_date, (7 * i))))
-        .attr("y", d => yScale(d))
-        .attr("height", d => yScale(0) - yScale(d))
-        .attr("width", (width - (margins.left + margins.right)) / data.data.length)
-        .attr("fill", "var(--sl-color-neutral-400)")
+    // graphSVG.append("g").selectAll("rect")
+    //     .data(data.other)
+    //     .enter()
+    //     .append("rect")
+    //     .attr("x", (d, i) => xScale(d3.timeDay.offset(start_date, (7 * i))))
+    //     .attr("y", d => yScale(d))
+    //     .attr("height", d => yScale(0) - yScale(d))
+    //     .attr("width", (width - (margins.left + margins.right)) / data.data.length)
+    //     .attr("fill", "var(--sl-color-neutral-400)")
 
     graphSVG.append("g").selectAll("rect")
         .data(data.data)

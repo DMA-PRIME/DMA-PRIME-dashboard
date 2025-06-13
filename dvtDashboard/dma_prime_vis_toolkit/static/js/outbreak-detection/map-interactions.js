@@ -34,6 +34,13 @@ mapOptionsTitleToggle.addEventListener("sl-change", () => {
     updateMapTitle()
 })
 
+// adding/removing labels
+mapOptionsGeographicLabelsToggle.addEventListener("sl-change", () => {
+    // toggle geographic unit labels
+    selectedItems.dataVersion++
+    redraw()
+})
+
 mapAllDiseaseSelector.addEventListener("sl-change", function(e) {
     if (e.target.checked) {
         d3.selectAll(".disease-checkbox").attr("checked", "")
