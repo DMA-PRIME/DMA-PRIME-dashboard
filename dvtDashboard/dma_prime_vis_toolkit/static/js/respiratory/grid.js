@@ -287,12 +287,12 @@ function updateGridData() {
         })
 
         // place value label and dot 
-        var lastDot = gridSVG.select(".grid-item-value") //TODO: rename this, my brain is tired
+        var lastValueMarker = gridSVG.select(".grid-item-value") //TODO: rename this, my brain is tired
         var dotPlacementX = gridDataSourceSortSelector.value == "state-prediction" ? gridItemWidth - 3 : xScale.range()[1]
         var valuePlacementX = gridDataSourceSortSelector.value == "state-prediction" ? dotPlacementX : dotPlacementX + 4
         var dotPlacementY, valuePlacementY
         if (!isNaN(value)) {
-            lastDot.attr("opacity", 1)
+            lastValueMarker.attr("opacity", 1)
             dotPlacementY = Math.max(yScale(value), 0)
             if (gridDataSourceSortSelector.value == "state-prediction") {
                 if (data["state-testing"].data.at(-1) < value) {
@@ -304,21 +304,21 @@ function updateGridData() {
                 valuePlacementY = Math.min(Math.max(dotPlacementY + 6, em), gridItemHeight - 3)
             }
 
-            lastDot.select("text")
+            lastValueMarker.select("text")
                 .attr("x", valuePlacementX)
                 .attr("y", valuePlacementY)
                 .attr("text-anchor", gridDataSourceSortSelector.value == "state-prediction" ? "end" : "start")
                 .text(value.toFixed(1))
 
-            lastDot.select("circle")
+            lastValueMarker.select("circle")
                 .attr("cx", dotPlacementX)
                 .attr("cy", dotPlacementY)
 
-            lastDot.select("line")
+            lastValueMarker.select("line")
                 .attr("display", gridDataSourceSortSelector.value == "state-prediction" ? "initial" : "none")
 
             if (gridDataSourceSortSelector.value == "state-prediction") {
-                lastDot.select("line")
+                lastValueMarker.select("line")
                     .attr("display", "initial")
                     .attr("x1", xScale.range()[1])
                     .attr("y1", yScale(data["state-testing"].data.at(-1)))
@@ -327,7 +327,7 @@ function updateGridData() {
             }
             
         } else {
-            lastDot.attr("opacity", 0)
+            lastValueMarker.attr("opacity", 0)
         }
 
     })

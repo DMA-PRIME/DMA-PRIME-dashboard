@@ -1,6 +1,6 @@
 const { GeoJsonLayer, IconLayer, MapboxOverlay, Widget } = deck;
 
-export { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn, update }
+export { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn, update, updateMapTitle }
 
 var regionData = await d3.json(`/data/outbreak-detection/zcta/pos_tests?${parseInt(Math.random()*9999999999)}`)
 var stateFeature = regionData.features.find(d => d.properties.identifier == "state")
@@ -1064,5 +1064,38 @@ function update() {
     drawAggregation()
     drawLargeAggregation()
     drawLegend()
+    updateMapTitle()
     redraw()
+}
+
+function updateMapTitle() {
+    if (!mapOptionsTitleToggle.checked) {
+        mapTitle.innerHTML = ""
+        return
+    }
+    var titleStart = `${d3.select(mapRateSwitch).select(`*[value=${mapRateSwitch.value}]`).html()} `
+    titleStart += `of ${d3.select(mapTimeSwitch).select(`*[value=${mapTimeSwitch.value}]`).html()}ly `
+    titleStart += `${d3.select(mapColumnSwitch).select(`*[value=${mapColumnSwitch.value}]`).html()} `
+
+    var titleEnd = "in South Carolina "
+    if (mapRegionSelector.value != "state") {
+        titleEnd += "by "
+        titleEnd += d3.select(mapRegionSelector).select(`*[value=${mapRegionSelector.value}]`).html() 
+    } 
+
+    switch (mapRateSwitch.value) {
+        case "count": 
+            mapTitle.innerHTML = titleStart + titleEnd
+        break;
+        case "rate": 
+            mapTitle.innerHTML = titleStart + "(per 1000 people) " + titleEnd
+        break;
+        case "percent": 
+            mapTitle.innerHTML = titleStart + "from Last "+ d3.select(mapTimeSwitch).select(`*[value=${mapTimeSwitch.value}]`).html() + " " + titleEnd
+        break;
+        default: 
+            mapTitle.innerHTML = titleStart + titleEnd
+        break;
+
+    }
 }
