@@ -53,11 +53,12 @@
 
   <!-- map icon inclusion checkboxes (hospital, mobile health clinic, community partners) -->
   <sl-divider class="options-divider"></sl-divider>
-  <sl-checkbox id="map-options-title-toggle" class="map-toggle" checked>Map Title</sl-checkbox>
-  <sl-checkbox id="map-options-geographic-labels-toggle" class="map-toggle">Geography Labels</sl-checkbox>
-  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-toggle">Hospitals</sl-checkbox>
-  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-toggle">Mobile Health Clinics</sl-checkbox>
-  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-toggle">Community Partners</sl-checkbox>
+  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle" checked>Hospitals</sl-checkbox>
+  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle" checked>Mobile Health Clinics</sl-checkbox>
+  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-icons-toggle" checked>Community Partners</sl-checkbox>
+  <sl-divider class="options-divider"></sl-divider>
+  <!-- map options -->
+  <sl-checkbox id="map-options-geographic-labels-toggle" class="map-toggle" checked>Geographic Labels</sl-checkbox>
   
   <!-- TODO Fix the below -->
   <!-- <p id="map-summary" class="panel-summary center-self">
@@ -149,7 +150,6 @@
     mapIncludeImputations           = document.getElementById("map-include-imputations");
 
     // Optional toggles
-    mapOptionsTitleToggle           = document.getElementById("map-options-title-toggle");
     mapOptionsGeographicLabelsToggle= document.getElementById("map-options-geographic-labels-toggle");
     hospitalIconsToggle             = document.getElementById("map-options-hospital-icons-toggle");
     mobileClinicIconsToggle         = document.getElementById("map-options-mobile-clinic-icons-toggle");

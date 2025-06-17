@@ -16,7 +16,7 @@ var icons = {
 
 var selectedItems = {
     "feature": undefined,
-    "icons": []
+    "icons": ["hospital", "mobile_health_clinic", "community_partner"]
 }
 
 var choroplethColorMap = d3.scaleLinear()
@@ -513,10 +513,6 @@ async function drawStateBarChart(svgDOM, subtitleDOM, stateMargins, yAxisDisplay
 }
 
 function updateMapTitle() {
-    if (!mapOptionsTitleToggle.checked) {
-        mapTitle.innerHTML = ""
-        return
-    }
     var titleStart = `${d3.select(mapTypeSwitch).select(`*[value=${mapTypeSwitch.value}]`).html()} `
     titleStart += `of ${d3.select(mapDiseaseSelector).select(`*[value=${mapDiseaseSelector.value}]`).html()} `
     titleStart += "Hospitalizations "
@@ -525,22 +521,20 @@ function updateMapTitle() {
     if (mapRegionSelector.value != "state") {
         titleEnd += "by "
         titleEnd += d3.select(mapRegionSelector).select(`*[value=${mapRegionSelector.value}]`).html() 
-        
     } 
 
     switch (mapTypeSwitch.value) {
         case "count": 
             mapTitle.innerHTML = titleStart + titleEnd
-        break;
+            break;
         case "rate": 
             mapTitle.innerHTML = titleStart + "(per 1000 people) " + titleEnd
-        break;
+            break;
         case "percentDifference": 
             mapTitle.innerHTML = titleStart + "from Last Week " + titleEnd
-        break;
+            break;
         default: 
             mapTitle.innerHTML = titleStart + titleEnd
-        break;
-
+            break;
     }
 }
