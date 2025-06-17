@@ -512,7 +512,7 @@ function drawTooltip(dataObject) {
         .append("p")
         .attr("class", "tooltip-subtitle")
         .style("margin", "0px")
-        .style("font-size", "14px")
+        .style("font-size", "20px")
         .style("line-height", "1.4em")
         .html(
           `County: ${dataObject.properties.county[0].toUpperCase() + dataObject.properties.county.slice(1)}`
@@ -530,7 +530,6 @@ function drawTooltip(dataObject) {
     const rightHeaderCol = headerContainer
       .append("div")
       .attr("class", "tooltip-right-col")
-      .style("flex", "0 0 120px")    // fixed width for percent‐change column
       .style("text-align", "right")
       .style("font-size", "14px")
       .style("line-height", "1.4em");
@@ -539,7 +538,7 @@ function drawTooltip(dataObject) {
       .append("p")
       .attr("class", "tooltip-percent-change")
       .style("margin", "0px")
-      .style("font-weight", "bold")
+      
       .html(percentLabel);
   
   
@@ -550,7 +549,7 @@ function drawTooltip(dataObject) {
       .append("p")
       .attr("class", "tooltip-subtitle")
       .style("margin", "4px 0 8px 0") // small spacing above/below
-      .style("font-size", "14px")
+      .style("font-size", "20px")
       .style("line-height", "1.4em")
       .html(encounterString);
   
@@ -578,12 +577,23 @@ function drawTooltip(dataObject) {
         d3.select(expandPopupButton.node().shadowRoot).select("button").node().style.padding = "4px";
     });
     expandPopupButton.on("click", () => {
-        var tooltipHTML = document.getElementById("map-tooltip-div").innerHTML;
-        var largeDiv = document.getElementById("map-tooltip-large-div");
-        largeDiv.innerHTML = tooltipHTML;
-        // Do NOT set SVG width/height here; let CSS handle it
-        document.getElementById("map-tooltip-large").show();
+      const tooltipHTML = document.getElementById("map-tooltip-div").innerHTML;
+      const largeDiv   = document.getElementById("map-tooltip-large-div");
+    
+      // 1) copy in the same inner HTML…
+      largeDiv.innerHTML = tooltipHTML;
+    
+      // 2) …then nuke any inline width/height on its SVG so CSS can override
+      const svgEl = largeDiv.querySelector("svg");
+      if (svgEl) {
+        svgEl.removeAttribute("width");
+        svgEl.removeAttribute("height");
+      }
+    
+      // 3) now show the dialog
+      document.getElementById("map-tooltip-large").show();
     });
+    
 }
 
   
