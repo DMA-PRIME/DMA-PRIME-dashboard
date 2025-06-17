@@ -14,11 +14,8 @@
 
   <style>
     header {
-      background-color: #333; /* Dark background */
+      background-color: var(--sl-color-neutral-100); /* Dark background */
       padding: 10px 20px; 
-      position: fixed; /* Sticks to the top */
-      top: 0;
-      left: 0;
       width: 100%; /* Full width */
       display: flex;
       align-items: center; /* Align icons vertically /*
@@ -36,15 +33,14 @@
       font-size: 2rem;
     }
 
-    body {
-      margin: var(--sl-spacing-large);
+    #subpage-container {
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       align-items: center;
       justify-content: center;
-      height: 100vh;          /*use viewport-relative units to cover page fully */
-      width: 100vw;
-      padding-top: 50px !important;
+      height: auto;
+      width: 100%;
+      padding: var(--sl-spacing-2x-large);
     }
 
     .subpage a {
@@ -102,36 +98,40 @@
     </nav>
   </header>
 
-  <div class="subpage">
-    <a href="{{ url_for('respiratory') }}">
-      <sl-icon name="lungs"></sl-icon>
-      <p>Respiratory Virus Forecasting: Covid-19, Influenza, RSV</p>
-    </a>
-  </div>
-  <div class="subpage">
-    <a href="{{ url_for('waste_water') }}">
-      <sl-icon name="droplet-half"></sl-icon>
-      <p>Wastewater Monitoring</p>
-    </a>
-  </div>
-  <div class="subpage">
-    <a href="{{ url_for('outbreak_detection') }}">
-      <sl-icon name="virus2"></sl-icon>
-      <p>Outbreak Detection: All infectious diseases</p>
-    </a>
-    
-  </div>
-  <div class="subpage">
-    <a href="{{ url_for('opioid_hcv_hiv') }}">
-      <img src="{{ url_for('static', filename='assets/Icons/syringe-1309-svgrepo-com.svg') }}"></img>
-      <p>Opioid Overdose and HCV and HIV Hospitalizations</p>
-    </a>
-  </div>
-  <div class="subpage">
-    <a href="{{ url_for('mobile_health_clinics') }}">
-      <img src="{{ url_for('static', filename='assets/Icons/mobile_health_clinic.svg') }}"></img>
-      <p>Mobile Health Clinic Tracking</p>    
-    </a>
+  <div id="subpage-container">
+
+    <div class="subpage">
+      <a href="{{ url_for('respiratory') }}">
+        <sl-icon name="lungs"></sl-icon>
+        <p>Respiratory Virus Forecasting: Covid-19, Influenza, RSV</p>
+      </a>
+    </div>
+    <div class="subpage">
+      <a href="{{ url_for('waste_water') }}">
+        <sl-icon name="droplet-half"></sl-icon>
+        <p>Wastewater Monitoring</p>
+      </a>
+    </div>
+    <div class="subpage">
+      <a href="{{ url_for('outbreak_detection') }}">
+        <sl-icon name="virus2"></sl-icon>
+        <p>Outbreak Detection: All Infectious Diseases</p>
+      </a>
+      
+    </div>
+    <div class="subpage">
+      <a href="{{ url_for('opioid_hcv_hiv') }}">
+        <img src="{{ url_for('static', filename='assets/Icons/syringe-1309-svgrepo-com.svg') }}"></img>
+        <p>Opioid Overdose and HCV and HIV Hospitalizations</p>
+      </a>
+    </div>
+    <div class="subpage">
+      <a href="{{ url_for('mobile_health_clinics') }}">
+        <img src="{{ url_for('static', filename='assets/Icons/mobile_health_clinic.svg') }}"></img>
+        <p>Mobile Health Clinic Tracking</p>    
+      </a>
+    </div>
+
   </div>
 
   <script>
