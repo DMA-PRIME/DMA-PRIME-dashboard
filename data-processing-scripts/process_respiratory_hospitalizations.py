@@ -1,44 +1,61 @@
+
 import pandas as pd
 import json
 import geojson
+import math
 import os
 import glob
 
 from supporting_files.utility import *
 
-diseases = {}
-# date_format = "%Y-%m-%d"
-date_format = {
-    'zcta': "%Y-%m-%d",
-    'region': "%Y-%m-%d",
-    'county': "%Y-%m-%d",
-    'state-cdc': "%Y-%m-%d",
-    'state': "%Y-%m-%d"
-}
-imputation_format = "%Y-%m-%d"
+# find all diseases
+# find current and max date
+ 
+# for every region
+    # for every disease
+        # read in csvs into one df
+        # replace column headers
+        # do state data
+        # do health system data
 
-label_dict = {
-        'health-system-data': 'Health System hospitalizations', 
-        'state-training': 'Projected Cases(train)', 
-        'state-testing': 'Projected Cases(post training)',
-        'state-data': 'Statewide hospitalizations',
-        }
+# process state-cdc separately
 
-region_sizes = ['county', 'region', 'zcta', 'state']
-region_identifiers = { # identifier key for geographic unit within the geojson file
-    'zcta': 'ZCTA',
-    'region': 'Region',
-    'county': 'NAME',
+date_format = "%Y-%m-%d"
+
+region_geojson_identifiers = { # identifier key for geographic unit within the geojson file
     'state': 'Region',
-}
-region_csv_identifiers = { # identifier key for geographic unit within the csv data files
-    'zcta': 'Region',
-    'region': 'Region',
-    'county': 'Region',
-    'state': None,
+    'region': 'Region', 
+    'county': 'NAME', 
+    'zcta': 'ZCTA'
 }
 
-for region_size in region_sizes:
+state_label_dict = {
+    # jiande/tanvir
+    'Statewide hospitalizations': 'state-encounters-reported',
+    'Projected Cases(train)': 'state-encounters-training', # model
+    'Projected Cases(post training)': 'state-encounters-testing', #model
+}
+
+health_system_label_dict = {
+    # jiande/tanvir
+    'Health System hospitalizations': 'health-system-encounters', 
+
+    # Md Sakhawat
+    'Health System Positive Tests (reported)': 'health-system-positive-tests-reported', # reported
+    'Health System Positive Tests (projected)': 'health-system-positive-tests-projected', # model
+    'Effective Reproductive Number (estimated)': 'health-system-rt-estimated', # model
+    'Effective Reproductive Number (projected)': 'health-system-rt-projected', # model
+}
+
+index_names = ['Region', 'date']
+data_variables = ['encounters', 'positive-tests', 'rt']
+
+diseases = {}
+dataframes = {}
+max_date = pd.to_datetime(0)
+curr_date = pd.to_datetime(0)
+
+for region_size in region_geojson_identifiers.keys():
     def fix_disease_dir(directory):
         disease = directory.split(',')[0]
         disease = disease.lower()
@@ -48,144 +65,158 @@ for region_size in region_sizes:
         return disease
     diseases.update({fix_disease_dir(directory.name):directory.name for directory in filter(lambda entry: entry.is_dir() and not 'CDC' in entry.name, os.scandir(f'{aggregated_data_dir}/respiratory/'+region_size))})
 
-dataframes = {}
-max_date = pd.to_datetime(0)
-date = pd.to_datetime(0)
 
-for region_size, identifier_column in region_csv_identifiers.items():
+print("Creating Dataframes")
+for region_size, identifier_column in region_geojson_identifiers.items():
+    print(region_size)
     dataframes[region_size] = {}
-    index_names = [region_size, 'date']
     files = {}
+
     for disease, dir_name in diseases.items():
         disease_files = glob.glob(f'{aggregated_data_dir}/respiratory/{region_size}/{dir_name}/*.csv')
-        files[disease] = []
+        df = pd.DataFrame()
+        # read in all dfs and rename columns 
+        def add_df(path, df):
+            path_lower = path.lower()
+            temp = pd.read_csv(path, date_format=date_format, parse_dates=['Date'])
+            temp['imputation'] = 'imputation' in path_lower or 'impute' in path_lower
+            temp.rename({'Date': 'date'}, axis=1, inplace=True, errors='raise')
+            temp.rename({**state_label_dict, **health_system_label_dict}, axis=1, inplace=True, errors='ignore')
+            # change date to rep end of week instead of start
+            temp['date'] = pd.to_datetime(temp['date'], format=date_format) + pd.DateOffset(days=6)
+            df = pd.concat([df, temp])
+            return df
+
         if isinstance(disease_files, str):
-            files[disease].append({
-                    'file': disease_files,
-                    'imputation': 'imputation' in disease_files
-                })
+            df = add_df(disease_files, df)
         else:
             for disease_file in disease_files:
-                files[disease].append({
-                    'file': disease_file,
-                    'imputation': 'imputation' in disease_file.lower() or 'impute' in disease_file.lower()
-                })
+                df = add_df(disease_file, df)
+                
+        if df.empty:
+            continue
 
-    # load data files, combine and mark imputed if necessary
-    # find max date across all diseases
-    for disease, file in files.items():
-        df = pd.DataFrame()
-        if isinstance(file, list):
-            for f in file:
-                temp = pd.read_csv(f['file'], date_format=date_format[region_size], parse_dates=['Date'])
-                temp['imputation'] = f['imputation']
-                temp.rename({'Date': 'date'}, axis=1, inplace=True)
-                temp.rename({identifier_column: region_size}, axis=1, inplace=True)
-                if f['imputation']:
-                    temp['date'] = pd.to_datetime(temp['date'], format=imputation_format) + pd.DateOffset(days=6)
-                else:
-                    temp['date'] = pd.to_datetime(temp['date'], format=date_format[region_size]) + pd.DateOffset(days=6)
+        ##### These will be shown on the map ###
 
-                df = pd.concat([df, temp])
-        else:
-            df = pd.read_csv(file)
-            df['imputation'] = False
+        # combining state encounter training/post training into one column
+        if 'state-encounters-training' in df.columns and 'state-encounters-testing' in df.columns:
+            df['state-encounters'] = df[['state-encounters-training','state-encounters-testing']].sum(axis=1,min_count=1)
+        # combining health system positive tests reported/projected into one column
+        if 'health-system-positive-tests-reported' in df.columns and 'health-system-positive-tests-projected' in df.columns:
+            df['health-system-positive-tests'] = df[['health-system-positive-tests-reported','health-system-positive-tests-projected']].sum(axis=1,min_count=1)
+        # combining health system reproductive number reported/projected into one column
+        if 'health-system-rt-estimated' in df.columns and 'health-system-rt-projected' in df.columns:
+            df['health-system-rt'] = df[['health-system-rt-estimated','health-system-rt-projected']].sum(axis=1,min_count=1)
 
-        try:
-            max_date = max(max_date, df['date'].max())
-            if 'Health System hospitalizations' in df.columns:
-                date = max(date, df.loc[~df['Health System hospitalizations'].isna()]['date'].max())
-            value_columns = df.columns.difference(index_names)
-            dataframes[region_size][disease] = pd.pivot_table(df, values=value_columns, index=index_names)
-        except:
-            if 'date' in df.columns:
-                df.index = df['date']
-            dataframes[region_size][disease] = df
+
+        ########################################
+
+        # update max and current dates
+        max_date = max(max_date, df['date'].max())
+        if 'health-system-encounters' in df.columns:
+            # health-system encounters end where projections start, so the last health-system entry is the current week
+            curr_date = max(curr_date, df.loc[df['health-system-encounters'].notna()]['date'].max())
+        if 'health-system-positive-tests' in df.columns:
+            # health-system positive tests end where projections start, see above comment
+            curr_date = max(curr_date, df.loc[df['health-system-positive-tests-reported'].notna()]['date'].max())
         
-    # find display date and date arrays for historical and prediction data
-    date = max(date, max_date - pd.DateOffset(weeks=4))
+        if region_size == 'state':
+            df['Region'] = 'state'
 
-day_of_week = pd.to_datetime(date).day_name()
-start_date = date - pd.DateOffset(weeks=78) # roughly 18 months
-historical_dates = pd.date_range(end=date, start=start_date, freq=f'W-{day_of_week[:3].upper()}')
+        # index on both region and date and save to df dict
+        value_columns = df.columns.difference(index_names)
+        df = pd.pivot_table(df, values=value_columns, index=index_names)
+        dataframes[region_size][disease] = df
+        
+    curr_date = max(curr_date, max_date - pd.DateOffset(weeks=4))
+
+# creating new indices for historical and predicted dates
+day_of_week = pd.to_datetime(curr_date).day_name()
+start_date = curr_date - pd.DateOffset(weeks=78) # roughly 18 months
+historical_dates = pd.date_range(end=curr_date, start=start_date, freq=f'W-{day_of_week[:3].upper()}')
 historical_dates = historical_dates.to_list()
-
 end_date = max_date
-pred_dates = pd.date_range(start=date, end=end_date, freq=f'W-{day_of_week[:3].upper()}', inclusive='both')
+pred_dates = pd.date_range(start=curr_date, end=end_date, freq=f'W-{day_of_week[:3].upper()}', inclusive='both')
 pred_dates = pred_dates.to_list()
 
-for region_size, identifier_column in region_identifiers.items():
+print("Create GeoJSONs")
+
+for region_size, identifier_column in region_geojson_identifiers.items():
     print(region_size)
     with open(f'{scripts_supporting_files_dir}/sc_{region_size}_population_simplified.json') as f:
         gj = geojson.load(f)
         
-        # reshape data
-        for thing in gj.features:
+        # add universal id key
+        for feature in gj.features:
             try:
-                identifier = int(thing.properties[identifier_column])
+                identifier = int(feature.properties[identifier_column])
             except ValueError:
-                identifier = thing.properties[identifier_column]
+                identifier = feature.properties[identifier_column]
 
-            thing.properties['id'] = identifier
+            feature.properties['id'] = identifier
             
-            disease_data = {}
-            for disease, df in dataframes[region_size].items():
-                identifier_dict = {}
-                for name, column in label_dict.items():
-                    try:
-                        if (df.index.nlevels > 1):
-                            data = df.xs(identifier, axis=0)
-                        else:
-                            data = df
-                        data = data[column].reindex(historical_dates).dropna()
+        for disease, df in dataframes[region_size].items():
+            # reshape data
+            for feature in gj.features:
+                try:
+                    identifier = int(feature.properties[identifier_column])
+                except ValueError:
+                    identifier = feature.properties[identifier_column]
+
+                disease_data = {
+                    'state': {var:{'historical': [], 'projected': []} for var in data_variables},                        
+                    'health-system': {var:{'historical': [], 'projected': []} for var in data_variables},
+                    'extra': {'state-encounters-reported': []},
+                    'imputation': 0
+                }
+
+                data = None
+
+                # grab data for this region
+                try:
+                    data = df.xs(identifier, axis=0)
+                    disease_data['imputation'] = int(data['imputation'].any())
+
+                except:
+                    # no data in this region - disease combo
+                    pass
+                    # print(identifier, disease)
+
+                for data_source in ['state', 'health-system']:
+                    for var in data_variables:
+                        try:
+                            var_data = data[f'{data_source}-{var}']
+                            try:
+                                historical_data = var_data.reindex(historical_dates)
+                                disease_data[data_source][var]['historical'] = ['null' if math.isnan(x) else x for x in historical_data.to_list()]
+                            except: # don't see why this would trigger
+                                pass
+                                # print(identifier, disease, var, 'historical')
+
+                            try:
+                                projected_data = var_data.reindex(pred_dates)
+                                disease_data[data_source][var]['projected'] = ['null' if math.isnan(x) else x for x in projected_data.to_list()]
+                            except: # don't see why this would trigger
+                                pass
+                                # print(identifier, disease, var, 'projected')
+                        except: # this column doesn't exist
+                            pass 
                         
-                        identifier_dict[name] = {
-                                'start-date': data.index[0].strftime('%Y-%m-%d'),
-                                'data': data.to_list(),
-                            }
-                    # if data doesn't exist then add data source with empty array
-                    except (KeyError, IndexError) as e:
-                        identifier_dict[name] = {
-                                'start-date': date.strftime('%Y-%m-%d'),
-                                'data': [],
-                            }
-                    except ValueError as e:
-                        print(identifier, name, disease)
-                        raise e
+                # process extra and save
                 try:
-                    if (df.index.nlevels > 1):
-                        data = df.xs(identifier, axis=0)
-                    else:
-                        data = df
-                    data = data['Projected Cases(post training)'].reindex(pred_dates).dropna()
-                    identifier_dict['state-prediction'] = {
-                            'start-date': data.index[0].strftime('%Y-%m-%d'),
-                            'data': data.to_list(),
-                        }
-                except (KeyError, IndexError) as e:
-                    identifier_dict['state-prediction'] = {
-                        'start-date': date.strftime('%Y-%m-%d'),
-                        'data': [],
-                    } 
-                    
-                try:
-                    if (df.index.nlevels > 1):
-                        identifier_dict['imputation'] = int(df.xs(identifier, axis=0)['imputation'].any())
-                    else:
-                        identifier_dict['imputation'] = int(df['imputation'].any())
-                except KeyError as e:
-                    identifier_dict['imputation'] = 0
+                    var_data = data['state-encounters-reported']
+                    disease_data['extra']['state-encounters-reported'] = ['null' if math.isnan(x) else x for x in var_data.to_list()]
+                except:
+                    pass
+                # add disease data to this feature
+                feature.properties['data'] = disease_data
+                
+            # create dirs if needed and save off file
+            out_path = f'{processed_data_dir}/respiratory/{region_size}/{disease}.json'
+            os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, 'w') as f:
+                geojson.dump(gj, f)
 
-                # makes state testing and training look pretty and connect when plotted
-                if len(identifier_dict['state-testing']['data']) > 0 and len(identifier_dict['state-training']['data']) > 0:
-                    identifier_dict['state-training']['data'].append(identifier_dict['state-testing']['data'][0])
-            
-                disease_data[disease] = identifier_dict
-
-            thing.properties['data'] = disease_data
-
-        with open(f'{processed_data_dir}/respiratory/respiratory_{region_size}_hospitalization_data.json', 'w') as f:
-            geojson.dump(gj, f)
 
 with open(f'{processed_data_dir}/respiratory/metadata.json', 'w') as f:
     metadata = {
@@ -197,23 +228,24 @@ with open(f'{processed_data_dir}/respiratory/metadata.json', 'w') as f:
             'zcta': 'Zip Code',
         },
         'start_date': start_date.strftime('%Y-%m-%d'),
-        'current_week': date.strftime('%Y-%m-%d'),
+        'current_week': curr_date.strftime('%Y-%m-%d'),
         'end_date': end_date.strftime('%Y-%m-%d')
     }
     json.dump(metadata, f)
 
 # create state CDC hospitalization json file
+print("State CDC Hospitalizations")
 
 # read in cdc hosp data and reformat
 csvs = glob.glob(f'{aggregated_data_dir}/respiratory/state/CDC_hospitalization/*.csv')
 state_csv = max(csvs, key=os.path.getctime)
 if len(csvs) > 0:
     state_cdc = pd.read_csv(state_csv)
-    state_cdc['Week.Ending.Date'] = pd.to_datetime(state_cdc['Week.Ending.Date'], format=date_format['state-cdc'])
+    state_cdc['Week.Ending.Date'] = pd.to_datetime(state_cdc['Week.Ending.Date'], format=date_format)
     
     # =========================== delete me ===============================
     temp_state_dow = state_cdc['Week.Ending.Date'][0].day_of_week
-    temp_ref_dow = pd.to_datetime(date).day_of_week
+    temp_ref_dow = pd.to_datetime(curr_date).day_of_week
     if temp_state_dow != temp_ref_dow:
         if abs(temp_ref_dow - temp_state_dow) < temp_ref_dow - temp_state_dow + 7:
             state_cdc['Week.Ending.Date'] = state_cdc['Week.Ending.Date'] + pd.DateOffset(days=temp_ref_dow - temp_state_dow)
@@ -221,7 +253,7 @@ if len(csvs) > 0:
             state_cdc['Week.Ending.Date'] = state_cdc['Week.Ending.Date'] + pd.DateOffset(days=temp_ref_dow - temp_state_dow + 7)
     # =====================================================================
     
-    state_cdc = state_cdc[(start_date <= state_cdc['Week.Ending.Date']) & (state_cdc['Week.Ending.Date'] <= date)]
+    state_cdc = state_cdc[(start_date <= state_cdc['Week.Ending.Date']) & (state_cdc['Week.Ending.Date'] <= curr_date)]
     state_cdc.index = state_cdc['Week.Ending.Date']
     
     # create df that will hold the data
@@ -238,8 +270,8 @@ if len(csvs) > 0:
     
     # save df to json file
     df = df.drop('Date', axis=1)
-    df.index = df.index.strftime(date_format['state-cdc'])
+    df.index = df.index.strftime(date_format)
 else:
     df = pd.DataFrame()
 
-df.to_json(f'{processed_data_dir}/respiratory/respiratory_state-cdc_hospitalization_data.json', orient='columns')
+df.to_json(f'{processed_data_dir}/respiratory/respiratory_state-cdc_encounter_data.json', orient='columns')

@@ -1,5 +1,5 @@
 import { getBoundsOfCoords, drawTooltip } from "/static/js/respiratory/script.js";
-import { map, popup, deckOverlay, selectedItems, redraw, drawStateHospitalizations, drawLargeStateHospitalizations, updateMapTitle } from "/static/js/respiratory/map.js"
+import { map, popup, deckOverlay, selectedItems, redraw, drawStateHospitalizations, drawLargeStateHospitalizations, updateMapTitle, updateMapTooltip } from "/static/js/respiratory/map.js"
 
 
 popup.on("close", e => {
@@ -83,17 +83,12 @@ map.on("click", e => {
         var ttpDiv = d3.select("#map-tooltip-div")
             .style("display", "initial")
             .style("border-style", "none")
-
-        var tooltipData = dataObject.properties.data[mapDiseaseSelector.value]
-        tooltipData["id"] = dataObject.properties.id
-        if (mapRegionSelector.value == "zcta") {
-            tooltipData["county"] = dataObject.properties.county
-        }
-        tooltipData["population"] = dataObject.properties.population
-
         var largeTtp = d3.select(mapTooltipLarge)
         mapTooltipLarge.show().then(() => {
-            drawTooltip(tooltipData, largeTtp.select(".tooltip-outer-svg"), largeTtp.select(".tooltip-header"), largeTtp.select(".tooltip-footer"), mapTypeSwitch.value == "rate", false, [])
+            drawTooltip(dataObject.properties, 
+                largeTtp.select(".tooltip-outer-svg"), largeTtp.select(".tooltip-header"), largeTtp.select(".tooltip-footer"), 
+                mapTypeSwitch.value == "rate", mapDataSourceSelector.value, mapDataVariableSelector.value,
+                false, [])
         })
     })
 
@@ -101,18 +96,14 @@ map.on("click", e => {
         .style("display", "initial")
         .style("border-style", "none")
 
-    var tooltipData = dataObject.properties.data[mapDiseaseSelector.value]
-    tooltipData["id"] = dataObject.properties.id
-    if (mapRegionSelector.value == "zcta") {
-        tooltipData["county"] = dataObject.properties.county
-    }
-    tooltipData["population"] = dataObject.properties.population
-
     var ttpSVG = ttpDiv.select(".tooltip-outer-svg")
         .attr("width", mapTooltipWidth)
         .attr("height", mapTooltipHeight)
 
-    drawTooltip(tooltipData, ttpSVG, ttpDiv.select(".tooltip-header"), ttpDiv.select(".tooltip-footer"), mapTypeSwitch.value == "rate", false, [])
+    drawTooltip(dataObject.properties, 
+        ttpSVG, ttpDiv.select(".tooltip-header"), ttpDiv.select(".tooltip-footer"), 
+        mapTypeSwitch.value == "rate", mapDataSourceSelector.value, mapDataVariableSelector.value,
+        false, [])
     dataVersion++
     redraw()
 })
@@ -133,43 +124,30 @@ mapResetButton.addEventListener("click", () => {
 })
 
 mapTypeSwitch.addEventListener("sl-change", (event) => {
+    var dataVarString = d3.select(mapDataVariableSelector).select(`*[value=${mapDataVariableSelector.value}]`).html()
     // update legend title
     if (mapTypeSwitch.value == "rate"){
         d3.select("#map-legend-title")
-            .text(`Current Week's Hospitalization Rates by ${metadata.region_sizes[mapRegionSelector.value]}`)
+            .text(`Current Week's ${dataVarString} Rates by ${metadata.region_sizes[mapRegionSelector.value]}`)
     } else {
         d3.select("#map-legend-title")
-            .text(`Current Week's Hospitalizations by ${metadata.region_sizes[mapRegionSelector.value]}`)
+            .text(`Current Week's ${dataVarString} by ${metadata.region_sizes[mapRegionSelector.value]}`)
     }
 
-    // update tooltip
     drawStateHospitalizations()
+
+    // update tooltip
     if (selectedItems.feature) {
-        var ttpDiv = d3.select("#map-tooltip-div")
-
-        var tooltipData = selectedItems.feature.properties.data[mapDiseaseSelector.value]
-        tooltipData["id"] = selectedItems.feature.properties.id
-        if (mapRegionSelector.value == "zcta") {
-            tooltipData["county"] = selectedItems.feature.properties.county
-        }
-        tooltipData["population"] = selectedItems.feature.properties.population
-
-        var width = mapDiv.clientWidth
-        var mapTooltipWidth = Math.max(500, width * .3)
-        var mapTooltipHeight = mapTooltipWidth * .65
-        var ttpSVG = ttpDiv.select(".tooltip-outer-svg")
-            .attr("width", mapTooltipWidth)
-            .attr("height", mapTooltipHeight)
-
-        drawTooltip(tooltipData, ttpSVG, ttpDiv.select(".tooltip-header"), ttpDiv.select(".tooltip-footer"), mapTypeSwitch.value == "rate", false, [])
-        
+        updateMapTooltip(selectedItems.feature.properties)
     }
     dataVersion++
     redraw()
-
 })
 
 mapDataSourceSelector.addEventListener("sl-change", (event) => {
+    if (selectedItems.feature) {
+        updateMapTooltip(selectedItems.feature.properties)
+    }
     dataVersion++
     redraw()
 })
@@ -179,7 +157,7 @@ mapDiseaseSelector.addEventListener("sl-change", (event) => {
     selectedItems.feature = undefined
     popup.remove()
     dataVersion++
-    redraw()
+    redraw(true)
 })
 
 mapRegionSelector.addEventListener("sl-change", (event) => {
@@ -187,6 +165,27 @@ mapRegionSelector.addEventListener("sl-change", (event) => {
     redraw(true)
     selectedItems.feature = undefined
     popup.remove()
+})
+
+mapDataVariableSelector.addEventListener("sl-change", (event) => {
+    var dataVarString = d3.select(mapDataVariableSelector).select(`*[value=${mapDataVariableSelector.value}]`).html()
+    // update legend title
+    if (mapTypeSwitch.value == "rate"){
+        d3.select("#map-legend-title")
+            .text(`Current Week's ${dataVarString} Rates by ${metadata.region_sizes[mapRegionSelector.value]}`)
+    } else {
+        d3.select("#map-legend-title")
+            .text(`Current Week's ${dataVarString} by ${metadata.region_sizes[mapRegionSelector.value]}`)
+    }
+
+    // update tooltip
+    drawStateHospitalizations()
+    if (selectedItems.feature) {
+        updateMapTooltip(selectedItems.feature.properties)
+    }
+    dataVersion++
+    redraw()
+
 })
 
 mapIncludeImputations.addEventListener("sl-change", () => {

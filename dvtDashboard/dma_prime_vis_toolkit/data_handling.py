@@ -20,11 +20,11 @@ def health_care_facility():
     # health care facilities - hospitals, center for drug and alcohol programs, mobile health clinics, community partners
     return decrypt(f"{current_app.config['DATADIR']}/supplementary/Health Care Facilities/hospital-cdap_mhc_partners.csv")
 
-@bp.route('/deckgl-respiratory/<region_size>', methods=['GET', 'POST'])
+@bp.route('/respiratory/<region_size>/<disease>', methods=['GET', 'POST'])
 @login_required
-def getRespiratoryHospitalizations(region_size='zcta'):
+def getRespiratoryHospitalizations(region_size='zcta', disease='covid-19'):
     # hospitalization data based on disease
-    return decrypt(f"{current_app.config['DATADIR']}/processed/respiratory/respiratory_{region_size}_hospitalization_data.json")
+    return decrypt(f"{current_app.config['DATADIR']}/processed/respiratory/{region_size}/{disease}.json")
 
 @bp.route('/opioid-hcv-hiv/<disease>', methods=['GET', 'POST'])
 @login_required
