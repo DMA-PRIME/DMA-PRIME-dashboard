@@ -1,7 +1,16 @@
-/* ==========================================================================
-   1) Sidebar & Chart Container
-   ========================================================================== */
-   #map-sidebar {
+/* map title */
+#map-title-container {
+    position:absolute; 
+    top: var(--sl-spacing-x-large);
+}
+
+#map-title {
+    text-align: center
+}
+
+/* map sidebar/options */
+
+#map-sidebar {
     /* scroll vertically if the state aggregation overflows vertically */
     overflow-y: scroll;
   }
@@ -9,23 +18,26 @@
   #map-content {
     /* needed for choropleth legend to be in the correct spot */
     position: relative;
-  }
-  
-  #map-disease-selector-container::part(content) {
-    /* tighten disease selector detail */
-    padding-top: 0;
-  }
-  
-  .disease-checkbox {
-    /* ensure 1 disease per line */
+}
+
+#map-disease-selector-container::part(content) {
+    /* makes disease selector detail content look nicer - not so far from the summary */
+    padding-top: 0px;
+}
+
+.disease-checkbox {
+    /* ensures 1 disease per "line" */
     width: 100%;
-  }
-  
-  
-  /* ==========================================================================
-     2) Aggregated State-Wide Chart (Large)
-     ========================================================================== */
-  #aggregated-disease-history-large {
+}
+
+.map-toggle::part(control--checked) {
+    /* Hospital icons toggle color is grey */
+    border-color: var(--sl-color-neutral-400);
+    background-color: var(--sl-color-neutral-400);
+}
+
+/* agg disease large */
+#aggregated-disease-history-large {
     --width: 65vw;
   }
   

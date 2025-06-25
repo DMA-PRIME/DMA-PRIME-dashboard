@@ -1,7 +1,7 @@
 
 export { zctaData, 
     startDate, currentWeek, endDate, historicalDates, predictionDates, 
-    dataSourceColorMap, dataSourceLineStyle, unknownColor,
+    dataVariableColorMap, gridLineStyle, unknownColor,
     gridItemDataSources, 
     parseDate, getDataAsArray, getBoundsOfCoords, getCenter,
     drawTooltip }
@@ -16,8 +16,7 @@ var historicalDates = d3.timeDay.range(startDate, new Date(currentWeek).setDate(
 var endDate = parseDate(metadata.end_date)
 var predictionDates = d3.timeDay.range(currentWeek, new Date(endDate).setDate(endDate.getDate()+1), 7)
 
-
-const zctaData = await d3.json(`/data/deckgl-respiratory/zcta?${parseInt(Math.random()*9999999999)}`)
+const zctaData = await d3.json(`/data/respiratory/zcta/covid-19?${parseInt(Math.random()*9999999999)}`)
 await Promise.allSettled([ // wait for following to be defined/load in
     customElements.whenDefined('sl-select'),
     customElements.whenDefined('sl-option'),
@@ -28,38 +27,28 @@ var formatInt = d3.format(".0f")
 
 let dataVersion = 0
 
-var gridItemDataSources = ["health-system-data", "state-training", "state-testing"]
+var gridItemDataSources = ["state_encounters_historical", "health-system_encounters_historical"]
 
 var unknownColor = d3.hsl("#CCCCCC")
 
-var dataSourceColorMap = {
-    "health-system-data": "#648FFF",
-    "state-data": "#785EF0",
-    "state-training": "#FFB000",
-    "state-testing": "#FFB000",
-    "state-estimation": "#FFB000",
-    "state-prediction": "#FE6100",
+var dataVariableColorMap = {
+    "encounters": "#FFB000",
+    "encounters-projected": "#FE6100",
+    "positive-tests": "#648FFF",
+    "positive-tests-projected": "#785EF0",
+    "rt": "#AA4499",
+    "rt-projected": "#882255",
 }
 
-var dataSourceDisplayName = {
-    "health-system-data": "Health System Data",
-    "state-data": "State Data",
-    "state-training": "Prediction (training)",
-    "state-testing": "Prediction (test)",
-    "state-estimation": "Estimated",
-    "state-prediction": "Projected",
+var dataVariableStringMap = {
+    "encounters": "Encounters",
+    "positive-tests": "Positive Tests",
+    "rt": "Transmission",
 }
 
-var dataSourceLineStyle = {
-    "health-system-data": null,
-    "state-data": null,
-    "state-training": "5,5",
-    "state-testing": "5,5",
-    
-    "health-system-data-tooltip": null,
-    "state-data-tooltip": null,
-    "state-training-tooltip": "5,5",
-    "state-testing-tooltip": null,
+var gridLineStyle = {
+    "health-system_encounters_historical": null,
+    "state_encounters_historical": "5,5",
 }
 
 var ttpHistoryWidthPercentage = 3/4
@@ -94,17 +83,18 @@ window.addEventListener("keydown", (event) => {
 document.adoptedStyleSheets = [styleSheet]
 
 // data fetching
-function getDataAsArray(data, disease, dataSource, rate, imputations=true) {
+function getDataAsArray(data, dataSource, dataVariable, histOrProj, rate, imputations=true) {
     var arr = data.features.map((d) => {
-        var data = d.properties.data[disease]
-        if (data[dataSource].data.length > 0 && (imputations || !data.imputation)) {
+        var thisData = d.properties.data[dataSource][dataVariable][histOrProj]
+        
+        if (thisData.length > 0 && (imputations || !d.properties.data.imputation)) {
             if (rate) {
-                return data[dataSource].data.at(-1) / d.population * 1000
+                return (parseInt(thisData.at(-1)) | 1) * 1000 / d.properties.population
             } else {
-                return data[dataSource].data.at(-1)
+                return parseInt(thisData.at(-1)) | 1
             }
         } else {
-            return 0
+            return rate ? 1000 / d.properties.population : 1
         }
     })
 
@@ -152,18 +142,27 @@ function fixCoord(coord) {
     return parseFloat(coord)
 }
 
-function drawTooltip(d, ttpSVG, header, footer, rate=false, grid=false, extraDataSources=[]) {
+function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVariable, grid=false, extraSourcesAndVariables={}) {
+    // handy
+    var mainDataVar = dataVariable
+    
+    // get dimensions
     var ttpHeight = ttpSVG.node().clientHeight
     var ttpWidth = ttpSVG.node().clientWidth
     
+    // don't want to mess up og data
     var data = JSON.parse(JSON.stringify(d))
-    ttpSVG.datum({"extraDataSources": extraDataSources})
+    var mainData = data.data[dataSource][dataVariable]
 
-    // creating titles/subtitles
+    // to use later
+    ttpSVG.datum({"extraSourcesAndVariables": extraSourcesAndVariables})
+
+    // create titles/subtitles
+    var dataVarString = dataVariableStringMap[dataVariable]
     var regionInfo = header.select(".tooltip-region-info")
     regionInfo.node().innerHTML = ""
     if (grid) {
-        regionInfo.append("p").html(`Zip Code: ${data.zcta}`)
+        regionInfo.append("p").html(`Zip Code: ${data.id}`)
     } else {
         if (mapRegionSelector.value != "state") {
             regionInfo.append("p").html(`${metadata.region_sizes[mapRegionSelector.value]}: ${data.id}`)
@@ -178,68 +177,27 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, grid=false, extraDat
     var dataInfo = header.select(".tooltip-data-info")
     dataInfo.node().innerHTML = ""
     if (rate) {
-        dataInfo.append("p").html(`Rate of Hospitalizations (per 1000 people)`)
+        dataInfo.append("p").html(`Rate of ${dataVarString} (per 1000 people)`)
     } else {
-        dataInfo.append("p").html(`Count of Hospitalizations`)
+        dataInfo.append("p").html(`Count of ${dataVarString}`)
     }
-    if (data['state-testing'].data.length > 0) {
-        let tempDate = parseDate(data['state-testing']['start-date'])
-        let tempEndDate = d3.timeDay.offset(tempDate, (data['state-testing'].data.length-1)*7)
+    if (mainData.historical.length) {
+        let tempDate = parseDate(metadata['start_date'])
+        let tempEndDate = parseDate(metadata['current_week'])
         var formatDate = d3.timeFormat("%b %d, %Y")
-        var tooltipString = `Estimated Hospitalizations from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
+        var tooltipString = `Estimated ${dataVarString} from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
         dataInfo.append("p").html(tooltipString)
-        if (data["state-prediction"].data.length) {
-            tempDate = parseDate(data['state-prediction']['start-date'])
-            tempEndDate = d3.timeDay.offset(tempDate, (data['state-prediction'].data.length-1)*7)
-            tooltipString = `Projected Hospitalizations from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
+        if (mainData.projected.length) {
+            tempDate = parseDate(metadata['current_week'])
+            tempEndDate = parseDate(metadata['end_date'])
+            tooltipString = `Projected ${dataVarString} from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
             dataInfo.append("p").html(tooltipString)  
         }
     }
 
-    // adding data source inclusion buttions
-    var ttpOptions = footer.select(".tooltip-options").html("")
-    Array("health-system-data", "state-data").forEach(function(dataSource, i) {
-        var buttonText = dataSourceDisplayName[dataSource]
-        if (extraDataSources.includes(dataSource)) {
-            buttonText = "Remove " + buttonText
-        } else {
-            buttonText = "Add " + buttonText
-        }
-
-        var button = ttpOptions.append("sl-button")
-            .html(buttonText)
-            .attr("size", "small")
-
-        button.node().updateComplete.then(() => {
-            d3.select(button.node().shadowRoot).select("[part=base]")
-                .style("background-color", "white")
-                .style("border-color", dataSourceColorMap[dataSource])
-                .style("color", dataSourceColorMap[dataSource])
-        })
-
-        function ttpOptionsHandler(extraDataSources, dataSource) {
-            if (extraDataSources.includes(dataSource)) {
-                extraDataSources.splice(extraDataSources.indexOf(dataSource), 1)
-            } else {
-                extraDataSources.push(dataSource)
-            }
-            drawTooltip(d, ttpSVG, header, footer, rate, grid, extraDataSources)
-        }
-        button.on("click", () => {ttpOptionsHandler(extraDataSources, dataSource)})
-
-        var icon = button.append("sl-icon")
-            .attr("slot", "prefix")
-            .attr("name", "graph-up")
-            .style("color", dataSourceColorMap[dataSource])
-
-    })
-
-    // draw graph
-    var ttpLegendTop = ttpHeight - 1*em
-
+    /* Draw Graph */
     // reset tooltip contents for new data
     ttpSVG.node().innerHTML = ""
-
     var graphSVG = ttpSVG.append("svg")
         .attr("class", "tooltip-graph-svg")
         .attr("height", ttpHeight)
@@ -253,26 +211,21 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, grid=false, extraDat
         .attr("class", "x-axis-historical")
     var xAxisPrediction = ttpSVG.append("g")
         .attr("class", "x-axis-prediction")
-
     var ttpLegend = ttpSVG.append("g").attr("class", "tooltip-legend")
 
-    var countMax = rate ? 1/d.population : 1
+    // apply rate if necessaryand figure out axes scaling
+    var countMax = rate ? 1/d.population : 1 // so y scale is never 0-0
 
-    Array("state-training", "state-testing", "state-prediction", ...extraDataSources).forEach(function(dataSource) {
-        if (rate) {
-            data[dataSource].data = d[dataSource].data.map(function(item) { return item/d.population * 1000} )
+    for (let [dataSrc, dataVars] of [...Object.entries(extraSourcesAndVariables), [dataSource, [dataVariable]]]) {
+        for (let dataVar of dataVars) {
+            if (rate) {
+                data.data[dataSrc][dataVar].historical = data.data[dataSrc][dataVar].historical.map(function(item) { return item === null ? null : item/d.population * 1000})
+                data.data[dataSrc][dataVar].projected = data.data[dataSrc][dataVar].projected.map(function(item) { return item === null ? null : item/d.population * 1000})
+            }
+            if (data.data[dataSrc][dataVar].historical.length && data.data[dataSrc][dataVar].projected.length) {
+                countMax = d3.max([...data.data[dataSrc][dataVar].historical, ...data.data[dataSrc][dataVar].projected, countMax])
+            }
         }
-        if (data[dataSource].data.length) {
-            countMax = Math.max(d3.max(data[dataSource].data), countMax)
-        }
-    })
-    
-    var predictionData = JSON.parse(JSON.stringify(data["state-prediction"]))
-    if (rate) {
-        predictionData.data = d["state-prediction"].data.map(function(item) { return item/d.population * 1000} )
-    }
-    if (predictionData.data.length) {
-        countMax = Math.max(d3.max(predictionData.data), countMax)
     }
 
     // figure out how much space is needed for the y-axis text
@@ -297,52 +250,54 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, grid=false, extraDat
         .domain(d3.extent(predictionDates))
         .range([ttpMargins.left + ttpGraphWidth*ttpHistoryWidthPercentage, ttpWidth - ttpMargins.right]) 
 
+    // draw historical data for selected data var
     var historicalGroup = graphSVG.append("g")
     var historicalBarWidth = Math.ceil(ttpGraphWidth*ttpHistoryWidthPercentage / historicalDates.length)
+    historicalGroup.append("g")
+        .selectAll("rect")
+        .data(mainData.historical)
+        .enter()
+        .append("rect")
+        .attr("x", (_, i) => {return xScaleHistorical(historicalDates[i])})
+        .attr("y", d => {return yScale(d)})
+        .attr("height", d => yScale(0) - yScale(d))
+        .attr("width", historicalBarWidth)
+        .attr("fill", dataVariableColorMap[mainDataVar])
 
-    Array("state-training", "state-testing").forEach(function(dataSource, i) {
-        var thisData = data[dataSource]
-        var thisStartDate = parseDate(thisData["start-date"])
-        var startIndex = historicalDates.findIndex((d) => d.getTime() == thisStartDate.getTime())
-
-        historicalGroup.append("g")
-            .selectAll("rect")
-            .data(thisData.data)
-            .enter()
-            .append("rect")
-            .attr("x", (_, i) => {return xScaleHistorical(historicalDates[i+startIndex])})
-            .attr("y", d => {return yScale(d)})
-            .attr("height", d => yScale(0) - yScale(d))
-            .attr("width", historicalBarWidth)
-            .attr("fill", dataSourceColorMap[dataSource])
-    })
-
+    // draw projected data for selected data var
     var stateCurrentLabelPositionAbove = null
-    if (predictionData.data.length) {     
+    
+    if (mainData.projected.length > 1) {
+        // highlights predictive data  
         graphSVG.append("rect")
             .attr("class", "tooltip-prediction-highlighter")
-
-        // draw predictive line chart
+            .attr("x", xScalePrediction.range()[0])
+            .attr("y", ttpMargins.top)
+            .attr("width", xScalePrediction.range()[1] - xScalePrediction.range()[0])
+            .attr("height", ttpHeight - ttpMargins.bottom - ttpMargins.top)
+        
+            // draw predictive line chart
         var predictiveGroup = graphSVG.append("g")
         predictiveGroup.append("path")
-            .attr("d", ttpAreaFunction(predictionData, predictionDates, xScalePrediction, yScale))
-            .attr("fill", dataSourceColorMap["state-prediction"])
+            .attr("d", d3.area()
+                        .x((_, i) => xScalePrediction(predictionDates[i]))
+                        .y0(yScale(0))
+                        .y1((d) => yScale(d))
+                        .defined(d => d !== null)
+                        .curve(d3.curveMonotoneX)(mainData.projected)
+            )
+            // ttpAreaFunction(predictionData, predictionDates, xScalePrediction, yScale))
+            .attr("fill", dataVariableColorMap[`${mainDataVar}-projected`])
 
         // marks each datapoint on prediction line
-        predictiveGroup.selectAll("circle").data(predictionData.data)
+        predictiveGroup.selectAll("circle").data(mainData.projected)
             .enter()
             .append("circle")
             .attr("r", 3)
             .attr("cx", (_, i) =>  xScalePrediction(predictionDates[i]))
             .attr("cy", (d) => yScale(d))
-            .attr("stroke", dataSourceColorMap["state-prediction"])
-
-        // highlights predictive data
-        graphSVG.select(".tooltip-prediction-highlighter")
-            .attr("x", xScalePrediction.range()[0])
-            .attr("y", ttpMargins.top)
-            .attr("width", xScalePrediction.range()[1] - xScalePrediction.range()[0])
-            .attr("height", ttpHeight - ttpMargins.bottom - ttpMargins.top)
+            .style("opacity", (d) => {return d === null ? 0 : 1})
+            .attr("stroke", dataVariableColorMap[`${mainDataVar}-projected`])
 
         // place line separating historical and prediction data
         ttpSVG.select(".tooltip-prediction-separator")
@@ -351,10 +306,14 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, grid=false, extraDat
             .attr("x2", xScalePrediction.range()[0])
             .attr("y2", ttpHeight - ttpMargins.bottom)
 
-        stateCurrentLabelPositionAbove = predictionData.data[0] > predictionData.data[1]
+        stateCurrentLabelPositionAbove = mainData.projected[0] > mainData.projected[1]
     }
 
-    Array("state-estimation", "state-prediction").forEach(function(dataSource, i) {
+    // TODO draw extra data sources/vars 
+
+    // draw legend
+    var ttpLegendTop = ttpHeight - 1*em
+    Array(mainDataVar, `${mainDataVar}-projected`).forEach(function(dataVar, i) {
         var labelGroup = ttpLegend.append("g")
             .attr("class", "tooltip-label-group")
         labelGroup.append("rect")
@@ -362,83 +321,21 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, grid=false, extraDat
             .attr("y", 0)
             .attr("height", .5*em)
             .attr("width", .5*em)
-            .attr("fill", dataSourceColorMap[dataSource])
+            .attr("fill", dataVariableColorMap[dataVar])
         var labelText = labelGroup.append("text")
             .attr("class", "tooltip-label")
             .attr("x", 1*em)
             .attr("y", .25*em)
-            .attr("fill", dataSourceColorMap[dataSource])
+            .attr("fill", dataVariableColorMap[dataVar])
             .attr("font-size", "var(--sl-font-size-small)")
             .style("dominant-baseline", "middle")
-            .text(dataSourceDisplayName[dataSource])
+            .text(i == 1 ? `${dataVarString} Projected` : dataVarString)
 
         var bbox = labelGroup.node().getBBox()
         labelGroup.attr("transform", `translate(${1*em + ((ttpWidth-2*em)*(i+1)/3) - bbox.width/2}, ${ttpLegendTop})`)
 
     })
-        
-
-    extraDataSources.forEach(function(dataSource) {
-        var thisData = data[dataSource]
-
-        // draw historical line chart
-        historicalGroup.append("path")
-            .attr("d", ttpLineFunction(thisData, historicalDates, xScaleHistorical, yScale))
-            .attr("stroke", dataSourceColorMap[dataSource])
-            .attr("fill", "none")
-            .attr("stroke-width", 3)
-            .style("stroke-dasharray", dataSourceLineStyle[`${dataSource}-tooltip`])
-        
-        var historicalLabels = graphSVG.append("g")
-
-        var thisStartDate = parseDate(thisData["start-date"])
-        var thisEndDate = new Date(thisStartDate);
-        thisEndDate.setDate(thisEndDate.getDate() + thisData.data.length*7);
-        var datesReconstructed = d3.timeDay.range(startDate, new Date(thisEndDate).setDate(thisEndDate.getDate()+1), 7)
-
-        var refDate = new Date(currentWeek)
-        refDate.setDate(refDate.getDate() - 7)
-
-        var index = datesReconstructed.findIndex((d) => d.getTime() == refDate.getTime())
-
-        if (index > -1) {
-            var circleData = thisData.data.slice(index).map(function(d, i) {
-                return {"count": d, "date": datesReconstructed.slice(index)[i]};
-            })
-
-            historicalLabels.selectAll("circle")
-                .data(circleData)
-                .enter()
-                .append("circle")
-                .attr("r", 3)
-                .attr("cx", (d) => xScaleHistorical(d.date))
-                .attr("cy", (d) => yScale(d.count))
-                .attr("stroke", dataSourceColorMap[dataSource])
-
-            if (circleData.length > 1) {
-                var yPosition = yScale(circleData[1].count)
-                if (dataSource == "state-testing") {
-                    if (stateCurrentLabelPositionAbove !== null) {
-                        yPosition += stateCurrentLabelPositionAbove ? -6 : 12
-                    }
-                } else {
-                    yPosition += 6
-                }
-
-                yPosition = Math.min(Math.max(yPosition, yScale.range()[1] + 12), yScale.range()[0] - 3)
-
-                historicalLabels.append("text")
-                    .attr("x", xScaleHistorical(circleData[1].date) + 6)
-                    .attr("y", yPosition)
-                    .attr("fill", dataSourceColorMap[dataSource])
-                    .attr("font-size", "var(--sl-font-size-x-small)")
-                    .text(parseFloat(circleData[1].count.toFixed(1)))
-            }
-            
-        }
-        
-    })
-
+    
     // display x-axis on the bottom
     xAxisHistorical // historical
         .attr("transform", `translate(0,${ttpHeight - ttpMargins.bottom})`)
@@ -470,7 +367,7 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, grid=false, extraDat
         .attr("text-anchor", "middle")
         .attr("fill", "var(--sl-color-neutral-1000)")
         .attr("font-size", "var(--sl-font-size-small)")
-        .text("Hospitalizations")
+        .text(dataVarString)
 
     yAxis.append("g")
         .attr("transform", `translate(${ttpMargins.left},0)`)

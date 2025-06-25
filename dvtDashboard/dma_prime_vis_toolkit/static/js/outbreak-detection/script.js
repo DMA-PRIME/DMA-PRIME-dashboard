@@ -4,6 +4,42 @@ function parseDate(datestring) {
     return dayjs(datestring, "YYYY-MM-DD").toDate()
 }
 
+function getBoundsOfCoords(coordinates) {
+    var bounds = new maplibregl.LngLatBounds()
+    function addCoordToBounds(bounds, arr) {
+        if (Array.isArray(arr[0])) {
+            arr.forEach(a => {
+                addCoordToBounds(bounds, a)
+            })
+        } else {
+            bounds.extend(arr)
+            return
+        }
+    }
+    addCoordToBounds(bounds, coordinates)
+    return bounds
+}
+
+function getCenter(feature) {
+    var coordinates = [feature.properties.INTPTLON, feature.properties.INTPTLAT]
+
+    if (!(coordinates[0] && coordinates[1])) {
+        coordinates = getBoundsOfCoords(feature.geometry.coordinates).getCenter()
+        coordinates = [coordinates.lng, coordinates.lat]
+    } else {
+        coordinates[0] = fixCoord(coordinates[0])
+        coordinates[1] = fixCoord(coordinates[1])    
+    }
+    return coordinates
+}
+
+function fixCoord(coord) {
+    while (coord[1] == "0") {
+        coord = coord[0] + coord.slice(2)
+    }
+    return parseFloat(coord)
+}
+
 function createBarGraph(svg, data, metadata, height, width, altMargins) {
     svg
     .attr("class", "tooltip-graph-svg")

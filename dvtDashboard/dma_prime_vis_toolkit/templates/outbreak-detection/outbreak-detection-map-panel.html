@@ -51,7 +51,7 @@
   </sl-select>
 
   <!-- disease selector -->
-    <sl-details id="map-disease-selector-container" open>
+    <sl-details id="map-disease-selector-container" >
       <p slot="summary">Select a disease or group of diseases</p>
       <sl-checkbox id="map-all-disease-selector" size="small">All Diseases <span id="map-all-count"></span></sl-checkbox>
       {% for disease in diseases %}
@@ -60,6 +60,9 @@
     </sl-details>  
   
   <sl-divider class="options-divider"></sl-divider>
+  <sl-checkbox id="map-options-title-toggle" class="map-toggle" checked size="small">Map Title</sl-checkbox>
+  <sl-checkbox id="map-options-geographic-labels-toggle" class="map-toggle" size="small">Geography Labels</sl-checkbox>
+  
   <!-- map icon inclusion checkboxes (hospital, mobile health clinic, community partners) -->
   <!-- <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle" style="display: initial;">Hospitals</sl-checkbox>
   <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle" style="display: initial;">Mobile Health Clinics</sl-checkbox>
@@ -91,7 +94,9 @@
 <div id="choropleth-legend" style="position:absolute; bottom: 0; left:0;">
   <svg id="choropleth-legend-svg"></svg>
 </div>
-
+<div id="map-title-container" class="fill-width">
+  <p id="map-title">Count of Weekly Positive Tests in South Carolina by Zip Code</p>
+</div>
 <sl-dialog id="map-tooltip-large" class="dialog-width map-tooltip-large-dialog">
   <div id="map-tooltip-large-div" class="tooltip-div map-tooltip-large-content"></div>
 </sl-dialog>
@@ -111,6 +116,8 @@
   mapYearlyTooltip = document.getElementById("map-yearly-tooltip")
 
   mapAllDiseaseSelector = document.getElementById("map-all-disease-selector")
+  mapOptionsTitleToggle = document.getElementById("map-options-title-toggle")
+  mapOptionsGeographicLabelsToggle = document.getElementById("map-options-geographic-labels-toggle")
 
   aggregatedDiseaseHistoryResizer = document.getElementById("aggregated-disease-history-resizer")
   aggregatedDiseaseHistoryContainer = document.getElementById("aggregated-disease-history-container")
@@ -124,6 +131,7 @@
   aggregatedDiseaseHistoryLargeSvg = document.getElementById("aggregated-disease-history-large-svg")
   aggregatedDiseaseHistoryResizerLarge = document.getElementById("aggregated-disease-history-resizer-large")
 
+  mapTitle = document.getElementById("map-title")
   mapDiv = document.getElementById("map-div")
   choroplethLegendSVG = document.getElementById("choropleth-legend-svg")
 

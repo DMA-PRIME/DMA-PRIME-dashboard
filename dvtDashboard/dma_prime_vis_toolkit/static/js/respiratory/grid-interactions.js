@@ -22,10 +22,21 @@ gridRateSwitch.addEventListener("sl-change", (event) => {
 })
 
 gridDataSourceSortSelector.addEventListener("sl-change", (event) => {
+    d3.select(gridContainer).selectAll("sl-tooltip[open]")
+        .each(function(d, i) {
+            setupGridTooltip(d3.select(this), true)
+        })
     updateGridData()    
 })
 
-gridDiseaseSelector.addEventListener("sl-change", (event) => {
+gridDiseaseSelector.addEventListener("sl-change", async (event) => {
+    await d3.json(`/data/respiratory/zcta/${gridDiseaseSelector.value}?${parseInt(Math.random()*9999999999)}`).then(data => {
+        zctaData.features = data.features
+    })
+    d3.select(gridContainer).selectAll("sl-tooltip[open]")
+        .each(function(d, i) {
+            setupGridTooltip(d3.select(this), true)
+        })
     updateGridData()
 })
 
@@ -45,7 +56,7 @@ function filterZCTAByText(event) {
     // if we're not including imputations, then filter them out so they don't show
     if (!gridIncludeImputations.checked) {
         matchingZCTAData = matchingZCTAData.filter(function(d) {
-            return !d.properties.data[gridDiseaseSelector.value].imputation
+            return !d.properties.data.imputation
         })
     }
 
@@ -68,7 +79,7 @@ gridIncludeImputations.addEventListener("sl-change", () => {
         // hide imputed zcta
         d3.selectAll("div.grid-container")
             .filter(function(d) {
-                return d.imputation
+                return d.properties.data.imputation
             })
             .style("display", "none")
     }

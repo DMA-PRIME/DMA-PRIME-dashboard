@@ -1,4 +1,4 @@
-import { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, changeDataColumn, update } from "/static/js/outbreak-detection/map.js"
+import { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, changeDataColumn, update, updateMapTitle } from "/static/js/outbreak-detection/map.js"
 
 mapResetButton.addEventListener("click", () => {
     // reset map zoom and center
@@ -30,7 +30,16 @@ mapRegionSelector.addEventListener("sl-change", changeDataColumn)
 
 mapColumnSwitch.addEventListener("sl-change", changeDataColumn)
 
+mapOptionsTitleToggle.addEventListener("sl-change", () => {
+    updateMapTitle()
+})
 
+// adding/removing labels
+mapOptionsGeographicLabelsToggle.addEventListener("sl-change", () => {
+    // toggle geographic unit labels
+    selectedItems.dataVersion++
+    redraw()
+})
 
 mapAllDiseaseSelector.addEventListener("sl-change", function(e) {
     if (e.target.checked) {
