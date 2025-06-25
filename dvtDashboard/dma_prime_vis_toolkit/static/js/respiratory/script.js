@@ -1,7 +1,7 @@
 
 export { zctaData, 
     startDate, currentWeek, endDate, historicalDates, predictionDates, 
-    dataVariableColorMap, gridLineStyle, unknownColor,
+    dataSourceColorMap, dataVariableColorMap, gridLineStyle, unknownColor,
     gridItemDataSources, 
     parseDate, getDataAsArray, getBoundsOfCoords, getCenter,
     drawTooltip }
@@ -31,6 +31,15 @@ var gridItemDataSources = ["state_encounters_historical", "health-system_encount
 
 var unknownColor = d3.hsl("#CCCCCC")
 
+var dataSourceColorMap = {
+    "state": "#FFB000",
+    "state-projected": "#FE6100",
+    "health-system": "#648FFF",
+    "health-system-projected": "#345FAF",
+    "extra": "#785EF0",
+    "extra-projected": "#382EA0",
+}
+
 var dataVariableColorMap = {
     "encounters": "#FFB000",
     "encounters-projected": "#FE6100",
@@ -49,6 +58,10 @@ var dataVariableStringMap = {
 var gridLineStyle = {
     "health-system_encounters_historical": null,
     "state_encounters_historical": "5,5",
+}
+
+var dataSourceDisplayName = {
+    'extra': {'state-encounters-reported': "State Reported Encounters"}
 }
 
 var ttpHistoryWidthPercentage = 3/4
@@ -144,6 +157,7 @@ function fixCoord(coord) {
 
 function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVariable, grid=false, extraSourcesAndVariables={}) {
     // handy
+    var mainDataSrc = dataSource
     var mainDataVar = dataVariable
     
     // get dimensions
@@ -185,7 +199,7 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
         let tempDate = parseDate(metadata['start_date'])
         let tempEndDate = parseDate(metadata['current_week'])
         var formatDate = d3.timeFormat("%b %d, %Y")
-        var tooltipString = `Estimated ${dataVarString} from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
+        var tooltipString = `${dataSource == "state" ? "Estimated" : ""} ${dataVarString} from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
         dataInfo.append("p").html(tooltipString)
         if (mainData.projected.length) {
             tempDate = parseDate(metadata['current_week'])
@@ -193,6 +207,63 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
             tooltipString = `Projected ${dataVarString} from ${formatDate(tempDate)} to ${formatDate(tempEndDate)}`
             dataInfo.append("p").html(tooltipString)  
         }
+    }
+
+    var ttpOptions = footer.select(".tooltip-options").html("")
+    if (dataSource == "state") {
+        Object.entries({
+            "extra": ["state-encounters-reported"],
+            "health-system": ["encounters"],
+        }).forEach(function([ds, dvs], i) {
+            dvs.forEach(function(dv) {
+                var buttonText
+                try {
+                    buttonText = `${d3.select(mapDataSourceSelector).select(`*[value=${ds}]`).html()} ${d3.select(mapDataVariableSelector).select(`*[value=${dv}]`).html()}`
+                } catch{
+                    buttonText = dataSourceDisplayName[ds][dv]
+                }
+
+                if (extraSourcesAndVariables[ds] !== undefined && extraSourcesAndVariables[ds].includes(dv)) {
+                    buttonText = "Remove " + buttonText
+                } else {
+                    buttonText = "Add " + buttonText
+                }
+
+                var button = ttpOptions.append("sl-button")
+                    .html(buttonText)
+                    .attr("size", "small")
+
+                button.node().updateComplete.then(() => {
+                    d3.select(button.node().shadowRoot).select("[part=base]")
+                        .style("background-color", "white")
+                        .style("border-color", dataSourceColorMap[ds])
+                        .style("color", dataSourceColorMap[ds])
+                })
+
+                function ttpOptionsHandler(extraSourcesAndVariables, dataSource, dataVariable) {
+                    // toggle data source-var combo
+                    if (extraSourcesAndVariables[dataSource] !== undefined) {
+                        if (extraSourcesAndVariables[dataSource].includes(dataVariable)) {
+                            extraSourcesAndVariables[dataSource].splice(extraSourcesAndVariables.indexOf(dataVariable), 1)
+                        } else {
+                            extraSourcesAndVariables[dataSource].push(dataVariable)
+                        }
+                    } else {
+                        extraSourcesAndVariables[dataSource] = [dataVariable]
+                    }
+                    drawTooltip(d, ttpSVG, header, footer, rate, mainDataSrc, mainDataVar, grid, extraSourcesAndVariables)
+                }
+                button.on("click", () => {ttpOptionsHandler(extraSourcesAndVariables, ds, dv)})
+
+                var icon = button.append("sl-icon")
+                    .attr("slot", "prefix")
+                    .attr("name", "graph-up")
+                    .style("color", dataSourceColorMap[ds])
+
+            })
+            
+        })
+
     }
 
     /* Draw Graph */
@@ -262,7 +333,7 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
         .attr("y", d => {return yScale(d)})
         .attr("height", d => yScale(0) - yScale(d))
         .attr("width", historicalBarWidth)
-        .attr("fill", dataVariableColorMap[mainDataVar])
+        .attr("fill", dataSourceColorMap[mainDataSrc])
 
     // draw projected data for selected data var
     var stateCurrentLabelPositionAbove = null
@@ -287,7 +358,7 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
                         .curve(d3.curveMonotoneX)(mainData.projected)
             )
             // ttpAreaFunction(predictionData, predictionDates, xScalePrediction, yScale))
-            .attr("fill", dataVariableColorMap[`${mainDataVar}-projected`])
+            .attr("fill", dataSourceColorMap[`${mainDataSrc}-projected`])
 
         // marks each datapoint on prediction line
         predictiveGroup.selectAll("circle").data(mainData.projected)
@@ -297,7 +368,7 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
             .attr("cx", (_, i) =>  xScalePrediction(predictionDates[i]))
             .attr("cy", (d) => yScale(d))
             .style("opacity", (d) => {return d === null ? 0 : 1})
-            .attr("stroke", dataVariableColorMap[`${mainDataVar}-projected`])
+            .attr("stroke", dataSourceColorMap[`${mainDataSrc}-projected`])
 
         // place line separating historical and prediction data
         ttpSVG.select(".tooltip-prediction-separator")
@@ -309,11 +380,41 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
         stateCurrentLabelPositionAbove = mainData.projected[0] > mainData.projected[1]
     }
 
-    // TODO draw extra data sources/vars 
+    // Draw extra data sources/vars
+    Object.entries(extraSourcesAndVariables).forEach(function([ds, dvs]) {
+        dvs.forEach(function(dv) {
+            var thisData = data.data[ds][dv]
+
+            // draw historical line chart
+            historicalGroup.append("path")
+                .attr("d", d3.line()
+                    .x((_, i) => xScaleHistorical(historicalDates[i]))
+                    .y((d, i) => yScale(d))
+                    .curve(d3.curveMonotoneX)(thisData.historical)
+                )
+                .attr("stroke", dataSourceColorMap[ds])
+                .attr("fill", "none")
+                .attr("stroke-width", 3)
+
+            // draw historical line chart
+            predictiveGroup.append("path")
+                .attr("d", d3.line()
+                    .x((_, i) => xScalePrediction(predictionDates[i]))
+                    .y((d, i) => yScale(d))
+                    .curve(d3.curveMonotoneX)(thisData.projected)
+                )
+                .attr("stroke", dataSourceColorMap[`${ds}-projected`])
+                .attr("fill", "none")
+                .attr("stroke-width", 3)
+            
+        })
+        
+    })
+
 
     // draw legend
     var ttpLegendTop = ttpHeight - 1*em
-    Array(mainDataVar, `${mainDataVar}-projected`).forEach(function(dataVar, i) {
+    Array(mainDataSrc, `${mainDataSrc}-projected`).forEach(function(dataSrc, i) {
         var labelGroup = ttpLegend.append("g")
             .attr("class", "tooltip-label-group")
         labelGroup.append("rect")
@@ -321,12 +422,12 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
             .attr("y", 0)
             .attr("height", .5*em)
             .attr("width", .5*em)
-            .attr("fill", dataVariableColorMap[dataVar])
+            .attr("fill", dataSourceColorMap[dataSrc])
         var labelText = labelGroup.append("text")
             .attr("class", "tooltip-label")
             .attr("x", 1*em)
             .attr("y", .25*em)
-            .attr("fill", dataVariableColorMap[dataVar])
+            .attr("fill", dataSourceColorMap[dataSrc])
             .attr("font-size", "var(--sl-font-size-small)")
             .style("dominant-baseline", "middle")
             .text(i == 1 ? `${dataVarString} Projected` : dataVarString)

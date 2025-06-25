@@ -188,15 +188,15 @@ for region_size, identifier_column in region_geojson_identifiers.items():
                             var_data = data[f'{data_source}-{var}']
                             try:
                                 historical_data = var_data.reindex(historical_dates)
-                                disease_data[data_source][var]['historical'] = ['null' if math.isnan(x) else x for x in historical_data.to_list()]
-                            except: # don't see why this would trigger
+                                disease_data[data_source][var]['historical'] = [None if math.isnan(x) else x for x in historical_data.to_list()]
+                            except:
                                 pass
                                 # print(identifier, disease, var, 'historical')
 
                             try:
                                 projected_data = var_data.reindex(pred_dates)
-                                disease_data[data_source][var]['projected'] = ['null' if math.isnan(x) else x for x in projected_data.to_list()]
-                            except: # don't see why this would trigger
+                                disease_data[data_source][var]['projected'] = [None if math.isnan(x) else x for x in projected_data.to_list()]
+                            except: 
                                 pass
                                 # print(identifier, disease, var, 'projected')
                         except: # this column doesn't exist
@@ -205,7 +205,16 @@ for region_size, identifier_column in region_geojson_identifiers.items():
                 # process extra and save
                 try:
                     var_data = data['state-encounters-reported']
-                    disease_data['extra']['state-encounters-reported'] = ['null' if math.isnan(x) else x for x in var_data.to_list()]
+                    try:
+                        historical_data = var_data.reindex(historical_dates)
+                        disease_data['extra']['state-encounters-reported']['historical'] = [None if math.isnan(x) else x for x in historical_data.to_list()]
+                    except:
+                        pass
+                    try:
+                        projected_data = var_data.reindex(pred_dates)
+                        disease_data['extra']['state-encounters-reported']['projected'] = [None if math.isnan(x) else x for x in projected_data.to_list()]
+                    except: 
+                        pass
                 except:
                     pass
                 # add disease data to this feature
@@ -274,4 +283,4 @@ if len(csvs) > 0:
 else:
     df = pd.DataFrame()
 
-df.to_json(f'{processed_data_dir}/respiratory/respiratory_state-cdc_encounter_data.json', orient='columns')
+df.to_json(f'{processed_data_dir}/respiratory/state/state-cdc.json', orient='columns')

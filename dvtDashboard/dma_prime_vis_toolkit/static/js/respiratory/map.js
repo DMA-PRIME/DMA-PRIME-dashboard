@@ -1,6 +1,6 @@
 const { GeoJsonLayer, IconLayer, TextLayer, MapboxOverlay } = deck;
 const { load, ImageLoader } = loaders
-import { startDate, currentWeek, endDate, dataVariableColorMap, unknownColor, parseDate, getCenter, drawTooltip } from "/static/js/respiratory/script.js";
+import { startDate, currentWeek, endDate, dataSourceColorMap, dataVariableColorMap, unknownColor, parseDate, getCenter, drawTooltip } from "/static/js/respiratory/script.js";
 export { map, popup, selectedItems, deckOverlay, redraw, drawStateHospitalizations, drawLargeStateHospitalizations, updateMapTitle, updateMapTooltip }
 
 loaders.registerLoaders(loaders.ImageLoader);
@@ -20,7 +20,7 @@ var selectedItems = {
 
 var choroplethColorMap = d3.scaleLinear()
     .domain([0, 1])
-    .range(["white", dataVariableColorMap["encounters"]])
+    .range(["white", dataSourceColorMap["state"]])
     .unknown(unknownColor).nice()
 
 const map = new maplibregl.Map({
@@ -205,7 +205,7 @@ function createChoropleth(data, mapType, dataSource, dataVariable, imputations=t
 
         choroplethColorMap = d3.scaleLinear()
             .domain([0, d3.max(arr)])
-            .range(["white", dataVariableColorMap[dataVariable]])
+            .range(["white", dataSourceColorMap[dataSource]])
             .unknown(unknownColor).nice()
 
     }
@@ -306,7 +306,7 @@ function drawLegend() {
         linearGrdient.append("stop")
             .attr("id", "linear-gradient-stop-1")
             .attr("offset", "100%")
-            .attr("stop-color", dataVariableColorMap[mapDataVariableSelector.value])
+            .attr("stop-color", dataSourceColorMap[mapDataSourceSelector.value])
 
         // add background
         colorLegend.append("rect")
