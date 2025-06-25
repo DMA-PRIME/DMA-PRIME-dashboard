@@ -333,7 +333,7 @@ function drawLegend() {
             .attr("class", `map-legend title`)
             .attr("x", legendWidth/2 + legendMargins.left)
             .attr("y", 3*em + legendMargins.top)
-            .text(`Current Week's Hospitalizations by ${metadata.region_sizes[mapRegionSelector.value]}`)
+            .text(`Current Week's ${dataVariableStringMap[mapDataVariableSelector.value]} by ${metadata.region_sizes[mapRegionSelector.value]}`)
 
     }
 }
@@ -554,3 +554,9 @@ function updateMapTooltip(featureProperties) {
         false, [])
         
 }
+
+const dataVariableStringMap = {
+    "encounters": "Encounters",
+    "positive-tests": "Positive Tests",
+    "rt": "Transmission",
+};
