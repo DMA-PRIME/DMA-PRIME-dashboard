@@ -84,11 +84,17 @@ map.on("click", e => {
             .style("display", "initial")
             .style("border-style", "none")
         var largeTtp = d3.select(mapTooltipLarge)
-        mapTooltipLarge.show().then(() => {
-            drawTooltip(dataObject.properties, 
+        mapTooltipLarge.show().then(async() => {
+            var allExtendedData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}/extended?${parseInt(Math.random()*9999999999)}`) 
+            var ttpData = {
+                "id": dataObject.properties.id,
+                "county": dataObject.properties.county,
+                "data": allExtendedData[dataObject.properties.id]
+            }
+            drawTooltip(ttpData,
                 largeTtp.select(".tooltip-outer-svg"), largeTtp.select(".tooltip-header"), largeTtp.select(".tooltip-footer"), 
-                mapTypeSwitch.value == "rate", mapDataSourceSelector.value, mapDataVariableSelector.value,
-                false, [])
+                mapDataSourceSelector.value, mapDataVariableSelector.value,
+                mapTypeSwitch.value == "rate", false, true, {})
         })
     })
 
@@ -100,10 +106,10 @@ map.on("click", e => {
         .attr("width", mapTooltipWidth)
         .attr("height", mapTooltipHeight)
 
-    drawTooltip(dataObject.properties, 
+    drawTooltip(dataObject.properties,
         ttpSVG, ttpDiv.select(".tooltip-header"), ttpDiv.select(".tooltip-footer"), 
-        mapTypeSwitch.value == "rate", mapDataSourceSelector.value, mapDataVariableSelector.value,
-        false, [])
+        mapDataSourceSelector.value, mapDataVariableSelector.value,
+        mapTypeSwitch.value == "rate", false, false, {})
     dataVersion++
     redraw()
 })

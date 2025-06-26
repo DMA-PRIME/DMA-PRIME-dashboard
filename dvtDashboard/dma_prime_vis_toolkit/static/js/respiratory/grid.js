@@ -376,7 +376,7 @@ function setupGridTooltip(ttpDiv, redraw=false) {
     
     var thisData = thisGridContainer.datum().properties
 
-    var extraDataSources = []
+    var extraDataSources = {}
     if (redraw) {
         ttpSVG.datum()["extraDataSources"]
     }
@@ -384,5 +384,8 @@ function setupGridTooltip(ttpDiv, redraw=false) {
     ttpSVG.attr("width", gridTooltipWidth)
     ttpSVG.attr("height", gridTooltipHeight)
 
-    drawTooltip(thisData, ttpSVG, slTTP.select(".tooltip-header"), slTTP.select(".tooltip-footer"), gridRateSwitch.value == "rate", gridDataSource, gridDataVariable, true, extraDataSources)
+    drawTooltip(thisData, 
+        ttpSVG, slTTP.select(".tooltip-header"), slTTP.select(".tooltip-footer"), 
+        gridDataSource, gridDataVariable, 
+        gridRateSwitch.value == "rate", true, false, extraDataSources)
 }

@@ -52,6 +52,7 @@ data_variables = ['encounters', 'positive-tests', 'rt']
 
 diseases = {}
 dataframes = {}
+min_date = pd.to_datetime(0)
 max_date = pd.to_datetime(0)
 curr_date = pd.to_datetime(0)
 
@@ -112,6 +113,7 @@ for region_size, identifier_column in region_geojson_identifiers.items():
         ########################################
 
         # update max and current dates
+        min_date = max(min_date, df['date'].min())
         max_date = max(max_date, df['date'].max())
         if 'health-system-encounters' in df.columns:
             # health-system encounters end where projections start, so the last health-system entry is the current week
@@ -135,6 +137,7 @@ day_of_week = pd.to_datetime(curr_date).day_name()
 start_date = curr_date - pd.DateOffset(weeks=78) # roughly 18 months
 historical_dates = pd.date_range(end=curr_date, start=start_date, freq=f'W-{day_of_week[:3].upper()}')
 historical_dates = historical_dates.to_list()
+all_historical_dates = pd.date_range(end=curr_date, start=min_date, freq=f'W-{day_of_week[:3].upper()}').to_list()
 end_date = max_date
 pred_dates = pd.date_range(start=curr_date, end=end_date, freq=f'W-{day_of_week[:3].upper()}', inclusive='both')
 pred_dates = pred_dates.to_list()
@@ -156,6 +159,7 @@ for region_size, identifier_column in region_geojson_identifiers.items():
             feature.properties['id'] = identifier
             
         for disease, df in dataframes[region_size].items():
+            extended_historical_data = {}
             # reshape data
             for feature in gj.features:
                 try:
@@ -166,7 +170,14 @@ for region_size, identifier_column in region_geojson_identifiers.items():
                 disease_data = {
                     'state': {var:{'historical': [], 'projected': []} for var in data_variables},                        
                     'health-system': {var:{'historical': [], 'projected': []} for var in data_variables},
-                    'extra': {'state-encounters-reported': []},
+                    'extra': {'state-encounters-reported': {'historical': [], 'projected': []}},
+                    'imputation': 0
+                }
+
+                all_hist = {
+                    'state': {var:{'historical': [], 'projected': []} for var in data_variables},                        
+                    'health-system': {var:{'historical': [], 'projected': []} for var in data_variables},
+                    'extra': {'state-encounters-reported': {'historical': [], 'projected': []}},
                     'imputation': 0
                 }
 
@@ -176,6 +187,7 @@ for region_size, identifier_column in region_geojson_identifiers.items():
                 try:
                     data = df.xs(identifier, axis=0)
                     disease_data['imputation'] = int(data['imputation'].any())
+                    all_hist['imputation'] = int(data['imputation'].any())
 
                 except:
                     # no data in this region - disease combo
@@ -187,6 +199,8 @@ for region_size, identifier_column in region_geojson_identifiers.items():
                         try:
                             var_data = data[f'{data_source}-{var}']
                             try:
+                                all_historical_data = var_data.reindex(all_historical_dates)
+                                all_hist[data_source][var]['historical'] = [None if math.isnan(x) else x for x in all_historical_data.to_list()]
                                 historical_data = var_data.reindex(historical_dates)
                                 disease_data[data_source][var]['historical'] = [None if math.isnan(x) else x for x in historical_data.to_list()]
                             except:
@@ -196,6 +210,7 @@ for region_size, identifier_column in region_geojson_identifiers.items():
                             try:
                                 projected_data = var_data.reindex(pred_dates)
                                 disease_data[data_source][var]['projected'] = [None if math.isnan(x) else x for x in projected_data.to_list()]
+                                all_hist[data_source][var]['projected'] = disease_data[data_source][var]['projected']
                             except: 
                                 pass
                                 # print(identifier, disease, var, 'projected')
@@ -204,8 +219,10 @@ for region_size, identifier_column in region_geojson_identifiers.items():
                         
                 # process extra and save
                 try:
-                    var_data = data['state-encounters-reported']
+                    var_data = data['state-encounters-reported'] 
                     try:
+                        all_historical_data = var_data.reindex(all_historical_dates)
+                        all_hist['extra']['state-encounters-reported']['historical'] = [None if math.isnan(x) else x for x in all_historical_data.to_list()]
                         historical_data = var_data.reindex(historical_dates)
                         disease_data['extra']['state-encounters-reported']['historical'] = [None if math.isnan(x) else x for x in historical_data.to_list()]
                     except:
@@ -213,18 +230,26 @@ for region_size, identifier_column in region_geojson_identifiers.items():
                     try:
                         projected_data = var_data.reindex(pred_dates)
                         disease_data['extra']['state-encounters-reported']['projected'] = [None if math.isnan(x) else x for x in projected_data.to_list()]
+                        all_hist['extra']['state-encounters-reported']['projected'] = disease_data['extra']['state-encounters-reported']['projected']
                     except: 
                         pass
                 except:
                     pass
+
                 # add disease data to this feature
                 feature.properties['data'] = disease_data
+                extended_historical_data[identifier] = all_hist
+
                 
             # create dirs if needed and save off file
             out_path = f'{processed_data_dir}/respiratory/{region_size}/{disease}.json'
             os.makedirs(os.path.dirname(out_path), exist_ok=True)
             with open(out_path, 'w') as f:
                 geojson.dump(gj, f)
+
+            out_path = f'{processed_data_dir}/respiratory/{region_size}/{disease}.extended.json'
+            with open(out_path, 'w') as f:
+                json.dump(extended_historical_data, f)
 
 
 with open(f'{processed_data_dir}/respiratory/metadata.json', 'w') as f:
@@ -236,6 +261,7 @@ with open(f'{processed_data_dir}/respiratory/metadata.json', 'w') as f:
             'county': 'County',
             'zcta': 'Zip Code',
         },
+        'min_date': min_date.strftime('%Y-%m-%d'),
         'start_date': start_date.strftime('%Y-%m-%d'),
         'current_week': curr_date.strftime('%Y-%m-%d'),
         'end_date': end_date.strftime('%Y-%m-%d')

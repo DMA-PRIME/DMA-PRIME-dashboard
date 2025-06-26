@@ -1,6 +1,6 @@
 
 export { zctaData, 
-    startDate, currentWeek, endDate, historicalDates, predictionDates, 
+    startDate, currentWeek, endDate, historicalDates, allHistoricalDates, predictionDates, 
     dataSourceColorMap, dataVariableColorMap, gridLineStyle, unknownColor,
     gridItemDataSources, 
     parseDate, getDataAsArray, getBoundsOfCoords, getCenter,
@@ -12,6 +12,9 @@ var currentWeek = parseDate(metadata.current_week)
 
 var startDate = parseDate(metadata.start_date)
 var historicalDates = d3.timeDay.range(startDate, new Date(currentWeek).setDate(currentWeek.getDate()+1), 7)
+
+var minDate = parseDate(metadata.min_date)
+var allHistoricalDates = d3.timeDay.range(minDate, new Date(currentWeek).setDate(currentWeek.getDate()+1), 7)
 
 var endDate = parseDate(metadata.end_date)
 var predictionDates = d3.timeDay.range(currentWeek, new Date(endDate).setDate(endDate.getDate()+1), 7)
@@ -155,18 +158,45 @@ function fixCoord(coord) {
     return parseFloat(coord)
 }
 
-function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVariable, grid=false, extraSourcesAndVariables={}) {
+function drawTooltip(d, ttpSVG, header, footer, dataSource, dataVariable, rate=false, grid=false, allDates=false, extraSourcesAndVariables={}) {
     // handy
+    var historicalDatesArray = allDates ? allHistoricalDates : historicalDates
     var mainDataSrc = dataSource
     var mainDataVar = dataVariable
+
+    var data = JSON.parse(JSON.stringify(d)) // don't want to mess up og data
+    var mainData = data.data[dataSource][dataVariable]
+
+    function drawMainHistoricalGraph(g, data, historicalDates, dataSrc, allDates, xScale, yScale) {
+        if (allDates){
+            g.append("path")
+                .attr("d", d3.area()
+                            .x((_, i) => xScale(historicalDates[i]))
+                            .y0(yScale(0))
+                            .y1((d) => yScale(d))
+                            .defined(d => d !== null)
+                            // .curve(d3.curveMonotoneX)
+                            (data)
+                )
+                .attr("fill", dataSourceColorMap[dataSrc])
+        } else {
+            var historicalBarWidth = Math.ceil(ttpGraphWidth*ttpHistoryWidthPercentage / historicalDates.length)
+            g.append("g")
+                .selectAll("rect")
+                .data(data)
+                .enter()
+                .append("rect")
+                .attr("x", (_, i) => {return xScale(historicalDates[i])})
+                .attr("y", d => {return yScale(d)})
+                .attr("height", d => yScale(0) - yScale(d))
+                .attr("width", historicalBarWidth)
+                .attr("fill", dataSourceColorMap[dataSrc])
+        }
+    }
     
     // get dimensions
     var ttpHeight = ttpSVG.node().clientHeight
     var ttpWidth = ttpSVG.node().clientWidth
-    
-    // don't want to mess up og data
-    var data = JSON.parse(JSON.stringify(d))
-    var mainData = data.data[dataSource][dataVariable]
 
     // to use later
     ttpSVG.datum({"extraSourcesAndVariables": extraSourcesAndVariables})
@@ -251,7 +281,10 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
                     } else {
                         extraSourcesAndVariables[dataSource] = [dataVariable]
                     }
-                    drawTooltip(d, ttpSVG, header, footer, rate, mainDataSrc, mainDataVar, grid, extraSourcesAndVariables)
+                    drawTooltip(d, 
+                        ttpSVG, header, footer, 
+                        mainDataSrc, mainDataVar, 
+                        rate, grid, allDates, extraSourcesAndVariables)
                 }
                 button.on("click", () => {ttpOptionsHandler(extraSourcesAndVariables, ds, dv)})
 
@@ -315,7 +348,7 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
         .range([ttpHeight-ttpMargins.bottom, ttpMargins.top])
 
     var xScaleHistorical = d3.scaleTime()
-        .domain(d3.extent(historicalDates))
+        .domain(d3.extent(historicalDatesArray))
         .range([ttpMargins.left, ttpMargins.left + ttpGraphWidth*ttpHistoryWidthPercentage]) 
     var xScalePrediction = d3.scaleTime()
         .domain(d3.extent(predictionDates))
@@ -323,17 +356,7 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
 
     // draw historical data for selected data var
     var historicalGroup = graphSVG.append("g")
-    var historicalBarWidth = Math.ceil(ttpGraphWidth*ttpHistoryWidthPercentage / historicalDates.length)
-    historicalGroup.append("g")
-        .selectAll("rect")
-        .data(mainData.historical)
-        .enter()
-        .append("rect")
-        .attr("x", (_, i) => {return xScaleHistorical(historicalDates[i])})
-        .attr("y", d => {return yScale(d)})
-        .attr("height", d => yScale(0) - yScale(d))
-        .attr("width", historicalBarWidth)
-        .attr("fill", dataSourceColorMap[mainDataSrc])
+    drawMainHistoricalGraph(historicalGroup, mainData.historical, historicalDatesArray, mainDataSrc, allDates, xScaleHistorical, yScale)
 
     // draw projected data for selected data var
     var stateCurrentLabelPositionAbove = null
@@ -357,7 +380,6 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
                         .defined(d => d !== null)
                         .curve(d3.curveMonotoneX)(mainData.projected)
             )
-            // ttpAreaFunction(predictionData, predictionDates, xScalePrediction, yScale))
             .attr("fill", dataSourceColorMap[`${mainDataSrc}-projected`])
 
         // marks each datapoint on prediction line
@@ -388,7 +410,7 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
             // draw historical line chart
             historicalGroup.append("path")
                 .attr("d", d3.line()
-                    .x((_, i) => xScaleHistorical(historicalDates[i]))
+                    .x((_, i) => xScaleHistorical(historicalDatesArray[i]))
                     .y((d, i) => yScale(d))
                     .curve(d3.curveMonotoneX)(thisData.historical)
                 )
@@ -414,9 +436,10 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
 
     // draw legend
     var ttpLegendTop = ttpHeight - 1*em
+    var legendItemTotalWidth = 0
     Array(mainDataSrc, `${mainDataSrc}-projected`).forEach(function(dataSrc, i) {
         var labelGroup = ttpLegend.append("g")
-            .attr("class", "tooltip-label-group")
+            .attr("class", `tooltip-label-group ${dataSrc}`)
         labelGroup.append("rect")
             .attr("x", 0)
             .attr("y", 0)
@@ -430,13 +453,31 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
             .attr("fill", dataSourceColorMap[dataSrc])
             .attr("font-size", "var(--sl-font-size-small)")
             .style("dominant-baseline", "middle")
-            .text(i == 1 ? `${dataVarString} Projected` : dataVarString)
+            .text(() => {
+                var text = dataVarString
+                if (i == 0 && mainDataSrc == "state") {
+                    text += ' (estimated)'
+                }
+                if (i == 1) {
+                    text += ' (projected)'
+                }
+                return text})
 
-        var bbox = labelGroup.node().getBBox()
-        labelGroup.attr("transform", `translate(${1*em + ((ttpWidth-2*em)*(i+1)/3) - bbox.width/2}, ${ttpLegendTop})`)
-
+        legendItemTotalWidth += labelGroup.node().getBBox().width
     })
-    
+
+    var totalLegendWidth = ttpWidth - (ttpMargins.left + ttpMargins.right)
+    var legendSpaceAround = Math.max(em, (totalLegendWidth - legendItemTotalWidth) / 3)
+
+    ttpLegend.selectAll(".tooltip-label-group").each(function(_, i, groups) {
+        var groupX = ttpMargins.left + legendSpaceAround * (i+1)
+        if (i > 0) {
+            groupX += groups[i-1].getBBox().width
+        }
+        d3.select(this)
+            .attr("transform", `translate(${groupX}, ${ttpLegendTop})`)
+    })
+
     // display x-axis on the bottom
     xAxisHistorical // historical
         .attr("transform", `translate(0,${ttpHeight - ttpMargins.bottom})`)
@@ -481,26 +522,4 @@ function drawTooltip(d, ttpSVG, header, footer, rate=false, dataSource, dataVari
 
     temp.remove()
 
-}
-
-var ttpLineFunction = function(data, dates, xScale, yScale) {
-    var thisStartDate = parseDate(data["start-date"])
-    var startIndex = dates.findIndex((d) => d.getTime() == thisStartDate.getTime())
-
-    return d3.line()
-        .x((_, i) => xScale(dates[i+startIndex]))
-        .y((d, i) => yScale(d))
-        .curve(d3.curveMonotoneX)(data.data)
-}
-
-var ttpAreaFunction = function(data, dates, xScale, yScale) {
-    var thisStartDate = parseDate(data["start-date"])
-    var startIndex = dates.findIndex((d) => d.getTime() == thisStartDate.getTime())
-    var y0 = yScale(0)
-
-    return d3.area()
-        .x((_, i) => xScale(dates[i+startIndex]))
-        .y0(y0)
-        .y1((d, i) => yScale(d))
-        .curve(d3.curveMonotoneX)(data.data)
 }

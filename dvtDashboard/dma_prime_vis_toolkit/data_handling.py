@@ -26,6 +26,13 @@ def getRespiratoryHospitalizations(region_size='zcta', disease='covid-19'):
     # hospitalization data based on disease
     return decrypt(f"{current_app.config['DATADIR']}/processed/respiratory/{region_size}/{disease}.json")
 
+@bp.route('/respiratory/<region_size>/<disease>/extended', methods=['GET', 'POST'])
+@login_required
+def getAllRespiratoryHospitalizations(region_size='zcta', disease='covid-19'):
+    # hospitalization data based on disease
+    return decrypt(f"{current_app.config['DATADIR']}/processed/respiratory/{region_size}/{disease}.extended.json")
+
+
 @bp.route('/opioid-hcv-hiv/<disease>', methods=['GET', 'POST'])
 @login_required
 def getOpioidHcvHiv(disease='opioid'):

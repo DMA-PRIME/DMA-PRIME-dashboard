@@ -325,7 +325,7 @@ function drawLegend() {
 
         colorLegendContent.append("g").attr("id", "map-color-legend-axis")
             .attr('transform', `translate(${legendMargins.left} ${em+legendMargins.top})`)
-            .call(d3.axisBottom(d3.scaleLinear(choroplethColorMap.domain(), [0, legendWidth])).ticks(9))
+            .call(d3.axisBottom(d3.scaleLinear(choroplethColorMap.domain(), [0, legendWidth])).ticks(6))
 
         colorLegendContent.append("text")
             .attr("id", `map-legend-title`)
@@ -552,9 +552,9 @@ function updateMapTooltip(featureProperties) {
             .attr("width", mapTooltipWidth)
             .attr("height", mapTooltipHeight)
 
-    drawTooltip(featureProperties, 
+    drawTooltip(featureProperties,
         ttpSVG, ttpDiv.select(".tooltip-header"), ttpDiv.select(".tooltip-footer"), 
-        mapTypeSwitch.value == "rate", mapDataSourceSelector.value, mapDataVariableSelector.value,
-        false, [])
+        mapDataSourceSelector.value, mapDataVariableSelector.value,
+        mapTypeSwitch.value == "rate", false, false)
         
 }
