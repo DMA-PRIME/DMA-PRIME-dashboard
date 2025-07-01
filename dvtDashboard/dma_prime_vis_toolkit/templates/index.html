@@ -74,10 +74,37 @@
     * {
       box-sizing: border-box;
     }
+
+    #notification-container {
+      position: fixed;
+      top: 32px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 2000;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: none;
+    }
+    #notification-container sl-alert {
+      pointer-events: auto;
+      min-width: 300px;
+      max-width: 90vw;
+      margin-bottom: 8px;
+    }
   </style>
 </head>
 
 <body>
+  <div id="notification-container">
+    {% for message in get_flashed_messages() %}
+      <sl-alert duration="2000" closable open>
+        <sl-icon slot="icon" name="info-circle"></sl-icon>
+        {{ message }}
+      </sl-alert>
+    {% endfor %}
+  </div>
+
   <header>
     <nav>
       <a style="float: left;" href="{{ url_for('index') }}">
@@ -164,13 +191,6 @@
   </script>
 </body>
 
-
 <footer>
-  {% for message in get_flashed_messages() %}
-      <sl-alert duration="2000" closable open>
-          <sl-icon slot="icon" name="info-circle"></sl-icon>
-          {{ message }}
-      </sl-alert>
-  {% endfor %}
 </footer>
 </html>
