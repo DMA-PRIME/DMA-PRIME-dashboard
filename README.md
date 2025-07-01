@@ -19,10 +19,10 @@ To further develop the toolkit:
 
 Notes:
 - The first parameter in the above command runs this app in development mode which clears the db and creates two users:
-    - usertest
-        - userpassword
-    - admintest
-        - adminpassword
+    - user
+        - password
+    - admin
+        - password
 - The website will be at localhost:5000. It works in chrome, edge, or firefox. It's broken in safari for reasons I cannot discern, lacking a mac
 - If you're having import issues, the requirements files may be old, sorry. dvtdashboard/pyproject.toml should pretty much always be up to date.
 

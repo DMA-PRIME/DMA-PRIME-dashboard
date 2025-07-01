@@ -63,6 +63,17 @@ def create_app(development=False, dataDir=None):
                 Bcrypt().generate_password_hash("userpassword"),
                 access_level=0, verified_user=True
             )
+            test_user = User(
+                "admin", "admin", 
+                Bcrypt().generate_password_hash("password"),
+                access_level=1, verified_user=True
+            )
+            db.session.add(test_user)
+            test_user = User(
+                "user", "user", 
+                Bcrypt().generate_password_hash("password"),
+                access_level=0, verified_user=True
+            )
             db.session.add(test_user)
             db.session.commit()
 

@@ -20,7 +20,7 @@
       display: flex;
       align-items: center; /* Align icons vertically /*
       z-index: 1000; /* Keeps it above other content */
-      height: 60px; /* Define a fixed height */
+      height: var(--sl-font-size-4x-large); /* Define a fixed height */
     }
 
     nav {
@@ -37,8 +37,9 @@
       display: grid;
       grid-template-columns: repeat(3, 1fr);
       align-items: center;
-      justify-content: center;
-      height: auto;
+      align-content: space-around;
+      justify-content: space-around;
+      height: calc(100% - var(--sl-font-size-4x-large));
       width: 100%;
       padding: var(--sl-spacing-2x-large);
     }
@@ -68,6 +69,7 @@
     body {
       margin: 0;
       padding: 0;
+      height: 100vh;
     }
 
     /* include border and padding in element width and height */
