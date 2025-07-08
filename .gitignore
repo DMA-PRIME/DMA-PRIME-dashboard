@@ -8,5 +8,6 @@ dvtDashboard/instance
 testing/logs/*
 testing/processed/*
 testing/supplementary/*
+testing/data.zip
 
 .npmrc

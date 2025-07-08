@@ -27,7 +27,7 @@ dashboard_translation = {
 def decrypt(file_name, encrypt_key):
     current_app.logger.info(f'{current_user.email} accessed {file_name}')
 
-    with open(f"{current_app.config['DATADIR']}/supplementary/encrypt_key.bin", 'rb') as f:
+    with open(encrypt_key, 'rb') as f:
         key = f.read()
 
     try:
