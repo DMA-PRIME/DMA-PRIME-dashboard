@@ -8,7 +8,7 @@ var icons = {
     data: await d3.csv('/data/health-care-facility'),
     iconAtlas: '/static/assets/Icons/icon-pack.png',
     iconMapping: await d3.json('/static/assets/Icons/icon-pack.json'),
-  }
+}
   
 
 var selectedItems = {
@@ -51,7 +51,7 @@ drawStateHospitalizations()
 async function redraw(fetchData=false) {
     updateMapTitle()
     if (fetchData == true) {
-        regionData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}?${parseInt(Math.random()*9999999999)}`) 
+        regionData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`) 
     }
     createChoropleth(regionData, mapTypeSwitch.value, mapDataSourceSelector.value, mapDataVariableSelector.value, mapIncludeImputations.checked)
     drawLegend()
@@ -463,7 +463,7 @@ async function drawStateBarChart(svgDOM, subtitleDOM, stateMargins, yAxisDisplay
 
     var stateData
     try {
-        stateData = await d3.json(`/data/respiratory/state/state-cdc?${parseInt(Math.random()*9999999999)}`) 
+        stateData = await d3.json(`/data/respiratory/state/state-cdc?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`) 
         stateData = Object.entries(stateData[mapDiseaseSelector.value]).map(d => {
             temp = {"Date": d[0], "count": d[1]}
             if (mapTypeSwitch.value == "rate") {

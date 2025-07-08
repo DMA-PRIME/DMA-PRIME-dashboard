@@ -50,7 +50,7 @@
     <sl-details id="map-disease-selector-container" >
       <p slot="summary">Select a disease or group of diseases</p>
       <sl-checkbox id="map-all-disease-selector" size="small">All Diseases <span id="map-all-count"></span></sl-checkbox>
-      {% for disease in diseases %}
+      {% for disease in metadata['diseases'] %}
       <sl-checkbox id="map-{{ disease['disease-name'] }}-selector" class="disease-checkbox" disease="{{ disease['disease-name'] }}" size="small">{{ disease['display-name'] }} <span id="map-{{ disease['disease-name'] }}-count"></span></sl-checkbox>
       {% endfor %}
     </sl-details>  
@@ -59,9 +59,9 @@
   <sl-checkbox id="map-options-geographic-labels-toggle" class="map-toggle" size="small">Geography Labels</sl-checkbox>
   
   <!-- map icon inclusion checkboxes (hospital, mobile health clinic, community partners) -->
-  <!-- <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle" style="display: initial;">Hospitals</sl-checkbox>
-  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle" style="display: initial;">Mobile Health Clinics</sl-checkbox>
-  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-icons-toggle" style="display: initial;">Community Partners</sl-checkbox> -->
+  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle" size="small">Hospitals</sl-checkbox>
+  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle" size="small">Mobile Health Clinics</sl-checkbox>
+  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-icons-toggle" size="small">Community Partners</sl-checkbox>
 </div>
 
 <sl-resize-observer id="aggregated-disease-history-resizer">
@@ -132,11 +132,10 @@
   mapMainContent = document.getElementById("map-main-content")
   mapMainContent.primary = "start"
   
-//   hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
-//   cdapIconsToggle = document.getElementById("map-options-cdap-toggle")
-//   mobileClinicIconsToggle = document.getElementById("map-options-mobile-clinic-icons-toggle")
-//   communityPartnerIconsToggle = document.getElementById("map-options-community-partner-icons-toggle")
-//   checked = []
+  hospitalIconsToggle = document.getElementById("map-options-hospital-icons-toggle")
+  // cdapIconsToggle = document.getElementById("map-options-cdap-toggle")
+  mobileClinicIconsToggle = document.getElementById("map-options-mobile-clinic-icons-toggle")
+  communityPartnerIconsToggle = document.getElementById("map-options-community-partner-icons-toggle")
 
 </script>
 

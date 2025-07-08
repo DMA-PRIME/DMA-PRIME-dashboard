@@ -19,7 +19,7 @@ var allHistoricalDates = d3.timeDay.range(minDate, new Date(currentWeek).setDate
 var endDate = parseDate(metadata.end_date)
 var predictionDates = d3.timeDay.range(currentWeek, new Date(endDate).setDate(endDate.getDate()+1), 7)
 
-const zctaData = await d3.json(`/data/respiratory/zcta/covid-19?${parseInt(Math.random()*9999999999)}`)
+const zctaData = await d3.json(`/data/respiratory/zcta/covid-19?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`)
 await Promise.allSettled([ // wait for following to be defined/load in
     customElements.whenDefined('sl-select'),
     customElements.whenDefined('sl-option'),

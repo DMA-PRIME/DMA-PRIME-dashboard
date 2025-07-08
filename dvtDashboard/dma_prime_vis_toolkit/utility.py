@@ -9,7 +9,22 @@ from flask_login import current_user
 
 main_dir = "/".join(__file__.split("\\")[:-1])
 
-def decrypt(file_name):
+dashboard_translation = {
+        # js to python
+        'respiratory': 'respiratory',
+        'wastewater': 'waste_water',
+        'outbreak-detection': 'other_infectious_diseases',
+        'opioid-hcv-hiv': 'opioid_hcv_hiv',
+        'mobile-health-clinics': 'mhc',
+
+        # python to js
+        'waste_water': 'wastewater',
+        'other_infectious_diseases': 'outbreak-detection',
+        'opioid_hcv_hiv': 'opioid-hcv-hiv',
+        'mhc': 'mobile-health-clinics',
+    }
+
+def decrypt(file_name, encrypt_key):
     current_app.logger.info(f'{current_user.email} accessed {file_name}')
 
     with open(f"{current_app.config['DATADIR']}/supplementary/encrypt_key.bin", 'rb') as f:
@@ -36,3 +51,15 @@ def decrypt(file_name):
     except (ValueError, KeyError) as e:
         current_app.logger.error("Incorrect decryption of ", file_name)
         raise e
+    
+def get_data_version_from_request(request, current_user, development, error='silent'):
+    data_version = request.args.get('data_version')
+
+    if data_version is None:
+        data_version = 'current'
+
+    if data_version is not 'current' and not (current_user.email == 'liorr@clemson.edu' or development):
+        current_app.logger.info(f'{current_user.email} attempted to view a dashboard data preview page')
+        data_version = 'current'
+
+    return data_version

@@ -85,7 +85,7 @@ map.on("click", e => {
             .style("border-style", "none")
         var largeTtp = d3.select(mapTooltipLarge)
         mapTooltipLarge.show().then(async() => {
-            var allExtendedData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}/extended?${parseInt(Math.random()*9999999999)}`) 
+            var allExtendedData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`) 
             var ttpData = {
                 "id": dataObject.properties.id,
                 "county": dataObject.properties.county,

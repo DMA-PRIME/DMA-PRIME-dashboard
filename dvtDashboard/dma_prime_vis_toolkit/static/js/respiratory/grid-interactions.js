@@ -30,7 +30,7 @@ gridDataSourceSortSelector.addEventListener("sl-change", (event) => {
 })
 
 gridDiseaseSelector.addEventListener("sl-change", async (event) => {
-    await d3.json(`/data/respiratory/zcta/${gridDiseaseSelector.value}?${parseInt(Math.random()*9999999999)}`).then(data => {
+    await d3.json(`/data/respiratory/zcta/${gridDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`).then(data => {
         zctaData.features = data.features
     })
     d3.select(gridContainer).selectAll("sl-tooltip[open]")

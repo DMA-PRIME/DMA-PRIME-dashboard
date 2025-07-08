@@ -48,19 +48,18 @@ def unauthorized():
 
     return redirect(redirect_url)
 
-@bp.route("/refresh", methods=["GET"])
+@bp.route("/refresh", methods=['GET'])
 def refresh():
     login_user(current_user)
     return '', 204
 
-@bp.route('/two_factor_setup', methods=["GET"])
+@bp.route('/two_factor_setup', methods=['GET'])
 def two_factor_setup():
     user = User.query.filter_by(email=session['email']).first()
     unique_key = pyotp.random_base32()
     user.two_factor_auth = unique_key
     db.session.commit()
     uri = pyotp.totp.TOTP(unique_key).provisioning_uri(name=user.email, issuer_name="DMA-PRIME")
-    # print(uri) #"DMA2FAKEY"
     # encode qr code so it can be served via render template instead of saved
     imgIO = BytesIO()
     qrcode.make(uri).save(imgIO, 'PNG')
@@ -68,9 +67,9 @@ def two_factor_setup():
     imgB64 = b64encode(imgIO.getvalue()).decode('utf-8')
     return render_template("authentication/two_factor_setup.html", img=imgB64)
 
-@bp.route("/two_factor_auth", methods=["GET", "POST"])
+@bp.route("/two_factor_auth", methods=['GET', 'POST'])
 def two_factor_auth():
-    if request.method == "POST":
+    if request.method == 'POST':
         otp_2fa = request.form["2fa_code"]
         curr_user = User.query.filter(User.email == session['email']).first()
         key = curr_user.two_factor_auth #"DMA_2FA_KEY"
@@ -88,9 +87,9 @@ def two_factor_auth():
             session['email'] = session['email']
     return render_template('authentication/two_factor_auth.html')
 
-@bp.route("/login", methods=("GET", "POST"))
+@bp.route("/login", methods=['GET', 'POST'])
 def login():
-    if request.method == "POST":
+    if request.method == 'POST':
         email_username = request.form["email_username"]
         password = request.form["password"]
 
@@ -121,17 +120,17 @@ def login():
     
     return render_template('authentication/login.html')
 
-@bp.route("/logout", methods=["GET"])
+@bp.route("/logout", methods=['GET'])
 def logout():
     logout_user()
     return redirect("/auth/login")
 
 
-@bp.route("/signup", methods=["GET", "POST"])
+@bp.route("/signup", methods=['GET', 'POST'])
 def signup():
     if current_app.config['DEVELOPMENT']:
         """Signup user by adding the user to the database."""
-        if request.method == "POST":
+        if request.method == 'POST':
             username = request.form["username"]
             password = request.form["password"]
             email = request.form["email"]
@@ -159,7 +158,7 @@ def signup():
     else:
         return abort(404)
 
-@bp.route("/verify_email/<token>", methods=["GET", "POST"])
+@bp.route("/verify_email/<token>", methods=['GET'])
 def verify_email(token):
     data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
     email = data["email"]
@@ -171,11 +170,11 @@ def verify_email(token):
     flash("Email confirmed successfully")
     return redirect("/auth/login")
 
-@bp.route("/reset_password/<token>", methods=["GET", "POST"])
+@bp.route("/reset_password/<token>", methods=['GET', 'POST'])
 def reset_password(token):
     data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
     email = data["email"]
-    if request.method == "GET":
+    if request.method == 'GET':
         return render_template("authentication/reset_password.html", email=email)
     password = request.form["password"]
     username = request.form["username"]
