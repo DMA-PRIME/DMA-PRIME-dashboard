@@ -13,7 +13,7 @@ tabGroup.addEventListener("sl-tab-hide", function(e) {
 
 d3.selectAll(".preview-data-button").on("click", function(d){
     document.getElementById(`${this.getAttribute("dashboard")}-dashboard`).src = `/${this.getAttribute("dashboard")}?data_version=${this.getAttribute("dataversion")}`
-    d3.selectAll(".preview-data-button").attr("variant", "default")
+    d3.selectAll(`.preview-data-button[dashboard=${this.getAttribute("dashboard")}]`).attr("variant", "default")
     this.setAttribute("variant", "primary")
 })
 
@@ -30,8 +30,8 @@ d3.selectAll(".approve-data-button").on("click", function(d) {
         if (!this.classList.contains("overview")) {
             document.getElementById(`${this.getAttribute("dashboard")}-dashboard`).src = `/${this.getAttribute("dashboard")}?data_version=current`
 
-            d3.selectAll(".preview-data-button").attr("variant", "default")
-            d3.selectAll(".preview-data-button[dataVersion=current]").node().setAttribute("variant", "primary")
+            d3.selectAll(`.preview-data-button[dashboard=${this.getAttribute("dashboard")}]`).attr("variant", "default")
+            d3.selectAll(`.preview-data-button[dataVersion=current][dashboard=${this.getAttribute("dashboard")}]`).node().setAttribute("variant", "primary")
         }
         updateDates(this.getAttribute("dashboard"))
     })
