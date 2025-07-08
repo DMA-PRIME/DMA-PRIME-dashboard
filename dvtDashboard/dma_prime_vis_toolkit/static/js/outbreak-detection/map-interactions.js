@@ -88,6 +88,21 @@ map.on("click", e => {
 
     // add popup to map
     var feature = thisObject.object
+
+    // --- ADDED LOGIC: close tooltip and zoom out if same region is clicked ---
+    if (selectedItems.region && selectedItems.region.properties.identifier === feature.properties.identifier) {
+        selectedItems.region = undefined;
+        popup.remove();
+        map.flyTo({
+            center: [-81, 33.65],
+            zoom: 7,
+            essential: true
+        });
+        redraw();
+        return;
+    }
+    // --- END ADDED LOGIC ---
+
     selectedItems.region = feature
     
     var width = mapDiv.clientWidth

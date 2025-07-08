@@ -84,17 +84,24 @@
   }
   
   #map-tooltip-svg text,
-  #aggregated-disease-history text {
-    /* axis & tick labels */
-    margin: 0;
-    padding: 0;
-    font-size: var(--sl-font-size-x-small);
-    white-space: nowrap;
-  }
-  
   #map-tooltip-svg .tick text,
-  #aggregated-disease-history .tick text {
-    font-size: var(--sl-font-size-2x-small);
+  #map-tooltip-svg .domain,
+  #map-tooltip-svg .tick,
+  #map-tooltip-svg .tick > text,
+  #map-tooltip-svg .tick-label,
+  #map-tooltip-svg .axis-label,
+  #map-tooltip-svg .x-axis text,
+  #map-tooltip-svg .y-axis text,
+  #aggregated-disease-history text,
+  #aggregated-disease-history .tick text,
+  #aggregated-disease-history .domain,
+  #aggregated-disease-history .tick,
+  #aggregated-disease-history .tick > text,
+  #aggregated-disease-history .tick-label,
+  #aggregated-disease-history .axis-label,
+  #aggregated-disease-history .x-axis text,
+  #aggregated-disease-history .y-axis text {
+    font-size: 8px !important;
   }
   
   .tooltip-title,
@@ -221,5 +228,39 @@
     font-size: 1.3rem !important;
     line-height: 1.2 !important;
     text-align: center !important;
+  }
+  
+  /* Add at the end of the file to ensure specificity and override */
+  #map-tooltip-div,
+  #map-tooltip-div p,
+  #map-tooltip-div .tooltip-header,
+  #map-tooltip-div .tooltip-left-col,
+  #map-tooltip-div .tooltip-right-col,
+  #map-tooltip-div .tooltip-title,
+  #map-tooltip-div .tooltip-subtitle,
+  #map-tooltip-div .tooltip-label,
+  #map-tooltip-div .tick text,
+  #map-tooltip-div .tick-label,
+  #map-tooltip-div .axis-label,
+  #map-tooltip-div .x-axis text,
+  #map-tooltip-div .y-axis text,
+  #map-tooltip-div text,
+  #map-tooltip-div svg text,
+  #map-tooltip-large-div,
+  #map-tooltip-large-div p,
+  #map-tooltip-large-div .tooltip-header,
+  #map-tooltip-large-div .tooltip-left-col,
+  #map-tooltip-large-div .tooltip-right-col,
+  #map-tooltip-large-div .tooltip-title,
+  #map-tooltip-large-div .tooltip-subtitle,
+  #map-tooltip-large-div .tooltip-label,
+  #map-tooltip-large-div .tick text,
+  #map-tooltip-large-div .tick-label,
+  #map-tooltip-large-div .axis-label,
+  #map-tooltip-large-div .x-axis text,
+  #map-tooltip-large-div .y-axis text,
+  #map-tooltip-large-div text,
+  #map-tooltip-large-div svg text {
+    font-size: var(--sl-font-size-small) !important;
   }
   
