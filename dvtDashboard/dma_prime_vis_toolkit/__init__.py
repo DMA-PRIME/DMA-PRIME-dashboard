@@ -3,7 +3,7 @@ import os
 import datetime
 import pandas as pd
 
-from flask import Flask, render_template
+from flask import Flask, render_template, session, request
 from flask_login import login_required
 from flask_bcrypt import Bcrypt
 
@@ -12,6 +12,7 @@ from werkzeug.middleware.proxy_fix import ProxyFix
 from .utility import *
 from .authenticate import login_manager, admin_required  # login_manager & admin_required stay as before
 from .database import User
+from .data_handling import get_data_date
 
 # ensure the authenticate module itself is available for blueprint registration
 from . import authenticate
@@ -90,37 +91,46 @@ def create_app(development=False, dataDir=None):
     app.register_blueprint(admin.bp)
     
     # landing page, though now respiratory
-    @app.route('/')
+    @app.route('/', methods=['GET'])
     @login_required
     def index():
         return render_template('index.html')
 
-    @app.route('/admin')
+    @app.route('/admin', methods=['GET'])
     @login_required
     @admin_required
     def admin_controls():
         return render_template("admin/admin.html")
+    
+    @app.route('/data-approval', methods=['GET'])
+    @login_required
+    @admin_required
+    def approval_page():
+        session['data-approval'] = True
 
-    @app.route('/respiratory')
+        column_headers = [{'display':'Disease', 'code': 'disease'},
+                          {'display':'Date of Current Data', 'code': 'current'},
+                          {'display':'Date of New Data', 'code': 'new'},
+                          {'display':'Date of Last Approved Data', 'code': 'previous'}]
+        dashboards = [{'display':'Respiratory', 'code': 'respiratory'},
+                          {'display':'Wastewater', 'code': 'wastewater'},
+                          {'display':'Outbreak Detection', 'code': 'outbreak-detection'},
+                          {'display':'Opioid, HCV, HIV', 'code': 'opioid-hcv-hiv'},
+                          {'display':'Mobile Health Clinics', 'code': 'mobile-health-clinics'}]
+        return render_template('data-approval/data-approval.html', column_headers=column_headers, dashboards=dashboards, dates=get_data_date('all', 'all'))
+
+    @app.route('/respiratory', methods=['GET'])
     @login_required
     def respiratory():
-        today = pd.to_datetime("today").normalize()
-        current_week = today + pd.DateOffset(days=(5 - today.weekday()) % 7)
-        metadata = {
-            'diseases': {
-                'covid-19': 'Covid-19'
-            },
-            'region_sizes': {
-                'zcta': 'ZCTA',
-                'county': 'County',
-                'region': 'Region'
-            },
-            'start_date': (current_week - pd.DateOffset(months=18)).strftime('%Y-%m-%d'),
-            'current_week': current_week.strftime('%Y-%m-%d'),
-            'end_date': (current_week + pd.DateOffset(weeks=4)).strftime('%Y-%m-%d')
-        }
 
-        metadata = dict(decrypt(f"{app.config['DATADIR']}/processed/respiratory/metadata.json"))
+        data_version = get_data_version_from_request(request, current_user, development)
+
+        
+        file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'metadata.json')
+        decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'encrypt_key.bin')
+
+        metadata = dict(decrypt(file, decrypt_key))
+        metadata['data_version'] = data_version
 
         panels = [
             {
@@ -138,18 +148,16 @@ def create_app(development=False, dataDir=None):
                 'displayName': 'Grid View',
                 'html': 'respiratory/respiratory-grid-panel.html'
             },
-            # {
-            #     'name': 'deckmap',
-            #     'displayName': 'Deckgl Map View',
-            #     'active': True,
-            #     'html': 'respiratory/deckgl-respiratory-map-panel.html'
-            # },
         ]
         return render_template('respiratory/respiratory-base.html', panels=panels, metadata=metadata)
     
-    @app.route('/mobile-health-clinics')
+    @app.route('/mobile-health-clinics', methods=['GET'])
     @login_required
     def mobile_health_clinics():
+        data_version = get_data_version_from_request(request, current_user, development)
+
+        metadata = {'data_version': data_version}
+
         panels = [
             {
                 'name': 'main',
@@ -162,28 +170,20 @@ def create_app(development=False, dataDir=None):
                 'html': 'mobile-health-clinic/mhc-map-panel.html'
             },
         ]
-        return render_template('mobile-health-clinic/mhc-base.html', panels=panels)
+        return render_template('mobile-health-clinic/mhc-base.html', panels=panels, metadata=metadata)
 
-    @app.route('/opioid-hcv-hiv')
+    @app.route('/opioid-hcv-hiv', methods=['GET'])
     @login_required
     def opioid_hcv_hiv():
-        metadata = {
-            'diseases': {
-                'opioid': 'Opioid',
-                'hcv': 'HCV',
-                'hiv': 'HIV',
-            },
-            'years': range(2020, int(datetime.datetime.now().year)),
-            'variables': {
-                'hospitalizations': 'Hospitalizations',
-                'deaths': 'Deaths',
-                'SVI': 'Social Vulnerability Index',
-                'proportion_uninsured': 'Proportion Uninsured',
-                'median_income': 'Median Income',
-            }
-        }
+
+        data_version = get_data_version_from_request(request, current_user, development)
+
         
-        metadata = dict(decrypt(f"{app.config['DATADIR']}/processed/opioid_hcv_hiv/metadata.json"))
+        file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'opioid_hcv_hiv', 'metadata.json')
+        decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'opioid_hcv_hiv', 'encrypt_key.bin')
+
+        metadata = dict(decrypt(file, decrypt_key))
+        metadata['data_version'] = data_version
         
         panels = [
             {
@@ -199,11 +199,17 @@ def create_app(development=False, dataDir=None):
         ]
         return render_template('opioid-hcv-hiv/opioid-hcv-hiv-base.html', panels=panels, metadata=metadata)
 
-    @app.route('/outbreak-detection')
+    @app.route('/outbreak-detection', methods=['GET'])
     @login_required
     def outbreak_detection():
-        diseases = list(decrypt(f"{app.config['DATADIR']}/processed/other_infectious_diseases/metadata.json"))
+        data_version = get_data_version_from_request(request, current_user, development)
+        
+        file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'other_infectious_diseases', 'metadata.json')
+        decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'other_infectious_diseases', 'encrypt_key.bin')
 
+        metadata = {'diseases': list(decrypt(file, decrypt_key))}
+        metadata['data_version'] = data_version
+ 
         panels = [
             {
                 'name': 'main',
@@ -216,21 +222,18 @@ def create_app(development=False, dataDir=None):
                 'html': 'outbreak-detection/outbreak-detection-map-panel.html'
             },
         ]
-        return render_template('outbreak-detection/outbreak-detection-base.html', panels=panels, diseases=diseases)
+        return render_template('outbreak-detection/outbreak-detection-base.html', panels=panels, metadata=metadata)
 
-    @app.route('/waste-water')
+    @app.route('/wastewater', methods=['GET'])
     @login_required
-    def waste_water():
-        metadata = {
-            'site_info': {},
-            'diseases': {},
-            'min_date': pd.to_datetime('today').strftime('%Y-%m-%d'),
-            'max_date': pd.to_datetime('today').strftime('%Y-%m-%d'),
-            'min_display_date': pd.to_datetime('today').strftime('%A, %B %d, %Y'),
-            'max_display_date': pd.to_datetime('today').strftime('%A, %B %d, %Y'),
-        }
+    def waste_water():        
+        data_version = get_data_version_from_request(request, current_user, development)
         
-        metadata = dict(decrypt(f"{app.config['DATADIR']}/processed/waste_water/metadata.json"))
+        file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'waste_water', 'metadata.json')
+        decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'waste_water', 'encrypt_key.bin')
+
+        metadata = dict(decrypt(file, decrypt_key))
+        metadata['data_version'] = data_version
 
         panels = [
             {

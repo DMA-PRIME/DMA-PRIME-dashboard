@@ -13,11 +13,11 @@ import jwt
 bp = Blueprint('admin', __name__, url_prefix='/admin') # allow admin.py to import these routes
 
 
-@bp.route("/add-user", methods=("GET", "POST"))
+@bp.route("/add-user", methods=['GET', 'POST'])
 @login_required
 @admin_required
 def add_user():
-    if request.method == "POST":
+    if request.method == 'POST':
         email = request.form["email"]
         access_level = int(request.form["access_level"])
   
@@ -53,11 +53,11 @@ def add_user():
     return render_template('admin/admin_access_user.html', action="add")
 
 
-@bp.route("/delete-user", methods=("GET", "POST"))
+@bp.route("/delete-user", methods=['GET', 'POST'])
 @login_required
 @admin_required
 def delete_user():
-    if request.method == "POST":
+    if request.method == 'POST':
         email = request.form["email"]
 
         try:
@@ -81,11 +81,11 @@ def delete_user():
         return redirect("/admin")
     return render_template('admin/admin_access_user.html', action="delete")
 
-@bp.route("/change-user", methods=("GET", "POST"))
+@bp.route("/change-user", methods=['GET', 'POST'])
 @login_required
 @admin_required
 def change_user():
-    if request.method == "POST":
+    if request.method == 'POST':
         email = request.form["email"]
         field = request.form["field"]
         new_value = request.form["changed_field"]

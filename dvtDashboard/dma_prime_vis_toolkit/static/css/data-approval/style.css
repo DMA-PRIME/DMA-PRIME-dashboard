@@ -1,0 +1,117 @@
+/* The following is from  https://dev.to/lennythedev/css-gotcha-how-to-fill-page-with-a-div-270j*/
+/* override browser default */
+html,
+body {
+    margin: 0;
+    padding: 0;
+}
+
+/* use viewport-relative units to cover page fully */
+body {
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    flex-flow: column;
+}
+
+/* include border and padding in element width and height */
+* {
+    box-sizing: border-box;
+}
+
+/* Tab Panels */
+sl-tab-group,
+sl-tab-group::part(base),
+sl-tab-group::part(body),
+sl-tab-panel::part(base),
+sl-tab-panel::part(body),
+sl-tab-panel,
+.panel-container {
+    height: 100%;
+}
+
+sl-tab-panel {
+    --padding: 0px
+}
+
+.panel-container{
+    display: flex;
+}
+
+/* Overview Panel*/
+#overview-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-content: center;
+}
+
+#overview-table {
+    width: 80%;
+    margin: auto;
+    border-collapse: collapse;
+}
+
+#overview-table-column-headers {
+    border-bottom: var(--sl-spacing-2x-small) solid black;
+}
+
+#overview-table th {
+    font-family: var(--sl-font-sans);
+    font-size: var(--sl-font-size-large);
+}
+
+#overview-table td {
+    font-family: var(--sl-font-sans);
+    font-size: var(--sl-font-size-large);
+    text-align: center;
+    padding: var(--sl-spacing-large) 0;
+}
+
+/* Dashboard Panels */
+.dashboard-panel {
+    flex-direction: column;
+}
+
+/* dashboard overview */
+.dashboard-overview {
+    padding: 0;
+    margin: var(--sl-spacing-small);
+}
+.data-date-label {
+    padding: 0;
+}
+
+.data-date-label::part(base) {
+    padding-bottom: 0
+}
+
+sl-menu-item.data-date::part(base) {
+    padding-top: 0
+}
+
+/* dashboard buttons */
+.dashboard-data-buttons-container {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    padding: var(--sl-spacing-large);
+}
+
+.dashboard-data-buttons-container > sl-divider {
+    --width: var(--sl-spacing-2x-small)
+}
+
+.preview-data-button-container, .approve-data-button-container {
+    display: flex;
+    flex-direction: column;
+    row-gap: var(--sl-spacing-x-small);
+}
+
+/* iframes */
+iframe {
+    flex-grow: 1;
+    /* height: 100%;
+    width: 100%; */
+    /* border: solid; */
+}

@@ -37,6 +37,36 @@ mapOptionsGeographicLabelsToggle.addEventListener("sl-change", () => {
     redraw()
 })
 
+// adding/removing icons
+hospitalIconsToggle.addEventListener("sl-change", () => {
+    // toggle hospital icons
+    selectedItems.icons = selectedItems.icons.filter(check => check !== "hospital")
+    if (hospitalIconsToggle.checked) {
+            selectedItems.icons.push("hospital")
+    }
+    selectedItems.dataVersion++
+    redraw()
+})
+mobileClinicIconsToggle.addEventListener("sl-change", () => {
+    // toggle mhc icons
+    selectedItems.icons = selectedItems.icons.filter(check => check !== "mobile_health_clinic")
+    if (mobileClinicIconsToggle.checked) {
+        selectedItems.icons.push("mobile_health_clinic")
+    }
+    selectedItems.dataVersion++
+    redraw()
+})
+communityPartnerIconsToggle.addEventListener("sl-change", () => {
+    // toggle community partner icons
+    selectedItems.icons = selectedItems.icons.filter(check => check !== "community_partner")
+    if (communityPartnerIconsToggle.checked) {
+        selectedItems.icons.push("community_partner")
+    }
+    selectedItems.dataVersion++
+    redraw()
+})
+
+
 mapAllDiseaseSelector.addEventListener("sl-change", function(e) {
     if (e.target.checked) {
         d3.selectAll(".disease-checkbox").attr("checked", "")

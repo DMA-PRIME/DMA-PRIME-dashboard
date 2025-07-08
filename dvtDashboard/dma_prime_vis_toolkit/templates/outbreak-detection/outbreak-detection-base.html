@@ -35,4 +35,8 @@
 
 <!-- Contains helper functions/data/constants -->
 <script src="{{ url_for('static', filename='js/outbreak-detection/script.js') }}"></script>
+
+<script>
+    metadata = {{ metadata | safe }}
+</script>
 {% endblock %}

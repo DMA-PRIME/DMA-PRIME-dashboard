@@ -1,12 +1,19 @@
-const { GeoJsonLayer, TextLayer, MapboxOverlay, Widget } = deck;
+const { GeoJsonLayer, IconLayer, TextLayer, MapboxOverlay } = deck;
 
 export { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn, update, updateMapTitle }
 
-var regionData = await d3.json(`/data/outbreak-detection/zcta/pos_tests?${parseInt(Math.random()*9999999999)}`)
+var regionData = await d3.json(`/data/outbreak-detection/zcta/pos_tests?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`)
 var stateFeature = regionData.features.find(d => d.properties.identifier == "state")
+
+var icons = {
+    data: await d3.csv('/data/health-care-facility'),
+    iconAtlas: '/static/assets/Icons/icon-pack.png',
+    iconMapping: await d3.json('/static/assets/Icons/icon-pack.json'),
+}
 
 var selectedItems = {
     "region": undefined,
+    "icons": [],
     "diseases": [],
     "dataVersion": 0
 }
@@ -138,6 +145,27 @@ function redraw() {
         },
       }),
     ]
+
+    if (selectedItems.icons.length) {
+      layers.push(
+        new IconLayer({
+          id: 'hospital-and-cdap',
+          data: icons.data,
+          iconAtlas: icons.iconAtlas,
+          iconMapping: icons.iconMapping,
+          getPosition: d => {return [+d.longitude, +d.latitude]},
+          getIcon: d => {if(selectedItems.icons.includes(d.type)) return d.type},
+          getSize: 15,
+          pickable: true,
+          parameters: {
+              depthTest: false
+          },
+          updateTriggers: {
+              getIcon: [ hospitalIconsToggle.checked, mobileClinicIconsToggle.checked, communityPartnerIconsToggle.checked ]  
+          }
+        }),
+      )
+    }
 
     if (mapRegionSelector.value != "state" && mapOptionsGeographicLabelsToggle.checked) {
       layers.push(
@@ -957,7 +985,7 @@ function drawLargeAggregation() {
     var svg = d3.select(aggregatedDiseaseHistoryLargeSvg)
     svg.html("")
     var data = thisData
-    var metadata = regionData.metadata
+    var regionMetadata = regionData.metadata
     var width = aggregatedDiseaseHistoryLargeSvg.clientWidth
     var height = aggregatedDiseaseHistoryLargeSvg.clientHeight
 
@@ -996,21 +1024,11 @@ function drawLargeAggregation() {
         .nice()
         .range([height-margins.bottom, margins.top])
 
-    var start_date = parseDate(metadata.start_date)
+    var start_date = parseDate(regionMetadata.start_date)
     var xScale = d3.scaleTime()
-        .domain([start_date, parseDate(metadata.end_date)])
+        .domain([start_date, parseDate(regionMetadata.end_date)])
         .nice()
         .range([margins.left, width - margins.right])
-
-    // graphSVG.append("g").selectAll("rect")
-    //     .data(data.other)
-    //     .enter()
-    //     .append("rect")
-    //     .attr("x", (d, i) => xScale(d3.timeDay.offset(start_date, (7 * i))))
-    //     .attr("y", d => yScale(d))
-    //     .attr("height", d => yScale(0) - yScale(d))
-    //     .attr("width", (width - (margins.left + margins.right)) / data.data.length)
-    //     .attr("fill", "var(--sl-color-neutral-400)")
 
     graphSVG.append("g").selectAll("rect")
         .data(data.data)
@@ -1130,17 +1148,8 @@ function drawLargeAggregation() {
     
 }
 
-async function changeRegionSize() {
-    regionData = await d3.json(`/data/outbreak-detection/${mapRegionSelector.value}/${mapColumnSwitch.value}?${parseInt(Math.random()*9999999999)}`)
-    stateFeature = regionData.features.find(d => d.properties.identifier == "state")
-
-    selectedItems.region = undefined
-
-    update()
-}
-
 async function changeDataColumn() {
-    regionData = await d3.json(`/data/outbreak-detection/${mapRegionSelector.value}/${mapColumnSwitch.value}?${parseInt(Math.random()*9999999999)}`)
+    regionData = await d3.json(`/data/outbreak-detection/${mapRegionSelector.value}/${mapColumnSwitch.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`)
     stateFeature = regionData.features.find(d => d.properties.identifier == "state")
 
     if (selectedItems.region) {

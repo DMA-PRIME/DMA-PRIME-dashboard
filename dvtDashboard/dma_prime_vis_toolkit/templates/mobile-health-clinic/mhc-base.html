@@ -27,7 +27,9 @@
     dayjs.tz.setDefault("America/New_York")
     currentDate = dayjs.tz().startOf("d")
 </script>
-
+<script>
+    metadata = {{ metadata | safe }}
+</script>
 {% endblock %}
 
 {% block linkout %}
