@@ -19,7 +19,7 @@ def map_data(type):
 @login_required
 def health_care_facility():
     file = os.path.join(current_app.config['DATADIR'], 'supplementary', 'Health Care Facilities', 'hospital-cdap_mhc_partners.csv')
-    decrypt_key = os.path.join(current_app.config['DATADIR'], 'supplementary', 'encrypt_key.bin')
+    decrypt_key = os.path.join(current_app.config['DATADIR'], 'supplementary', 'Health Care Facilities', 'encrypt_key.bin')
     return decrypt(file, decrypt_key)
 
 
