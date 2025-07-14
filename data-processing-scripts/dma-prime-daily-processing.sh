@@ -23,7 +23,9 @@ echo "Logs from daily data processing on $(printf '%(%Y-%m-%d)T\n' -1)" > $log_f
 updated_dashboards=0
 lior_file="lior.txt"
 touch "$lior_file"
-echo "Dashboards updated on $(printf '%(%Y-%m-%d)T\n' -1):" > $lior_file
+echo "Report of data processing - $(printf '%(%Y-%m-%d)T\n' -1)" > $lior_file
+echo "Visit dmaprime.clemson.edu/data-approval to preview and approve data." >> $lior_file
+echo "Dashboards updated:" >> $lior_file
 
 # write new key
 /project/liorr/dmaprime/visualization_data/scripts/.venv/bin/python << EOF
@@ -95,7 +97,7 @@ echo >> $log_file
 
 # Disease Outbreak (Other Infectious Diseases)
 echo "Disease Outbreak" >> $log_file
-diff -r --brief $latest_backup/aggregated/other_infectious_diseases ../aggregated/other_infectious_diseases
+diff -r --brief $latest_backup/aggregated/other_diseases ../aggregated/other_diseases
 if [[ $? -ne 0 ]]; then # new data!
     # process data
     /project/liorr/dmaprime/visualization_data/scripts/.venv/bin/python /project/liorr/dmaprime/visualization_data/scripts/process_other_infectious_diseases_data.py &>> $log_file
@@ -190,22 +192,23 @@ backup_dir="/project/liorr/dmaprime/visualization_data/backup/$(printf '%(%Y-%m-
 mkdir $backup_dir
 
 cp -rp "/project/liorr/dmaprime/visualization_data/raw" $backup_dir &>> $log_file
+cp -rp "/project/liorr/dmaprime/visualization_data/aggregated" $backup_dir &>> $log_file
 
-mkdir -p "$backup_dir/aggregated/waste_water"
-cp -rp "/project/liorr/dmaprime/visualization_data/aggregated/waste_water/CDC_running_data_4plot.xlsx" "$backup_dir/aggregated/waste_water/CDC_running_data_4plot.xlsx" &>> $log_file
+#mkdir -p "$backup_dir/aggregated/waste_water"
+#cp -rp "/project/liorr/dmaprime/visualization_data/aggregated/waste_water/CDC_running_data_4plot.xlsx" "$backup_dir/aggregated/waste_water/CDC_running_data_4plot.xlsx" &>> $log_file
 
-cp -rp "/project/liorr/dmaprime/visualization_data/aggregated/other_diseases" "$backup_dir/aggregated/" &>> $log_file
+#cp -rp "/project/liorr/dmaprime/visualization_data/aggregated/other_diseases" "$backup_dir/aggregated/" &>> $log_file
 
-cp -rp "/project/liorr/dmaprime/visualization_data/aggregated/respiratory" "$backup_dir/aggregated/" &>> $log_file
+#cp -rp "/project/liorr/dmaprime/visualization_data/aggregated/respiratory" "$backup_dir/aggregated/" &>> $log_file
 
-echo "Num errors: $errors" >> $log_file
 
 ### Email Results ###
+echo "Num errors: $errors" >> $log_file
 # if [[ $errors -gt 0 ]]; then
     python3 sendmail.py gausten@clemson.edu "DMA-PRIME Data Processing Log" "$(cat $log_file)"
 # fi
 
 if [[ $updated_dashboards -gt 0 ]]; then
-    python3 sendmail.py gausten@clemson.edu "DMA-PRIME Data Processing Report" "$(cat $lior_file)"
+    python3 sendmail.py liorr@clemson.edu "DMA-PRIME Data Processing Report" "$(cat $lior_file)"
 fi
 
