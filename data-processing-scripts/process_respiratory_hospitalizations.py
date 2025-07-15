@@ -113,7 +113,7 @@ for region_size, identifier_column in region_geojson_identifiers.items():
         ########################################
 
         # update max and current dates
-        min_date = max(min_date, df['date'].min())
+        min_date = min(min_date, df['date'].min())
         max_date = max(max_date, df['date'].max())
         if 'health-system-encounters' in df.columns:
             # health-system encounters end where projections start, so the last health-system entry is the current week

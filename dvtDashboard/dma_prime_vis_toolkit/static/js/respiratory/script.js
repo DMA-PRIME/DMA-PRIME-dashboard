@@ -105,9 +105,9 @@ function getDataAsArray(data, dataSource, dataVariable, histOrProj, rate, imputa
         
         if (thisData.length > 0 && (imputations || !d.properties.data.imputation)) {
             if (rate) {
-                return (parseInt(thisData.at(-1)) | 1) * 1000 / d.properties.population
+                return (parseFloat(thisData.at(-1)) || 1) * 1000 / d.properties.population
             } else {
-                return parseInt(thisData.at(-1)) | 1
+                return parseFloat(thisData.at(-1)) || 1
             }
         } else {
             return rate ? 1000 / d.properties.population : 1
