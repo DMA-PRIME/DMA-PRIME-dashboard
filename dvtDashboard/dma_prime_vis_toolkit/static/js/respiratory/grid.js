@@ -31,18 +31,8 @@ function gridInitialVisualization() {
     var gridItemHeight = (adjustedHeight-((colItems-1)*.25*em))/colItems
     var gridItemWidth = (adjustedWidth-((rowItems-1)*.25*em))/rowItems
 
-    // create x scale and color scale
-    var xScale = d3.scaleTime()
-                .domain([historicalDates[0], historicalDates.at(-1)])
-                .range([0, gridItemWidth*.75]) 
-
+    // get data
     var diseaseData = zctaData.features
-    var [gridDataSource, gridDataVariable, gridHistOrProj] = gridDataSourceSortSelector.value.split('_')
-    var gridColor = d3.scaleQuantile()
-        .domain(getDataAsArray(zctaData, gridDataSource, gridDataVariable, gridHistOrProj, gridRateSwitch.value =="rate", gridIncludeImputations.checked)
-            .filter(function(d) {return d != 0})) // TODO : if we decide to leave na values as na, this filter may need to be omited
-        .range(gridBackgroundColors)
-        .unknown("var(--sl-color-gray-600)")
 
     // create grid item elements
     gridContainerD3.selectAll("div")
@@ -317,8 +307,8 @@ function sortGrid() {
         case "value-high": // sort value high-low
             d3.selectAll("div.grid-container")
                 .sort((a, b) => {
-                    var aValue = parseInt(a.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) | 0
-                    var bValue = parseInt(b.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) | 0
+                    var aValue = parseFloat(a.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) || 0
+                    var bValue = parseFloat(b.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) || 0
                     if (gridRateSwitch.value == "rate") {
                         aValue /= a.properties.population / 1000
                         bValue /= b.properties.population / 1000
@@ -330,8 +320,8 @@ function sortGrid() {
         case "value-low": // sort value low-high
             d3.selectAll("div.grid-container")
                 .sort((a, b) => {
-                    var aValue = parseInt(a.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) | 0
-                    var bValue = parseInt(b.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) | 0
+                    var aValue = parseFloat(a.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) || 0
+                    var bValue = parseFloat(b.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) || 0
                     if (gridRateSwitch.value == "rate") {
                         aValue /= a.properties.population / 1000
                         bValue /= b.properties.population / 1000
@@ -351,8 +341,8 @@ function sortGrid() {
         default: // sort value high-low
             d3.selectAll("div.grid-container")
                 .sort((a, b) => {
-                    var aValue = parseInt(a.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) | 0
-                    var bValue = parseInt(b.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) | 0
+                    var aValue = parseFloat(a.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) || 0
+                    var bValue = parseFloat(b.properties.data[gridDataSource][gridDataVariable][gridHistOrProj].at(-1)) || 0
                     if (gridRateSwitch.value == "rate") {
                         aValue /= a.properties.population / 1000
                         bValue /= b.properties.population / 1000

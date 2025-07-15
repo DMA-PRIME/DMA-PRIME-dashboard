@@ -178,9 +178,9 @@ function createChoropleth(data, mapType, dataSource, dataVariable, imputations=t
             var thisData = data.features[0].properties.data[dataSource][dataVariable]['historical']
             if (thisData.length > 0) {
                 if (mapType == "rate") {
-                    arr =  thisData.map(d => (d | 1) / data.features[0].properties.population * 1000)
+                    arr =  thisData.map(d => (d || 1) / data.features[0].properties.population * 1000)
                 } else {
-                    arr =  thisData.map(d => d | 1)
+                    arr =  thisData.map(d => d || 1)
                 }
             } else {
                 arr = [1]
@@ -191,9 +191,9 @@ function createChoropleth(data, mapType, dataSource, dataVariable, imputations=t
         
                 if (thisData.length > 0 && (imputations || !d.properties.data.imputation)) {
                     if (mapType == "rate") {
-                        return (parseInt(thisData.at(-1)) | 1) * 1000 / d.properties.population
+                        return (parseFloat(thisData.at(-1)) || 1) * 1000 / d.properties.population
                     } else {
-                        return parseInt(thisData.at(-1)) | 1
+                        return parseFloat(thisData.at(-1)) || 1
                     }
                 } else {
                     return mapType == "rate" ? 1000 / d.properties.population : 1
@@ -323,7 +323,7 @@ function drawLegend() {
 
         colorLegendContent.append("g").attr("id", "map-color-legend-axis")
             .attr('transform', `translate(${legendMargins.left} ${em+legendMargins.top})`)
-            .call(d3.axisBottom(d3.scaleLinear(choroplethColorMap.domain(), [0, legendWidth])).ticks(6))
+            .call(d3.axisBottom(d3.scaleLinear(choroplethColorMap.domain(), [0, legendWidth]).nice()).ticks(6))
 
         colorLegendContent.append("text")
             .attr("id", `map-legend-title`)
