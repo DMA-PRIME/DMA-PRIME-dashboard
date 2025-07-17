@@ -194,6 +194,8 @@ function redraw() {
     deckOverlay.setProps({
       layers: layers
     });
+    d3.select("#map-loading-div").style("visibility", "hidden")
+    d3.selectAll("#map-loading-div circle").classed("animate", false)
   }
   
 
@@ -1287,6 +1289,8 @@ function drawLargeAggregation() {
 }
 
 async function changeDataColumn() {
+    d3.select("#map-loading-div").style("visibility", "visible")
+    d3.selectAll("#map-loading-div circle").classed("animate", true)
     regionData = await d3.json(`/data/outbreak-detection/${mapRegionSelector.value}/${mapColumnSwitch.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`)
     stateFeature = regionData.features.find(d => d.properties.identifier == "state")
 
