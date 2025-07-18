@@ -51,9 +51,33 @@ function updateApproveButtons(dashboard) {
     });
 }
 
+function approveDashboard(dashboard) {
+    const approveBtn = document.getElementById(`${dashboard}-approve-button`);
+    if (approveBtn && !approveBtn.disabled) {
+        const requestOptions = {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ 'change': 'new', 'dashboard': dashboard })
+        };
+        fetch('/data/change-version', requestOptions)
+        .then(response => {
+            updateDates(dashboard);
+            updateApproveButtons(dashboard);
+        });
+    }
+}
+
+function approveAllDashboards() {
+    dashboards.forEach(dashboard => approveDashboard(dashboard));
+}
+
 // On page load, update all approve buttons
 window.addEventListener('DOMContentLoaded', function() {
     dashboards.forEach(dashboard => updateApproveButtons(dashboard));
+    const approveAllBtn = document.getElementById('approve-all-button');
+    if (approveAllBtn) {
+        approveAllBtn.addEventListener('click', approveAllDashboards);
+    }
 });
 
 d3.selectAll(".approve-data-button").on("click", function(d) {

@@ -45,16 +45,25 @@
 
         <sl-tab-panel id="overview-panel" name="overview" active>
             <div id="overview-container" class="panel-container">
-                <!-- <p>Select a dashboard to preview data</p> -->
-                <table id="overview-table">
-                    <tr id="overview-table-column-headers">{% for col in column_headers %}<th>{{ col.display }}</th>{% endfor %}</tr>
-                    {% for dash in dashboards %}<tr id="{{ dash.code }}-row">
-                        <th>{{ dash.display }}</th>
-                        {% for col in column_headers[1:4] %}<td id="{{ dash.code }}-{{ col.code }}" class="overview-table-date data-date" dashboard="{{ dash.code }}" dataVersion="{{ col.code }}">{{ dates[dash.code][col.code] }}</td>{% endfor %}
-                        <td id="{{ dash.code }}-approve"><sl-button id="{{ dash.code }}-approve-button" class="approve-data-button overview" dashboard="{{ dash.code }}" dataVersion="new">Approve New Data</sl-button></td>
-                        <td id="{{ dash.code }}-revert"><sl-button id="{{ dash.code }}-revert-button" class="approve-data-button overview" dashboard="{{ dash.code }}" dataVersion="previous">Revert to Last Approved Data</sl-button></td>
-                    </tr>{% endfor %}
-                </table>
+                <div style="width: 100%;">
+                    <table id="overview-table">
+                        <tr id="overview-table-column-headers">
+                            {% for col in column_headers %}<th>{{ col.display }}</th>{% endfor %}
+                            <th style="text-align: right; vertical-align: top; border-bottom: 2px solid black; background: transparent;">
+                                <sl-button id="approve-all-button" variant="success" size="large" pill style="font-size: 1.1em; margin-right: 0;">
+                                    <sl-icon slot="prefix" name="check2-circle"></sl-icon>
+                                    Approve All
+                                </sl-button>
+                            </th>
+                        </tr>
+                        {% for dash in dashboards %}<tr id="{{ dash.code }}-row">
+                            <th>{{ dash.display }}</th>
+                            {% for col in column_headers[1:4] %}<td id="{{ dash.code }}-{{ col.code }}" class="overview-table-date data-date" dashboard="{{ dash.code }}" dataVersion="{{ col.code }}">{{ dates[dash.code][col.code] }}</td>{% endfor %}
+                            <td id="{{ dash.code }}-approve"><sl-button id="{{ dash.code }}-approve-button" class="approve-data-button overview" dashboard="{{ dash.code }}" dataVersion="new">Approve New Data</sl-button></td>
+                            <td id="{{ dash.code }}-revert"><sl-button id="{{ dash.code }}-revert-button" class="approve-data-button overview" dashboard="{{ dash.code }}" dataVersion="previous">Revert to Last Approved Data</sl-button></td>
+                        </tr>{% endfor %}
+                    </table>
+                </div>
             </div>
         </sl-tab-panel>
         {% for dash in dashboards %}
