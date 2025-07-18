@@ -108,6 +108,13 @@
         </a>
         {% endif %}
 
+        {# Data-approval icon for liorr@clemson.edu or admin in development #}
+        {% if (current_user.email == 'liorr@clemson.edu') or (DEVELOPMENT and current_user.email == 'admin') %}
+        <a style="float: right; margin-right: 17px;" href="{{ url_for('approval_page') }}">
+          <sl-icon-button name="star"></sl-icon-button>
+        </a>
+        {% endif %}
+
         {% if session["user_id"] %}
         <sl-button id="log_out" style="float: right; font-size: 2rem; margin-top: 3px; align-items: center;" size="medium">
         <a href="{{ url_for('auth.logout') }}">Logout</a>

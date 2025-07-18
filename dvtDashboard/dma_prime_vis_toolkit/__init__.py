@@ -3,7 +3,7 @@ import os
 import datetime
 import pandas as pd
 
-from flask import Flask, render_template, session, request
+from flask import Flask, render_template, session, request, current_app
 from flask_login import login_required
 from flask_bcrypt import Bcrypt
 
@@ -101,7 +101,8 @@ def create_app(development=False, dataDir=None):
     @login_required
     @admin_required
     def admin_controls():
-        return render_template("admin/admin.html")
+        from flask import current_app
+        return render_template("admin/admin.html", DEVELOPMENT=current_app.config['DEVELOPMENT'])
     
     @app.route('/data-approval', methods=['GET'])
     @login_required
