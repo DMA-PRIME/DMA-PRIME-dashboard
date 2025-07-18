@@ -102,7 +102,7 @@ def create_app(development=False, dataDir=None):
     @admin_required
     def admin_controls():
         from flask import current_app
-        return render_template("admin/admin.html", DEVELOPMENT=current_app.config['DEVELOPMENT'])
+        return render_template("admin/admin.html", DEVELOPMENT=current_app.config['DEVELOPMENT'], data_approvers=current_app.config['DATA_APPROVERS'])
     
     @app.route('/data-approval', methods=['GET'])
     @login_required

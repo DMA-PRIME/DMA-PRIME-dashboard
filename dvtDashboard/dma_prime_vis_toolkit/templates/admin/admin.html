@@ -109,7 +109,7 @@
         {% endif %}
 
         {# Data-approval icon for liorr@clemson.edu or admin in development #}
-        {% if (current_user.email == 'liorr@clemson.edu') or (DEVELOPMENT and current_user.email == 'admin') %}
+        {% if (current_user.email in data_approvers) or DEVELOPMENT %}
         <a style="float: right; margin-right: 17px;" href="{{ url_for('approval_page') }}">
           <sl-icon-button name="star"></sl-icon-button>
         </a>
