@@ -161,6 +161,16 @@
       </a>
     </div>
 
+    {# Data-approval icon for liorr@clemson.edu or admin in development #}
+    {% if current_user.data_approver or (current_user.access_level == 1 and DEVELOPMENT) %}
+    <div class="subpage">
+      <a href="{{ url_for('approval_page') }}">
+        <sl-icon name="star"></sl-icon>
+        <p>Data Approval</p>    
+      </a>
+    </div>
+    {% endif %}
+
   </div>
 
   <script>

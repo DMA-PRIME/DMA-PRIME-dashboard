@@ -10,9 +10,10 @@ from flask_bcrypt import Bcrypt
 from werkzeug.middleware.proxy_fix import ProxyFix
 
 from .utility import *
-from .authenticate import login_manager, admin_required  # login_manager & admin_required stay as before
+from .authenticate import login_manager
+from .admin import admin_required
 from .database import User
-from .data_handling import get_data_date
+from .data_handling import get_data_date, data_approver_required
 
 # ensure the authenticate module itself is available for blueprint registration
 from . import authenticate
@@ -56,13 +57,13 @@ def create_app(development=False, dataDir=None):
             test_user = User(
                 "admintest", "admintest", 
                 Bcrypt().generate_password_hash("adminpassword"),
-                access_level=1, verified_user=True
+                access_level=1, data_approver=True, verified_user=True
             )
             db.session.add(test_user)
             test_user = User(
                 "usertest", "usertest", 
                 Bcrypt().generate_password_hash("userpassword"),
-                access_level=0, verified_user=True
+                access_level=0, data_approver=True, verified_user=True
             )
             db.session.add(test_user)
             test_user = User(
@@ -102,14 +103,12 @@ def create_app(development=False, dataDir=None):
     @admin_required
     def admin_controls():
         from flask import current_app
-        return render_template("admin/admin.html", DEVELOPMENT=current_app.config['DEVELOPMENT'], data_approvers=current_app.config['DATA_APPROVERS'])
+        return render_template("admin/admin.html")
     
     @app.route('/data-approval', methods=['GET'])
     @login_required
-    @admin_required
+    @data_approver_required
     def approval_page():
-        session['data-approval'] = True
-
         column_headers = [{'display':'Disease', 'code': 'disease'},
                           {'display':'Date of Current Data', 'code': 'current'},
                           {'display':'Date of New Data', 'code': 'new'},
@@ -125,7 +124,7 @@ def create_app(development=False, dataDir=None):
     @login_required
     def respiratory():
 
-        data_version = get_data_version_from_request(request, current_user, development)
+        data_version = get_data_version_from_request(request, current_user)
 
         
         file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'metadata.json')
@@ -156,7 +155,7 @@ def create_app(development=False, dataDir=None):
     @app.route('/mobile-health-clinics', methods=['GET'])
     @login_required
     def mobile_health_clinics():
-        data_version = get_data_version_from_request(request, current_user, development)
+        data_version = get_data_version_from_request(request, current_user)
 
         metadata = {'data_version': data_version}
 
@@ -178,7 +177,7 @@ def create_app(development=False, dataDir=None):
     @login_required
     def opioid_hcv_hiv():
 
-        data_version = get_data_version_from_request(request, current_user, development)
+        data_version = get_data_version_from_request(request, current_user)
 
         
         file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'opioid_hcv_hiv', 'metadata.json')
@@ -204,7 +203,7 @@ def create_app(development=False, dataDir=None):
     @app.route('/outbreak-detection', methods=['GET'])
     @login_required
     def outbreak_detection():
-        data_version = get_data_version_from_request(request, current_user, development)
+        data_version = get_data_version_from_request(request, current_user)
         
         file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'other_infectious_diseases', 'metadata.json')
         decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'other_infectious_diseases', 'encrypt_key.bin')
@@ -229,7 +228,7 @@ def create_app(development=False, dataDir=None):
     @app.route('/wastewater', methods=['GET'])
     @login_required
     def waste_water():        
-        data_version = get_data_version_from_request(request, current_user, development)
+        data_version = get_data_version_from_request(request, current_user)
         
         file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'waste_water', 'metadata.json')
         decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'waste_water', 'encrypt_key.bin')

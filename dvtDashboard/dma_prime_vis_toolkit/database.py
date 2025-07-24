@@ -15,14 +15,16 @@ class User(UserMixin, db.Model):
     username = db.Column(db.String(200), nullable=True)
     password = db.Column(db.String(200), nullable=False)
     access_level = db.Column(db.Integer, default=0)
+    data_approver = db.Column(db.Boolean, default=False)
     verified_user = db.Column(db.Boolean, default=False)
     two_factor_auth = db.Column(db.String(200), nullable=True)
 
-    def __init__(self, email, username, password, access_level, verified_user):
+    def __init__(self, email, username, password, access_level, data_approver=False, verified_user=False):
         self.email = email
         self.username = username
         self.password = password
         self.access_level = access_level
+        self.data_approver = data_approver
 
 @click.command('init-db')
 def init_db_command():

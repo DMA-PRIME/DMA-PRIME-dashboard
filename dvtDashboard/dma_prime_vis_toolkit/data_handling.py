@@ -1,6 +1,8 @@
+import functools
+
 from .utility import * 
 from flask import (
-    Blueprint, send_file, current_app, request, abort
+    Blueprint, flash, send_file, redirect, url_for, current_app, request
 )
 import os
 import shutil
@@ -27,7 +29,7 @@ def health_care_facility():
 @login_required
 def get_respiratory_hospitalizations(region_size='zcta', disease='covid-19'):
     # hospitalization data based on disease
-    data_version = get_data_version_from_request(request, current_user, current_app.config['DEVELOPMENT'])
+    data_version = get_data_version_from_request(request, current_user)
     file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', region_size, f'{disease}.json')
     decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'encrypt_key.bin')
     return decrypt(file, decrypt_key)
@@ -36,7 +38,7 @@ def get_respiratory_hospitalizations(region_size='zcta', disease='covid-19'):
 @login_required
 def get_all_respiratory_hospitalizations(region_size='zcta', disease='covid-19'):
     # hospitalization data based on disease
-    data_version = get_data_version_from_request(request, current_user, current_app.config['DEVELOPMENT'])
+    data_version = get_data_version_from_request(request, current_user)
     file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', region_size, f'{disease}.extended.json')
     decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'encrypt_key.bin')
     return decrypt(file, decrypt_key)
@@ -44,7 +46,7 @@ def get_all_respiratory_hospitalizations(region_size='zcta', disease='covid-19')
 @bp.route('/opioid-hcv-hiv/<disease>', methods=['GET'])
 @login_required
 def get_opioid_hcv_hiv(disease='opioid'):
-    data_version = get_data_version_from_request(request, current_user, current_app.config['DEVELOPMENT'])
+    data_version = get_data_version_from_request(request, current_user)
     file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'opioid_hcv_hiv', f'{disease}_zcta_hospitalization_data.json')
     decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'opioid_hcv_hiv', 'encrypt_key.bin')
     return decrypt(file, decrypt_key)
@@ -52,7 +54,7 @@ def get_opioid_hcv_hiv(disease='opioid'):
 @bp.route('/outbreak-detection/<region_size>/<column>', methods=['GET'])
 @login_required
 def get_state_disease_hospitalizations(region_size='region', column='encounters'):
-    data_version = get_data_version_from_request(request, current_user, current_app.config['DEVELOPMENT'])
+    data_version = get_data_version_from_request(request, current_user)
     file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'other_infectious_diseases',region_size, f'{column}_data.json')
     decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'other_infectious_diseases', 'encrypt_key.bin')
     return decrypt(file, decrypt_key)
@@ -60,7 +62,7 @@ def get_state_disease_hospitalizations(region_size='region', column='encounters'
 @bp.route('/waste-water/<site>', methods=['GET'])
 @login_required
 def get_wastewater_data(site):
-    data_version = get_data_version_from_request(request, current_user, current_app.config['DEVELOPMENT'])
+    data_version = get_data_version_from_request(request, current_user)
     file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'waste_water', f'{site}.json')
     decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'waste_water', 'encrypt_key.bin')
     return decrypt(file, decrypt_key)
@@ -68,7 +70,7 @@ def get_wastewater_data(site):
 @bp.route('/mobile-health-clinic-events', methods=['GET'])
 @login_required
 def get_mobile_health_clinic_events():
-    data_version = get_data_version_from_request(request, current_user, current_app.config['DEVELOPMENT'])
+    data_version = get_data_version_from_request(request, current_user)
     file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'mhc', 'clemson_rural_health_event_data.json')
     decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'mhc', 'encrypt_key.bin')
     return decrypt(file, decrypt_key)
@@ -95,10 +97,22 @@ def icon(type):
 
     return send_file(file_path)
 
-# approval
+### Data Approval ###
+def data_approver_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if not current_user.data_approver:
+            current_app.logger.info(f'{current_user.email} attempted to view admin page')
+            flash("Access Denied: Data approval access required")
+            return redirect(url_for('index'))
+
+        return view(**kwargs)
+
+    return wrapped_view
+
 @bp.route('/change-version', methods=['PUT'])
 def change_version():
-    if not (current_user.email == 'liorr@clemson.edu' or current_app.config['DEVELOPMENT']):
+    if not current_user.data_approver:
         current_app.logger.info(f'{current_user.email} attempted to retrieve data date')
         return 'Need data approval access', 401
     
@@ -128,7 +142,7 @@ def change_version():
 @bp.route('/get-date/<data_version>/<dashboard>', methods=['GET'])
 def send_data_date(data_version, dashboard):
 
-    if not (current_user.email == 'liorr@clemson.edu' or current_app.config['DEVELOPMENT']):
+    if not current_user.data_approver:
         current_app.logger.info(f'{current_user.email} attempted to retrieve data date')
         return 'Need data approval access', 401
     
