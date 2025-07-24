@@ -11,13 +11,13 @@ export { zctaData,
 var currentWeek = parseDate(metadata.current_week)
 
 var startDate = parseDate(metadata.start_date)
-var historicalDates = d3.timeDay.range(startDate, new Date(currentWeek).setDate(currentWeek.getDate()+1), 7)
+var historicalDates = d3.timeDay.range(startDate, d3.timeDay.offset(currentWeek, 1), 7)
 
 var minDate = parseDate(metadata.min_date)
-var allHistoricalDates = d3.timeDay.range(minDate, new Date(currentWeek).setDate(currentWeek.getDate()+1), 7)
+var allHistoricalDates = d3.timeDay.range(minDate, d3.timeDay.offset(currentWeek, 1), 7)
 
 var endDate = parseDate(metadata.end_date)
-var predictionDates = d3.timeDay.range(currentWeek, new Date(endDate).setDate(endDate.getDate()+1), 7)
+var predictionDates = d3.timeDay.range(currentWeek, d3.timeDay.offset(endDate, 1), 7)
 
 const zctaData = await d3.json(`/data/respiratory/zcta/covid-19?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`)
 await Promise.allSettled([ // wait for following to be defined/load in
@@ -191,6 +191,7 @@ function drawTooltip(d, ttpSVG, header, footer, dataSource, dataVariable, rate=f
                 .attr("height", d => yScale(0) - yScale(d))
                 .attr("width", historicalBarWidth)
                 .attr("fill", dataSourceColorMap[dataSrc])
+                .attr("transform", `translate(-${historicalBarWidth}, 0)`)
         }
     }
     
@@ -385,7 +386,7 @@ function drawTooltip(d, ttpSVG, header, footer, dataSource, dataVariable, rate=f
         .range([ttpHeight-ttpMargins.bottom, ttpMargins.top])
 
     var xScaleHistorical = d3.scaleTime()
-        .domain(d3.extent(historicalDatesArray))
+        .domain([d3.timeDay.offset(startDate, -7), currentWeek])
         .range([ttpMargins.left, ttpMargins.left + ttpGraphWidth*ttpHistoryWidthPercentage]) 
     var xScalePrediction = d3.scaleTime()
         .domain(d3.extent(predictionDates))

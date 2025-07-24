@@ -1,4 +1,4 @@
-import { zctaData, historicalDates, currentWeek, gridLineStyle, gridItemDataSources, parseDate, getDataAsArray, drawTooltip } from "/static/js/respiratory/script.js";
+import { zctaData, historicalDates, startDate, currentWeek, gridLineStyle, gridItemDataSources, parseDate, getDataAsArray, drawTooltip } from "/static/js/respiratory/script.js";
 export { gridWidth, gridHeight, updateGridData, sortGrid, setupGridTooltip }
 
 await Promise.allSettled([ // wait for following to be defined/load in
@@ -180,7 +180,7 @@ function updateGridData() {
         .unknown("var(--sl-color-gray-600)")
 
     var xScale = d3.scaleTime()
-                .domain([historicalDates[0], historicalDates.at(-1)])
+                .domain([d3.timeDay.offset(startDate, -7), currentWeek])
                 .range([0, gridItemWidth*.75]) 
 
     // draw grid graph        
