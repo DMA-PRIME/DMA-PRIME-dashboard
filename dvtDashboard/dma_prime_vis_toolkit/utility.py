@@ -52,13 +52,13 @@ def decrypt(file_name, encrypt_key):
         current_app.logger.error("Incorrect decryption of ", file_name)
         raise e
     
-def get_data_version_from_request(request, current_user, development, error='silent'):
+def get_data_version_from_request(request, current_user, error='silent'):
     data_version = request.args.get('data_version')
 
     if data_version is None:
         data_version = 'current'
 
-    if data_version is not 'current' and not (current_user.email in current_app.config['DATA_APPROVERS'] or current_app.config['DEVELOPMENT']):
+    if data_version is not 'current' and not current_user.data_approver:
         current_app.logger.info(f'{current_user.email} attempted to view a dashboard data preview page')
         data_version = 'current'
 

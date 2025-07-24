@@ -1,4 +1,3 @@
-import functools
 import pyotp
 import qrcode
 from io import BytesIO
@@ -191,14 +190,3 @@ def reset_password(token):
     flash("Password Changed Succesfully. Please Log in")
     return redirect("/auth/login")
 
-def admin_required(view):
-    @functools.wraps(view)
-    def wrapped_view(**kwargs):
-        if current_user.access_level != 1:
-            current_app.logger.info(f'{current_user.email} attempted to view admin page')
-            flash("Access Denied: Admin access required")
-            return redirect(url_for('index'))
-
-        return view(**kwargs)
-
-    return wrapped_view

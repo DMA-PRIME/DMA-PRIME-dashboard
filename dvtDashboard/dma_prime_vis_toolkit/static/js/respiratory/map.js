@@ -418,7 +418,7 @@ function drawLargeStateHospitalizations() {
     }
 
     function xAxisDisplayFunc(svg, stateXScale, stateWidth, stateHeight, stateMargins, diseaseDisplayNames) {
-        var allWeeks = d3.timeDay.range(startDate, d3.timeDay.offset(endDate, 7), 7)
+        var allWeeks = d3.timeDay.range(d3.timeDay.offset(startDate, -7), endDate, 7)
         var xAxis = svg.select(".x-axis")
         var svgMajorXAxis = xAxis.append("g")
             .attr("id", "map-state-hospitalizations-large-major-xaxis")
@@ -496,13 +496,14 @@ async function drawStateBarChart(svgDOM, subtitleDOM, stateMargins, yAxisDisplay
     stateMargins.left += Math.max(20, temp.node().getBBox().width)
 
     var stateXScale = d3.scaleTime()
-                .domain([startDate, d3.timeDay.offset(endDate, 7)]).range([stateMargins.left, stateWidth - stateMargins.right])    
+                .domain([d3.timeDay.offset(startDate, 7), endDate]).range([stateMargins.left, stateWidth - stateMargins.right])    
 
     var stateYScale = d3.scaleLinear()
         .domain([0, maxVal])
         .nice()
         .range([stateHeight-stateMargins.bottom, stateMargins.top])
 
+    var barWidth = (stateWidth - (stateMargins.left + stateMargins.right)) / stateData.length
     svg.append("g")
         .selectAll("rect")
         .data(stateData)
@@ -511,10 +512,11 @@ async function drawStateBarChart(svgDOM, subtitleDOM, stateMargins, yAxisDisplay
         .attr("x", (d) => stateXScale(parseDate(d["Date"])))
         .attr("y", d => stateYScale(d["count"]))
         .attr("height", d => stateYScale(0) - stateYScale(d["count"]))
-        .attr("width", (stateWidth - (stateMargins.left + stateMargins.right)) / stateData.length)
+        .attr("width", barWidth)
         .attr("stroke", "var(--sl-color-neutral-1000)")
         .attr("stroke-width", 1)
         .attr("fill", d => dayjs(parseDate(d["Date"])).isAfter(currentWeek) ? "var(--sl-color-neutral-600)" : "var(--sl-color-neutral-100)")
+        .attr("transform", `translate(-${barWidth}, 0)`)
 
     yAxisDisplayFunc(svg, stateYScale, stateWidth, stateHeight, stateMargins, diseaseDisplayNames)
     xAxisDisplayFunc(svg, stateXScale, stateWidth, stateHeight, stateMargins, diseaseDisplayNames)

@@ -1,3 +1,4 @@
+import functools
 
 from flask import (
     Blueprint, flash, redirect, render_template, request, url_for, current_app
@@ -7,11 +8,22 @@ from flask_bcrypt import Bcrypt
 from flask_login import login_required, current_user
 
 from .database import db, User
-from .authenticate import admin_required #login_required, 
 import jwt
 
 bp = Blueprint('admin', __name__, url_prefix='/admin') # allow admin.py to import these routes
 
+
+def admin_required(view):
+    @functools.wraps(view)
+    def wrapped_view(**kwargs):
+        if current_user.access_level != 1:
+            current_app.logger.info(f'{current_user.email} attempted to view admin page')
+            flash("Access Denied: Admin access required")
+            return redirect(url_for('index'))
+
+        return view(**kwargs)
+
+    return wrapped_view
 
 @bp.route("/add-user", methods=['GET', 'POST'])
 @login_required
@@ -105,6 +117,11 @@ def change_user():
                 the_user.access_level = int(new_value)
                 db.session.commit()
                 current_app.logger.info(f'{current_user.email} changed access_level of {email}')
+            elif field == "data_approver":
+                the_user.data_approver = new_value.lower() == 'true' or new_value == '1' 
+                print(the_user.data_approver)
+                db.session.commit()
+                current_app.logger.info(f'{current_user.email} changed data_approver status of {email}')
 
         except Exception as e:
             current_app.logger.info(f'{current_user.email} attempted to change {field} of {email}')
