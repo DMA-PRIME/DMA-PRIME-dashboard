@@ -169,18 +169,40 @@ def verify_email(token):
     flash("Email confirmed successfully")
     return redirect("/auth/login")
 
+@bp.route("/reset_password", methods=['GET', 'POST'])
+def get_email():
+    if request.method == 'GET':
+        return render_template("authentication/reset_password.html")
+    email = request.form["email"]
+    curr_user = User.query.filter_by(email=email).first()
+
+    if curr_user:
+        token = jwt.encode({"email": email}, current_app.config["SECRET_KEY"], algorithm='HS256')
+        reset_password_url =  url_for("auth.reset_password", token=token, _external=True)
+        
+        if not current_app.config['DEVELOPMENT']:
+            reset_password_url = 'https://dmaprime.clemson.edu/auth' + reset_password_url.split("/auth")[-1]
+        return redirect(reset_password_url)
+    else:
+        flash("Email not found")
+        return render_template('authentication/reset_password.html')
+    
+
 @bp.route("/reset_password/<token>", methods=['GET', 'POST'])
 def reset_password(token):
     data = jwt.decode(token, current_app.config["SECRET_KEY"], algorithms=["HS256"])
     email = data["email"]
-    if request.method == 'GET':
-        return render_template("authentication/reset_password.html", email=email)
-    password = request.form["password"]
-    username = request.form["username"]
-
     curr_user = User.query.filter_by(email=email).first()
+
+    if request.method == 'GET':
+        return render_template("authentication/reset_password.html", email=email, verified=curr_user.verified_user)
+    
+    password = request.form["password"]
     curr_user.password = Bcrypt().generate_password_hash(password)
-    curr_user.username = username
+
+    if not curr_user.verified_user:
+        username = request.form["username"]
+        curr_user.username = username
     curr_user.verified_user = True
     db.session.commit()
     session.clear()

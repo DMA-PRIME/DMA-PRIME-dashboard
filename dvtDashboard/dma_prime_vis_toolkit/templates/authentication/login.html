@@ -122,6 +122,7 @@
     <form method="post" id="login-form">
       <sl-input type="text" label="Email/Username" id="email_username" name="email_username" required></sl-input>
       <sl-input label="Password" type="password" name="password" id="password-input" password-toggle required></sl-input>
+      <p><a href="/auth/reset_password">Reset Password</a></p>
       <p id="login-error"> 
         <!-- if there is an error passed through flask, display it -->
         {% for message in get_flashed_messages() %}
