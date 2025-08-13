@@ -152,6 +152,32 @@ def create_app(development=False, dataDir=None):
         ]
         return render_template('respiratory/respiratory-base.html', panels=panels, metadata=metadata)
     
+    @app.route('/respiratory-model-metrics', methods=['GET'])
+    @login_required
+    def respiratory_model_metrics():
+
+        data_version = get_data_version_from_request(request, current_user)
+        
+        file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'metadata.json')
+        decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'encrypt_key.bin')
+
+        metadata = dict(decrypt(file, decrypt_key))
+        metadata['data_version'] = data_version
+
+        panels = [
+            {
+                'name': 'main',
+                'displayName': 'DMA-PRIME',
+            },
+            {
+                'name': 'metrics',
+                'displayName': 'Model Merics',
+                'active': True,
+                'html': 'respiratory/respiratory-model-metric-panel.html'
+            },
+        ]
+        return render_template('respiratory/respiratory-model-base.html', panels=panels, metadata=metadata)
+
     @app.route('/mobile-health-clinics', methods=['GET'])
     @login_required
     def mobile_health_clinics():

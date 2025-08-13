@@ -1,0 +1,79 @@
+{% set min_width = "350px" %}
+{% extends "subtemplates/panel.html" %}
+
+{% block options %}
+<div id="metric-options" class="sidebar-container">
+
+  <!-- disease selector -->
+  <sl-select value="{{ metadata['diseases'].keys() | first }}" id="metric-disease-selector" class="fill-width" size="small">
+    <p slot="label">Select a disease or group of diseases</p>
+    {% for disease, name in metadata['diseases'].items() %}
+    <sl-option value="{{ disease }}">{{ name }}</sl-option>
+    {% endfor %}
+  </sl-select>
+
+  <!-- region selector -->
+  <sl-select value="region" id="metric-region-selector" class="fill-width" size="small">
+    <p slot="label">Geographic unit</p>
+    {% for region, name in metadata['region_sizes'].items() %}
+    <sl-option value="{{ region }}">{{ name }}</sl-option>
+    {% endfor %}
+  </sl-select>
+
+  <!-- data source -->
+   <sl-select value="state" id="metric-data-source-selector" class="fill-width" size="small">
+    <p slot="label">Select data source</p>
+    <sl-tooltip content="Revenue and Fiscal Affairs data" trigger="hover" hoist>
+      <sl-option value="state" >State</sl-option>
+    </sl-tooltip>
+    <sl-tooltip content="Prisma Health and MUSC EHR data" trigger="hover" hoist>
+      <sl-option value="health-system">Health System</sl-option>
+    </sl-tooltip>
+  </sl-select>
+
+  <!-- data variable -->
+  <sl-select value="encounters" id="metric-data-variable-selector" class="fill-width" size="small">
+    <p slot="label">Select outcome variable</p>
+    <sl-tooltip content="In-patient hospitalizations and emergency department" trigger="hover" hoist>
+      <sl-option value="encounters" >Encounters</sl-option>
+    </sl-tooltip>
+    <sl-tooltip content="Positive tests" trigger="hover" hoist>
+      <sl-option value="positive-tests">Positive Tests</sl-option>
+    </sl-tooltip>
+    <sl-tooltip content="Average effective reproductive number" trigger="hover" hoist>
+      <sl-option value="rt">Transmission</sl-option>
+    </sl-tooltip>
+  </sl-select>
+  
+  <!-- grid item filtration (text) -->
+  <sl-input id="grid-text-filter" clearable>
+    <p slot="label">Filter by Location</p>
+  </sl-input>
+
+</div>
+
+{% endblock %}
+
+{% block contents %}
+<iframe id="model-metrics" title="Selected Model Metrics"></iframe>
+
+{% endblock %}
+
+{% block scripts %}
+
+  <!-- 1) Deck.gl UMD bundle (pin to 8.9.27) -->
+  <script src="https://unpkg.com/deck.gl@8.9.27/dist.min.js"></script>
+
+  <!-- 2) Your initialization + controls (unchanged) -->
+  <script>
+    dataVersion = 0;
+
+    // Controls
+    metricDiseaseSelector = document.getElementById("metric-disease-selector")
+    metricRegionSelector = document.getElementById("metric-region-selector")
+    metricDataSourceSelector = document.getElementById("metric-data-source-selector")
+    metricDataVariableSelector = document.getElementById("metric-data-variable-selector")
+
+  </script>
+
+{% endblock %}
