@@ -247,7 +247,7 @@ function drawTooltip(d, ttpSVG, header, footer, dataSource, dataVariable, rate=f
     var regionInfo = header.select(".tooltip-region-info")
     regionInfo.node().innerHTML = ""
     if (grid) {
-        regionInfo.append("p").html(`Zip Code: ${data.id}`)
+        regionInfo.append("p").html(`ZCTA: ${data.id}`)
     } else {
         if (mapRegionSelector.value != "state") {
             regionInfo.append("p").html(`${metadata.region_sizes[mapRegionSelector.value]}: ${data.id}`)
