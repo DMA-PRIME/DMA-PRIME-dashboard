@@ -46,9 +46,22 @@
   </sl-select>
   
   <!-- grid item filtration (text) -->
-  <sl-input id="grid-text-filter" clearable>
-    <p slot="label">Filter by Location</p>
-  </sl-input>
+  <sl-dropdown sync="width">
+
+    <sl-input slot="trigger" id="location-id-search" clearable type="text" spellcheck="false">
+      <p slot="label">Location</p>
+      <sl-icon name="chevron-down" slot="suffix" id="location-id-search-suffix" class="select__combobox"></sl-icon>
+    </sl-input>
+    
+    <sl-menu id="location-menu">
+      <sl-menu-item value="south carolina" class="state-id location-id">South Carolina</sl-menu-item>
+      <sl-menu-item value="lowcountry" class="region-id location-id">Lowcountry</sl-menu-item>
+      <sl-menu-item value="midlands" class="region-id location-id">Midlands</sl-menu-item>
+      <sl-menu-item value="pee dee" class="region-id location-id">Pee Dee</sl-menu-item>
+      <sl-menu-item value="upstate" class="region-id location-id">Upstate</sl-menu-item>
+    </sl-menu>
+  </sl-dropdown>
+  
 
 </div>
 
@@ -61,12 +74,8 @@
 
 {% block scripts %}
 
-  <!-- 1) Deck.gl UMD bundle (pin to 8.9.27) -->
-  <script src="https://unpkg.com/deck.gl@8.9.27/dist.min.js"></script>
-
-  <!-- 2) Your initialization + controls (unchanged) -->
   <script>
-    dataVersion = 0;
+    var modelLocation = null
 
     // Controls
     explorationDiseaseSelector = document.getElementById("exploration-disease-selector")
@@ -74,6 +83,30 @@
     explorationDataSourceSelector = document.getElementById("exploration-data-source-selector")
     explorationDataVariableSelector = document.getElementById("exploration-data-variable-selector")
 
+    // Location selector
+    locationIdSearch = document.getElementById("location-id-search")
+    locationMenu = document.getElementById("location-menu")
+
+    // 
+    modelExploration = document.getElementById("model-exploration")
+    
   </script>
+  
+  <script type="module">
+    await Promise.allSettled([ // wait for following to be defined/load in
+      customElements.whenDefined('sl-select'),
+      customElements.whenDefined('sl-option'),
+      customElements.whenDefined('sl-tooltip'),
+      customElements.whenDefined('sl-menu'),
+      customElements.whenDefined('sl-menu-item'),
+  ])
+  d3.selectAll("sl-menu-item.location-id").each(function(a, b, c, d) {
+    let menuItem = d3.select(this)
+    menuItem.classed("hide", !menuItem.classed(`${explorationRegionSelector.value}-id`))
+  })
+  </script>
+
+  <script src="{{ url_for('static', filename='js/respiratory/model-exploration-interactions.js') }}" type="module"></script>
+
 
 {% endblock %}

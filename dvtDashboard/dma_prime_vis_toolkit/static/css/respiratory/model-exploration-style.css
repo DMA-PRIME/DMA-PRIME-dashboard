@@ -9,3 +9,8 @@ iframe {
     width: 100%; */
     /* border: solid; */
 }
+
+
+.hide {
+    display: none;
+}
