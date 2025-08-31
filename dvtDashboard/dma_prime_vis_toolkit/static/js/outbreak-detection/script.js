@@ -57,48 +57,39 @@ function createBarGraph(svg, data, metadata, height, width, options = {}) {
   // 3) Now append your axes and bars onto graphSVG:
     const yAxis = graphSVG.append("g").attr("class", "y-axis");
     const xAxis = graphSVG.append("g").attr("class", "x-axis");
-    
-    var minMaxVal = mapRateSwitch.value == "rate" ? 1000.0/data.population : 1
-    var maxVal = d3.max(data.data) ? d3.max(data.data) : minMaxVal
-    // maxVal = d3.max(data.other) ? Math.max(maxVal, d3.max(data.other)) : maxVal
 
-    // figure out how much space is needed for the y-axis text
-    var temp = svg.append("text").text(d3.format(".2r")(maxVal)).attr("x", 0).attr("y", 0)
-
+    // Margins and scale definitions
     var margins = {
         "top": .5*em, 
         "bottom": 1.5*em + extraBottom,
         "left": 1*em,
-        "right": 0*em,
+        "right": .5*em,
     }
-    margins.left += Math.max(20, temp.node().getBBox().width)
-
-    if (mapColumnSwitch.value == "pos_tests") {
-        var percentages = data.data.map((pos_test, i) => pos_test / Math.max(data.other[i], 1))
-        temp.text(d3.format(".0%")(1))
-        margins.right += Math.max(10, temp.node().getBBox().width) + .75*em
-    }
+    
+    var minMaxVal = mapRateSwitch.value == "rate" ? 1000.0/data.population : 1
+    var maxVal = d3.max(data.data) ? d3.max(data.data) : minMaxVal
 
     var yScale = d3.scaleLinear()
         .domain([0, maxVal])
         .nice()
         .range([height-margins.bottom, margins.top])
 
+    // figure out how much space is needed for the y-axis text
+    var tempLeft = svg.append("text").text(d3.format(".2r")(yScale.domain()[1])).attr("x", 0).attr("y", 0)
+    var tempRight = svg.append("text").text(d3.format(".0%")(1)).attr("x", 0).attr("y", 0)
+
+    margins.left += Math.max(20, tempLeft.node().getBBox().width + 6)
+    if (mapColumnSwitch.value == "pos_tests") {
+        var percentages = data.data.map((pos_test, i) => pos_test / Math.max(data.other[i], 1))
+        margins.right += Math.max(10, tempRight.node().getBBox().width) + (isLargeTooltip ? 1.5*em : .5*em) + 6
+    }
+
+
     var start_date = parseDate(metadata.start_date)
     var xScale = d3.scaleTime()
         .domain([start_date, parseDate(metadata.end_date)])
         .nice()
         .range([margins.left, width - margins.right])
-
-    // graphSVG.append("g").selectAll("rect")
-    //     .data(data.other)
-    //     .enter()
-    //     .append("rect")
-    //     .attr("x", (d, i) => xScale(d3.timeDay.offset(start_date, (7 * i))))
-    //     .attr("y", d => yScale(d))
-    //     .attr("height", d => yScale(0) - yScale(d))
-    //     .attr("width", (width - (margins.left + margins.right)) / data.data.length)
-    //     .attr("fill", "var(--sl-color-neutral-400)")
 
     graphSVG.append("g").selectAll("rect")
         .data(data.data)
@@ -149,24 +140,11 @@ function createBarGraph(svg, data, metadata, height, width, options = {}) {
         .attr("fill", "var(--sl-color-neutral-1000)")
         .style("font-size", isLargeTooltip ? "var(--sl-font-size-x-small)" : "var(--sl-font-size-small)");
     // Dynamically offset left y-axis label just outside widest tick label
-    const yTickTexts = yTickGroup.selectAll("text").nodes();
-    const maxTickWidth = Math.max(...yTickTexts.map(t => t.getBBox().width), 30);
-    let labelPadding, minOffset;
+    var leftLabelOffset
     if (isLargeTooltip) {
-        labelPadding = -120;   // more space for large tooltip
-        minOffset = 8;        // more space from edge in large tooltip
-        var minAxisOffset = -100; // always at least 40px left of axis
+        leftLabelOffset = 0; // always 100px left of axis in large tooltip
     } else {
-        labelPadding = -30; // close to ticks in normal tooltip
-        minOffset = 4;      // minimal space in normal tooltip
-        var minAxisOffset = null;
-    }
-    let leftLabelOffset;
-    if (isLargeTooltip) {
-        leftLabelOffset = -10; // always 100px left of axis in large tooltip
-    } else {
-        leftLabelOffset = -maxTickWidth + labelPadding;
-        if (leftLabelOffset < minOffset) leftLabelOffset = minOffset;
+        leftLabelOffset = .75*em
     }
     yAxis.append("text")
         .attr("transform", `translate(${leftLabelOffset},${(yScale.range()[0] + yScale.range()[1]) / 2})rotate(-90)`)
@@ -205,9 +183,14 @@ function createBarGraph(svg, data, metadata, height, width, options = {}) {
             .attr("stroke-width", 1)
 
         // Right y-axis label (percent positive): fixed  padding from axis
-        const rightLabelPadding = 48;
+        var rightLabelOffset
+        if (isLargeTooltip) {
+            rightLabelOffset = 1.5; // always 100px left of axis in large tooltip
+        } else {
+            rightLabelOffset = .5*em
+        }
         yAxis2.append("text")
-            .attr("transform", `translate(${xScale.range()[1] + rightLabelPadding},${(yScale2.range()[0] + yScale2.range()[1]) / 2})rotate(90)`)
+            .attr("transform", `translate(${width - rightLabelOffset},${(yScale2.range()[0] + yScale2.range()[1]) / 2})rotate(90)`)
             .attr("text-anchor", "middle")
             .attr("fill", "blue")
             .attr("font-size", isLargeTooltip ? "var(--sl-font-size-x-small)" : "var(--sl-font-size-small)")
@@ -240,24 +223,27 @@ function createBarGraph(svg, data, metadata, height, width, options = {}) {
         .attr("dominant-baseline", "middle")
         .attr("fill", "var(--sl-color-neutral-1000)")
         .style("font-size", isLargeTooltip ? "var(--sl-font-size-x-small)" : "var(--sl-font-size-small)")
-        .text("Positive Tests");
-    var percentPosTest = legend.append("g");
-    percentPosTest.attr("transform", `translate(0, ${em})`);
-    percentPosTest.append("line")
-        .attr("x1", 0)
-        .attr("x2", .5*em)
-        .attr("y1", .5*em)
-        .attr("y2", .5*em)
-        .attr("stroke", "blue");
-    percentPosTest.append("text")
-        .attr("x", .5*1.5*em)
-        .attr("y", em/2)
-        .attr("dominant-baseline", "middle")
-        .attr("fill", "blue")
-        .style("font-size", isLargeTooltip ? "var(--sl-font-size-x-small)" : "var(--sl-font-size-small)")
-        .text("Percent Positive Tests");
+        .text(d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html());
+    if (mapColumnSwitch.value == "pos_tests") {
+        var percentPosTest = legend.append("g");
+        percentPosTest.attr("transform", `translate(0, ${em})`);
+        percentPosTest.append("line")
+            .attr("x1", 0)
+            .attr("x2", .5*em)
+            .attr("y1", .5*em)
+            .attr("y2", .5*em)
+            .attr("stroke", "blue");
+        percentPosTest.append("text")
+            .attr("x", .5*1.5*em)
+            .attr("y", em/2)
+            .attr("dominant-baseline", "middle")
+            .attr("fill", "blue")
+            .style("font-size", isLargeTooltip ? "var(--sl-font-size-x-small)" : "var(--sl-font-size-small)")
+            .text("Percent Positive Tests");
+    }
 
-    temp.remove()
+    tempLeft.remove()
+    tempRight.remove()
     
 }
 

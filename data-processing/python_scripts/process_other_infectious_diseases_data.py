@@ -16,7 +16,7 @@ other_column = {
     'encounter_plus_test': None,
 }
 
-region_file_identifiers = {'county': 'County', 'region': 'Region', 'zcta': 'ZIP'}
+region_file_identifiers = {'county': 'County', 'region': 'Region', 'zcta': 'ZCTA'}
 region_geojson_identifiers = {'county': 'NAME', 'region': 'Region', 'zcta': 'ZCTA'}
 
 diseases = []

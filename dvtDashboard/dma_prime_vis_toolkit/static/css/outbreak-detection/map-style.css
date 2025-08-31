@@ -12,7 +12,7 @@
 
 #map-sidebar {
     /* scroll vertically if the state aggregation overflows vertically */
-    overflow-y: scroll;
+    overflow-y: auto;
   }
   
   #map-content {
