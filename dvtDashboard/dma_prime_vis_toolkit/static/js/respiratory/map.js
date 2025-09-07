@@ -141,8 +141,6 @@ function getColor(feature) {
         if (mapTypeSwitch.value == "percentDifference") {
             var thisWeekDatum = parseFloat(thisData.values.at(expectedShortHistoryDataPoints-1))
             var lastWeekDatum = parseFloat(thisData.values.at(expectedShortHistoryDataPoints-2))
-            console.log(feature.properties.id, thisWeekDatum, lastWeekDatum, (thisWeekDatum - lastWeekDatum) / Math.abs(lastWeekDatum) * 100)
-            console.log(d3.rgb(choroplethColorMap((thisWeekDatum - lastWeekDatum) / Math.abs(lastWeekDatum) * 100)))
             c = d3.rgb(unknownColor)
             if (isNaN(thisWeekDatum) || lastWeekDatum) {
                 c = d3.rgb(choroplethColorMap((thisWeekDatum - lastWeekDatum) / Math.abs(lastWeekDatum) * 100))
