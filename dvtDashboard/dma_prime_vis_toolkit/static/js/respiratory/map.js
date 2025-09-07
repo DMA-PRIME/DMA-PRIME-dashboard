@@ -1,5 +1,5 @@
 const { GeoJsonLayer, IconLayer, TextLayer, MapboxOverlay } = deck;
-import { getDataAsArray, populationColorMap, unknownColor, getCenter, drawTooltip } from "/static/js/respiratory/script.js";
+import { getDataAsArray, outcomeVariableStringCrosswalk, populationColorMap, unknownColor, getCenter, drawTooltip } from "/static/js/respiratory/script.js";
 export { map, popup, selectedItems, deckOverlay, redraw, drawStateHospitalizations, drawLargeStateHospitalizations, updateMapTitle, updateMapTooltip }
 
 var regionData
@@ -141,13 +141,15 @@ function getColor(feature) {
         if (mapTypeSwitch.value == "percentDifference") {
             var thisWeekDatum = parseFloat(thisData.values.at(expectedShortHistoryDataPoints-1))
             var lastWeekDatum = parseFloat(thisData.values.at(expectedShortHistoryDataPoints-2))
+            console.log(feature.properties.id, thisWeekDatum, lastWeekDatum, (thisWeekDatum - lastWeekDatum) / Math.abs(lastWeekDatum) * 100)
+            console.log(d3.rgb(choroplethColorMap((thisWeekDatum - lastWeekDatum) / Math.abs(lastWeekDatum) * 100)))
             c = d3.rgb(unknownColor)
             if (isNaN(thisWeekDatum) || lastWeekDatum) {
                 c = d3.rgb(choroplethColorMap((thisWeekDatum - lastWeekDatum) / Math.abs(lastWeekDatum) * 100))
             } else if (thisWeekDatum == 0) {
                 c = d3.rgb("white")
             } else {
-                c = d3.rgb("#ffddff")
+                c = d3.rgb("#ff8800")
             }
         } else {
             var value
@@ -174,10 +176,10 @@ function getColor(feature) {
 
 function createChoropleth(data, mapType, population, outcomeVariable, imputations=true) {
     if (mapType == "percentDifference") {
-        choroplethColorMap = d3.scaleLinear()
-        .domain([-100, -50, -10, 0, 10, 50, 100, 500])
-        .range(d3.reverse(d3.schemeRdYlGn[10]).slice(1))
-        .unknown(unknownColor).nice()
+        choroplethColorMap = d3.scaleThreshold()
+        .domain([-100, -50, 0, 50, 100, 500])
+        .range(d3.reverse(d3.schemeRdBu[8]).slice(1))
+        .unknown(unknownColor)
     } else {
         var arr
         if (mapRegionSelector.value == "state") {
@@ -221,8 +223,8 @@ function drawLegend() {
 
     if (mapTypeSwitch.value == "percentDifference") {
 
-        var colors = d3.reverse(d3.schemeRdYlGn[10]).slice(1)
-        var labels = [-100, -50, -10, 0, 10, 50, 100, 500]
+        var colors = d3.reverse(d3.schemeRdBu[8]).slice(1)
+        var labels = [-100, -50, 0, 50, 100, 500]
         var legendLength = 350
         var legend = d3.select(choroplethLegendSVG)
             .attr("overflow", "visible")
@@ -259,8 +261,8 @@ function drawLegend() {
             .html(d => `${d}%`)
 
         var otherColors = legend.append("g")
-        var others = [["white", `No Hospitalizations`], 
-        ["#ffddff", `New Hospitalizations from Last Period`],
+        var others = [["white", `No ${outcomeVariableStringCrosswalk[mapOutcomeVariableSelector.value]}`], 
+        ["#ff8800", `New ${outcomeVariableStringCrosswalk[mapOutcomeVariableSelector.value]} from Last Period`],
         [unknownColor, "Unknown"]]
 
         others.forEach((d, i) => {
@@ -470,7 +472,7 @@ function drawLargeStateHospitalizations() {
     }
 
     function xAxisDisplayFunc(svg, stateXScale, stateWidth, stateHeight, stateMargins, diseaseDisplayNames) {
-        var allWeeks = [d3.timeDay.offset(startShortHistory, -7)].concat(allHistoricalDates)
+        var allWeeks = [d3.timeDay.offset(startShortHistory, -7)].concat(shortHistoryDates)
         var xAxis = svg.select(".x-axis")
         var svgMajorXAxis = xAxis.append("g")
             .attr("id", "map-state-hospitalizations-large-major-xaxis")
@@ -488,13 +490,13 @@ function drawLargeStateHospitalizations() {
             var thisText = d3.select(this)
             thisText.append("tspan")
                 .style("text-anchor", "middle")
-                .attr("x", i < a.length-1 ? (stateXScale(a[i+1].__data__)-stateXScale(d))/2 : stateXScale.range()[1]-stateXScale(d))
+                .attr("x", i < a.length-1 ? (stateXScale(a[i+1].__data__)-stateXScale(d))/2 : (stateXScale.range()[1]-stateXScale(d))/2)
                 .html(d3.timeFormat("%b")(d))
 
             thisText.append("tspan")
                 .style("text-anchor", "middle")
                 .attr("dy", 12)
-                .attr("x", i < a.length-1 ? (stateXScale(a[i+1].__data__)-stateXScale(d))/2 : stateXScale.range()[1]-stateXScale(d))
+                .attr("x", i < a.length-1 ? (stateXScale(a[i+1].__data__)-stateXScale(d))/2 : (stateXScale.range()[1]-stateXScale(d))/2)
                 .html(d3.timeFormat("%Y")(d))
         })
 
@@ -548,7 +550,7 @@ async function drawStateBarChart(svgDOM, subtitleDOM, stateMargins, yAxisDisplay
     stateMargins.left += Math.max(20, temp.node().getBBox().width) + stateMargins["axis-thickness"]
 
     var stateXScale = d3.scaleTime()
-                .domain([d3.timeDay.offset(startShortHistory, -7), lastDate]).range([stateMargins.left, stateWidth - stateMargins.right])    
+                .domain([d3.timeDay.offset(startShortHistory, -7), shortHistoryDates[expectedShortHistoryDataPoints-1]]).range([stateMargins.left, stateWidth - stateMargins.right])    
 
     var stateYScale = d3.scaleLinear()
         .domain([0, maxVal])

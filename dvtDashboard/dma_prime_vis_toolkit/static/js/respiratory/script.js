@@ -1,6 +1,7 @@
 
 export { zctaData, 
     populationColorMap, dataSourceColorMap, gridLineStyle, unknownColor,
+    outcomeVariableStringCrosswalk,
     gridItemDataSources, 
     getDataAsArray, getBoundsOfCoords, getCenter,
     drawTooltip }
@@ -468,7 +469,6 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, rat
 
     let lastHistoricalValueIndex = data.historical.values.findLastIndex(d => !isNaN(parseFloat(d)))
     let projectedValues = data.projected.values
-    console.log("pv0", projectedValues)
     if (projectedValues.length) {
         if (dayjs(historicalDatesArray.at(lastHistoricalValueIndex)).isSame(d3.timeDay.offset(data.projected.start_date, -7))) {
             // last historical date is week before projected start date
@@ -476,7 +476,6 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, rat
         } else {
             projectedValues.splice(0, 0, projectedValues[0])
         }
-        console.log("pv1", projectedValues)
         predictiveGroup.selectAll("path")
             .data(projectedValues.slice(1))
             .enter()
@@ -491,7 +490,6 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, rat
             )
             .attr("fill", populationColorMap[population]["projected"])
             .on("mouseover", function(event, d, a, b) {
-                console.log(event, d, a, b)
                 if (d !== null) {
                     var thisPointDate = d3.timeDay.offset(data.projected.start_date, 7*data.projected.values.indexOf(d))
                     var thisPointX = (xScale(thisPointDate)+xScale(d3.timeDay.offset(thisPointDate, -7)))/2
