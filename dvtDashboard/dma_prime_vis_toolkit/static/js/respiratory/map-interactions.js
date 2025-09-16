@@ -93,6 +93,9 @@ map.on("click", e => {
             .style("color", "black")
             .style("cursor", "pointer")
             .on("click", () => {
+                d3.select(modelExplorationButtonTooltipLarge).on("click", () => {
+                    window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapRegionSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
+                })
                 var largeTtp = d3.select(tooltipLarge)
                 tooltipLarge.show().then(async () => {
                     var allExtendedData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
@@ -106,6 +109,19 @@ map.on("click", e => {
                         mapPopulationSelector.value, mapOutcomeVariableSelector.value,
                         mapTypeSwitch.value == "rate", false, true, [])
                 })
+            })
+    }
+    if (popupContent.select(".model-exploration-icon-button").empty()) {
+        popupContent.append("sl-icon-button")
+            .attr("class", "model-exploration-icon-button")
+            .attr("name", "info-circle")
+            .style("position", "absolute")
+            .style("right", "40px")
+            .style("top", "0px")
+            .style("color", "black")
+            .style("cursor", "pointer")
+            .on("click", () => {
+                window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapRegionSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
             })
     }
     dataVersion++

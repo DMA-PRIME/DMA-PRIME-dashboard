@@ -2,8 +2,6 @@
 import { populationColorMap, unknownColor, getFeatureValue, getAllFeatureValues, drawTooltip } from "/static/js/respiratory/script.js";
 export { updateGrid, sortGridItems, filterGridItems, setupGridTooltip }
 
-var backgroundColors = d3.schemeReds[9].slice(1,5) //[1, 2, 3, 4].map(i => d3.schemeReds[9][i])
-
 var margins = { 
     top: 1.5*em, 
     right: 0, 
@@ -84,6 +82,9 @@ async function updateData() {
                     .attr("class", "grid-open-expanded-tooltip-button grid-tooltip-toolbar-button")
                     // .style("right", "30px")
                     .on("click", () => {
+                        d3.select(modelExplorationButtonTooltipLarge).on("click", () => {
+                            window.open(`/respiratory-model-exploration?disease=${gridDiseaseSelector.value}&geographic-unit=${gridRegionSelector.value}&population=${gridPopulationSelector.value}&outcome-variable=${gridOutcomeVariableSelector.value}&location=${location}`)
+                        })
                         var largeTtp = d3.select(tooltipLarge)
                         tooltipLarge.show().then(async () => {
                             var allExtendedData = await d3.json(`/data/respiratory/${gridRegionSelector.value}/${gridDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
@@ -103,7 +104,7 @@ async function updateData() {
                     .attr("name", "info-circle")
                     .attr("class", "grid-tooltip-toolbar-button grid-model-exploration-icon-button")
                     .on("click", () => {
-                        window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapRegionSelector.value}&population=${mapPopulationSelector.value}&ouctome-variable${mapOutcomeVariableSelector.value}&location=${location}`)
+                        window.open(`/respiratory-model-exploration?disease=${gridDiseaseSelector.value}&geographic-unit=${gridRegionSelector.value}&population=${gridPopulationSelector.value}&ouctome-variable=${gridOutcomeVariableSelector.value}&location=${location}`)
                     })
 
 

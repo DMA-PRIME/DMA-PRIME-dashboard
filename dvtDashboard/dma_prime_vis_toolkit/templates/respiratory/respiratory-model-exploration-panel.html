@@ -5,7 +5,8 @@
 <div id="exploration-options" class="sidebar-container">
 
   <!-- disease selector -->
-  <sl-select value="{{ metadata['diseases'].keys() | first }}" id="exploration-disease-selector" class="fill-width" size="small">
+  <sl-select value="{{ disease }}" id="exploration-disease-selector" class="fill-width"
+    size="small">
     <p slot="label">Select a disease or group of diseases</p>
     {% for disease, name in metadata['diseases'].items() %}
     <sl-option value="{{ disease }}">{{ name }}</sl-option>
@@ -13,100 +14,110 @@
   </sl-select>
 
   <!-- region selector -->
-  <sl-select value="region" id="exploration-region-selector" class="fill-width" size="small">
+  <sl-select value="{{ geographic_unit }}" id="exploration-region-selector" class="fill-width" size="small">
     <p slot="label">Geographic unit</p>
     {% for region, name in metadata['region_sizes'].items() %}
     <sl-option value="{{ region }}">{{ name }}</sl-option>
     {% endfor %}
   </sl-select>
 
-  <!-- data source -->
-   <sl-select value="state" id="exploration-data-source-selector" class="fill-width" size="small">
-    <p slot="label">Select data source</p>
-    <sl-tooltip content="Revenue and Fiscal Affairs data" trigger="hover" hoist>
-      <sl-option value="state" >State</sl-option>
+  <!-- population -->
+  <sl-select value="{{ population }}" id="exploration-population-selector" class="fill-width" size="small">
+    <p slot="label">Select population</p>
+    <sl-tooltip content="All South Carolina residents in the selected geography" trigger="hover" hoist>
+      <sl-option value="general_population">General Population</sl-option>
     </sl-tooltip>
-    <sl-tooltip content="Prisma Health and MUSC EHR data" trigger="hover" hoist>
-      <sl-option value="health-system">Health System</sl-option>
+    <sl-tooltip content="South Carolina residents in the selected geography served by the PRISMA or MUSC health system"
+      trigger="hover" hoist>
+      <sl-option value="health_system">Health Systems (PRISMA/MUSC)</sl-option>
     </sl-tooltip>
   </sl-select>
 
-  <!-- data variable -->
-  <sl-select value="encounters" id="exploration-data-variable-selector" class="fill-width" size="small">
+  <!-- outcome variable -->
+  <sl-select value="{{ outcome_variable }}" id="exploration-outcome-variable-selector" class="fill-width" size="small">
     <p slot="label">Select outcome variable</p>
-    <sl-tooltip content="In-patient hospitalizations and emergency department" trigger="hover" hoist>
-      <sl-option value="encounters" >Encounters</sl-option>
+    <sl-tooltip content="Inpatient and outpatient hospitalizations and emergency department visits" trigger="hover"
+      hoist>
+      <sl-option value="encounters">All Encounters</sl-option>
+    </sl-tooltip>
+    <sl-tooltip content="Inpatient hospitalizations" trigger="hover" hoist>
+      <sl-option value="inpatient_hospitalizations">Inpatient Hospitalizations</sl-option>
+    </sl-tooltip>
+    <sl-tooltip content="Emergency department visits" trigger="hover" hoist>
+      <sl-option value="emergency_department_visits">Emergency Department Visits</sl-option>
     </sl-tooltip>
     <sl-tooltip content="Positive tests" trigger="hover" hoist>
-      <sl-option value="positive-tests">Positive Tests</sl-option>
+      <sl-option value="positive_tests">Positive Tests</sl-option>
     </sl-tooltip>
     <sl-tooltip content="Average effective reproductive number" trigger="hover" hoist>
-      <sl-option value="rt">Transmission</sl-option>
+      <sl-option value="rate_of_transmission">Transmission</sl-option>
     </sl-tooltip>
   </sl-select>
-  
+
   <!-- grid item filtration (text) -->
   <sl-dropdown sync="width">
 
-    <sl-input slot="trigger" id="location-id-search" clearable type="text" spellcheck="false">
+    <sl-input slot="trigger" id="location-id-search" clearable type="text" spellcheck="false" size="small" value="{{ location }}">
       <p slot="label">Location</p>
       <sl-icon name="chevron-down" slot="suffix" id="location-id-search-suffix" class="select__combobox"></sl-icon>
     </sl-input>
-    
+
     <sl-menu id="location-menu">
-      <sl-menu-item value="south carolina" class="state-id location-id">South Carolina</sl-menu-item>
-      <sl-menu-item value="lowcountry" class="region-id location-id">Lowcountry</sl-menu-item>
-      <sl-menu-item value="midlands" class="region-id location-id">Midlands</sl-menu-item>
-      <sl-menu-item value="pee dee" class="region-id location-id">Pee Dee</sl-menu-item>
-      <sl-menu-item value="upstate" class="region-id location-id">Upstate</sl-menu-item>
+      {% for region in metadata['region_sizes'].keys() %}
+      {% for location in metadata[region]|sort() %}
+      <sl-menu-item value="{{ location }}" class="{{ region }}-id location-id">{{ location }}</sl-menu-item>
+      {% endfor %}
+      {% endfor %}
     </sl-menu>
   </sl-dropdown>
-  
+
 
 </div>
 
 {% endblock %}
 
 {% block contents %}
-<iframe id="model-exploration" title="Selected Model Information"></iframe>
+<iframe id="model-exploration" title="Selected Model Information" {% if src is defined %}src="{{ src }}"{% endif %}></iframe>
 
 {% endblock %}
 
 {% block scripts %}
 
-  <script>
-    var modelLocation = null
+<script>
+  var modelLocation = null
 
-    // Controls
-    explorationDiseaseSelector = document.getElementById("exploration-disease-selector")
-    explorationRegionSelector = document.getElementById("exploration-region-selector")
-    explorationDataSourceSelector = document.getElementById("exploration-data-source-selector")
-    explorationDataVariableSelector = document.getElementById("exploration-data-variable-selector")
+  // Controls
+  explorationDiseaseSelector = document.getElementById("exploration-disease-selector")
+  explorationRegionSelector = document.getElementById("exploration-region-selector")
+  explorationPopulationSelector = document.getElementById("exploration-population-selector")
+  explorationOutcomeVariableSelector = document.getElementById("exploration-outcome-variable-selector")
 
-    // Location selector
-    locationIdSearch = document.getElementById("location-id-search")
-    locationMenu = document.getElementById("location-menu")
+  // Location selector
+  locationIdSearch = document.getElementById("location-id-search")
+  locationMenu = document.getElementById("location-menu")
 
-    // 
-    modelExploration = document.getElementById("model-exploration")
-    
-  </script>
-  
-  <script type="module">
-    await Promise.allSettled([ // wait for following to be defined/load in
-      customElements.whenDefined('sl-select'),
-      customElements.whenDefined('sl-option'),
-      customElements.whenDefined('sl-tooltip'),
-      customElements.whenDefined('sl-menu'),
-      customElements.whenDefined('sl-menu-item'),
+  // 
+  modelExploration = document.getElementById("model-exploration")
+
+  window.removeEventListener("keydown", swapTheme);
+</script>
+
+<script type="module">
+  await Promise.allSettled([ // wait for following to be defined/load in
+    customElements.whenDefined('sl-select'),
+    customElements.whenDefined('sl-option'),
+    customElements.whenDefined('sl-tooltip'),
+    customElements.whenDefined('sl-menu'),
+    customElements.whenDefined('sl-menu-item'),
   ])
-  d3.selectAll("sl-menu-item.location-id").each(function(a, b, c, d) {
+  d3.selectAll("sl-menu-item.location-id").each(function (a, b, c, d) {
     let menuItem = d3.select(this)
     menuItem.classed("hide", !menuItem.classed(`${explorationRegionSelector.value}-id`))
   })
-  </script>
+</script>
 
-  <script src="{{ url_for('static', filename='js/respiratory/model-exploration-interactions.js') }}" type="module"></script>
+<script src="{{ url_for('static', filename='js/respiratory/model-exploration-interactions.js') }}"
+  type="module"></script>
 
 
 {% endblock %}

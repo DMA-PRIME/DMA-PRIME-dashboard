@@ -157,7 +157,24 @@ def create_app(development=False, dataDir=None):
     def respiratory_model_exploration():
 
         data_version = get_data_version_from_request(request, current_user)
-        
+
+        disease = request.args.get('disease')
+        geographic_unit = request.args.get('geographic-unit')
+        population = request.args.get('population')
+        outcome_variable = request.args.get('outcome-variable')
+        location = request.args.get('location')
+
+        if disease is None:
+            disease = 'covid_19'
+        if geographic_unit is None:
+            geographic_unit = 'region'
+        if population is None:
+            population = 'general_population'
+        if outcome_variable is None:
+            outcome_variable = 'encounters'
+        if location is None:
+            location = ''
+
         file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'metadata.json')
         decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'encrypt_key.bin')
 
@@ -176,7 +193,13 @@ def create_app(development=False, dataDir=None):
                 'html': 'respiratory/respiratory-model-exploration-panel.html'
             },
         ]
-        return render_template('respiratory/respiratory-model-base.html', panels=panels, metadata=metadata)
+        if location == '':
+            return render_template('respiratory/respiratory-model-base.html', panels=panels, metadata=metadata, 
+                                disease=disease, geographic_unit=geographic_unit, population=population, outcome_variable=outcome_variable, location=location)
+        else:
+            src = f'/data/respiratory/model/{disease}/{geographic_unit}/{population}/{outcome_variable}/{location}'
+            return render_template('respiratory/respiratory-model-base.html', panels=panels, metadata=metadata, 
+                                disease=disease, geographic_unit=geographic_unit, population=population, outcome_variable=outcome_variable, location=location, src=src)
 
     @app.route('/mobile-health-clinics', methods=['GET'])
     @login_required

@@ -257,11 +257,17 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, rat
                     "data": allExtendedData[identifier]
                 }
                 if (grid) {
+                    d3.select(modelExplorationButtonTooltipLarge).on("click", () => {
+                        window.open(`/respiratory-model-exploration?disease=${gridDiseaseSelector.value}&geographic-unit=${gridRegionSelector.value}&population=${gridPopulationSelector.value}&outcome-variable=${gridOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
+                    })
                     drawTooltip(ttpData,
                         largeTtp.select(".tooltip-outer-svg"), largeTtp.select(".tooltip-header"), largeTtp.select(".tooltip-footer"),
                         gridPopulationSelector.value, gridOutcomeVariableSelector.value,
                         gridTypeSwitch.value == "rate", grid, true, [])
                 } else {
+                    d3.select(modelExplorationButtonTooltipLarge).on("click", () => {
+                        window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapRegionSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
+                    })
                     drawTooltip(ttpData,
                         largeTtp.select(".tooltip-outer-svg"), largeTtp.select(".tooltip-header"), largeTtp.select(".tooltip-footer"),
                         mapPopulationSelector.value, mapOutcomeVariableSelector.value,

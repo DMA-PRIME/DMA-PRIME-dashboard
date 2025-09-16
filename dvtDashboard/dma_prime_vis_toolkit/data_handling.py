@@ -2,7 +2,7 @@ import functools
 
 from .utility import * 
 from flask import (
-    Blueprint, flash, send_file, redirect, url_for, current_app, request
+    Blueprint, flash, send_file, redirect, url_for, render_template, current_app, request
 )
 import os
 import shutil
@@ -45,12 +45,26 @@ def get_all_respiratory_hospitalizations(region_size='zcta', disease='covid-19')
 
 @bp.route('/respiratory/model/<disease>/<geographic_unit>/<population>/<outcome_variable>/<location>', methods=['GET'])
 @login_required
-def get_respiratory_model(region_id, region_size='zcta', disease='covid-19', outcome_variable='encounters', population='state'):
+def get_respiratory_model(location, disease='covid_19', geographic_unit='region', population='state', outcome_variable='encounters'):
     # model information for given combo of option selections
     data_version = get_data_version_from_request(request, current_user)
-    file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'metrics', region_size, disease, outcome_variable, population, f'{region_id}.html')
+    outcome_variable_crosswalk = {
+        'encounters': 'Weekly_Encounters',
+        'inpatient_hospitalizations': 'Weekly_Inpatient_Hospitalizations',
+        'emergency_department_visits': 'Weekly_ED_Visits',
+        'positive_tests': 'Weekly_Positive_Tests',
+        'rate_of_transmission': 'rt',
+    }
+
+    file = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'metrics', geographic_unit, '-'.join(disease.upper().split('_')), 
+                        f'{geographic_unit}-{disease}-{outcome_variable_crosswalk[outcome_variable]}-{population}_{location}.html')
+    
     decrypt_key = os.path.join(current_app.config['DATADIR'], 'processed', data_version, 'respiratory', 'encrypt_key.bin')
-    return decrypt(file, decrypt_key)
+    try:
+        file = decrypt(file, decrypt_key)
+        return file
+    except FileNotFoundError as e:
+        return render_template('respiratory/no-report.html')
 
 @bp.route('/opioid-hcv-hiv/<disease>', methods=['GET'])
 @login_required

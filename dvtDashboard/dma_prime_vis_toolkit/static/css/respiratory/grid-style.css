@@ -117,9 +117,6 @@
   font-size: var(--sl-font-size-x-small);
 }
 
-/* .grid-tooltip-toolbar-button::part(base) {
-} */
-
 .grid-close-tooltip-button::part(base) {
   padding: 6px;
   padding-top: 2px;
