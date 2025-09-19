@@ -12,12 +12,14 @@ dirs = os.listdir(f'{aggregated_data_dir}/other_diseases')
 
 other_column = {
     'encounters': None,
-    'pos_tests': 'tests',
-    'encounter_plus_test': None,
+    'inpatient_hospitalizations': None,
+    'emergency_department_visits': None,
+    'positive_tests': 'tests',
+    'unique_records': None,
 }
 
-region_file_identifiers = {'county': 'County', 'region': 'Region', 'zcta': 'ZCTA'}
-region_geojson_identifiers = {'county': 'NAME', 'region': 'Region', 'zcta': 'ZCTA'}
+region_file_identifiers = {'state': 'State', 'county': 'County', 'region': 'Region', 'zcta': 'ZCTA'}
+region_geojson_identifiers = {'state': 'Region', 'county': 'NAME', 'region': 'Region', 'zcta': 'ZCTA'}
 
 diseases = []
 
@@ -35,9 +37,9 @@ with open(f'{processed_data_dir}/other_infectious_diseases/metadata.json', 'w') 
     json.dump(diseases, f)
 
 for region_size, file_region_size in region_file_identifiers.items():
+    print(region_size)
 
-    for column in ['encounters', 'pos_tests', 'encounter_plus_test']:
-        print(region_size, column)
+    for column in other_column.keys():
 
         with open(f'{scripts_supporting_files_dir}/sc_{region_size}_population_simplified.json') as f:
             state_central_point = geojson.Point((-81, 33.65))
@@ -80,9 +82,11 @@ for region_size, file_region_size in region_file_identifiers.items():
                 df = pd.read_csv(file).rename({file_region_size: region_size, 
                                             'Week': 'date', 
                                             'Weekly_Encounters': 'encounters', 
-                                            'Weekly_Positive_Tests': 'pos_tests',
-                                            'Weekly_Tests': 'tests'}, axis=1)
-                df['encounter_plus_test'] = df['encounters'] + df['pos_tests']
+                                            'Weekly_Inpatient_Hospitalizations': 'inpatient_hospitalizations',
+                                            'Weekly_ED_Visits': 'emergency_department_visits',
+                                            'Weekly_Positive_Tests': 'positive_tests',
+                                            'Weekly_Tests': 'tests',
+                                            'Weekly_Unique_Records': 'unique_records'}, axis=1)
                 
                 df['date'] = pd.to_datetime(df['date'])
                 start_date = df['date'].min().strftime('%Y-%m-%d')
@@ -219,6 +223,8 @@ for region_size, file_region_size in region_file_identifiers.items():
                 state_aggregation.properties['other'][disease]['yearly'] = state_aggregation['properties']['other'][disease]['yearly'].fillna(0).to_numpy().tolist()
 
             gj.features.append(state_aggregation)
-
-            with open(f'{processed_data_dir}/other_infectious_diseases/{region_size}/{column}_data.json', 'w') as f:
+            
+            out_path = f'{processed_data_dir}/other_infectious_diseases/{region_size}/{column}_data.json'
+            os.makedirs(os.path.dirname(out_path), exist_ok=True)
+            with open(out_path, 'w') as f:
                 geojson.dump(gj, f)

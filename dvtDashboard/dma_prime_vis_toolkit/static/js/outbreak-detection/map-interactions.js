@@ -28,7 +28,7 @@ mapTimeSwitch.addEventListener("sl-change", update)
 
 mapRegionSelector.addEventListener("sl-change", changeDataColumn)
 
-mapColumnSwitch.addEventListener("sl-change", changeDataColumn)
+mapOutcomeVariableSelector.addEventListener("sl-change", changeDataColumn)
 
 // adding/removing labels
 mapOptionsGeographicLabelsToggle.addEventListener("sl-change", () => {
