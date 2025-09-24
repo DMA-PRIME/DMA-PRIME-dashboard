@@ -54,6 +54,12 @@ o_v_crosswalk = {
 # populations
 populations = ['general_population', 'health_system']
 
+# population to data source
+ds_to_pop = {
+    'general_population': 'RFA',
+    'health_system': 'HS'
+}
+
 # diseases
 diseases = {
     'covid_19': 'COVID-19',
@@ -228,12 +234,17 @@ for region_size, identifier_column in region_geojson_identifiers.items():
                             # no estimated, then reported -> historical
                             
                             if data_by_value_type['reported'] is not None:
+                                try:
+                                    temp_data_values = data_by_value_type['reported']['value'].xs(ds_to_pop[population], axis=0, drop_level=True)
+                                except KeyError:
+                                    temp_data_values = pd.Series()
+                                    
                                 # short history
-                                disease_data[population][outcome_variable]['historical']['values'] = pandas_to_json_safe_list(data_by_value_type['reported']['value'].reindex(short_history_dates, level='target_end_date'))
+                                disease_data[population][outcome_variable]['historical']['values'] = pandas_to_json_safe_list(temp_data_values.reindex(short_history_dates))
                                 disease_data[population][outcome_variable]['historical']['reported'] = True
 
                                 # all history
-                                disease_data_all[population][outcome_variable]['historical']['values'] = pandas_to_json_safe_list(data_by_value_type['reported']['value'].reindex(all_historical_dates, level='target_end_date'))
+                                disease_data_all[population][outcome_variable]['historical']['values'] = pandas_to_json_safe_list(temp_data_values.reindex(all_historical_dates))
                                 disease_data_all[population][outcome_variable]['historical']['reported'] = True
 
                         else:

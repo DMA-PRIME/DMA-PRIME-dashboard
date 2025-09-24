@@ -1,3 +1,4 @@
+import { drawStateHospitalizations, drawLargeStateHospitalizations } from "/static/js/respiratory/script.js";
 import { updateGrid, sortGridItems, filterGridItems, setupGridTooltip } from "/static/js/respiratory/grid.js";
 
 gridContainerResizer.addEventListener("sl-resize", updateGrid)
@@ -11,6 +12,15 @@ gridTypeSwitch.addEventListener("sl-change", (event) => {
         .each(function(d, i) {
             setupGridTooltip(d3.select(this), true)
         })
+
+    d3.select(gridMainLegend).select("text").text(d3.select(gridTypeSwitch).select(`*[value=${gridTypeSwitch.value}]`).html())
+    drawStateHospitalizations(gridDiseaseSelector.value, gridTypeSwitch.value, gridStateHospitalizationsSvg, gridStateHospitalizationsSubtitle)
+
+    if (gridTypeSwitch.value == "percentDifference") {
+        d3.select(gridSecondaryLegend).style("display", "initial")
+    } else {
+        d3.select(gridSecondaryLegend).style("display", "none")
+    }
     updateGrid()
 })
 
@@ -20,6 +30,7 @@ gridDiseaseSelector.addEventListener("sl-change", (event) => {
             setupGridTooltip(d3.select(this), true)
         })
     updateGrid(true)    
+    drawStateHospitalizations(gridDiseaseSelector.value, gridTypeSwitch.value, gridStateHospitalizationsSvg, gridStateHospitalizationsSubtitle)
 })
 
 gridRegionSelector.addEventListener("sl-change", (event) => {
@@ -42,7 +53,7 @@ gridOutcomeVariableSelector.addEventListener("sl-change", (event) => {
     updateGrid()    
 })
 
-gridIncludeImputations.addEventListener("sl-change", filterGridItems)
+gridIncludeImputations.addEventListener("sl-change", updateGrid)
 
 gridSort.addEventListener("sl-change", (event) => {
     sortGridItems()
@@ -51,3 +62,14 @@ gridSort.addEventListener("sl-change", (event) => {
 gridTextFilter.addEventListener("sl-input", filterGridItems)
 gridTextFilter.addEventListener("clear", filterGridItems)
 
+gridStateHospitalizationsResizer.addEventListener("sl-resize", () => {
+    drawStateHospitalizations(gridDiseaseSelector.value, gridTypeSwitch.value, gridStateHospitalizationsSvg, gridStateHospitalizationsSubtitle)
+})
+
+gridStateHospitalizationsSvg.addEventListener("click", () => {
+    gridStateHospitalizationsLarge.show()
+})
+
+gridStateHospitalizationsLargeResizer.addEventListener("sl-resize", () => {
+    drawLargeStateHospitalizations(gridDiseaseSelector.value, gridTypeSwitch.value, gridStateHospitalizationsLargeSvg, gridStateHospitalizationsLargeSubtitle)
+})

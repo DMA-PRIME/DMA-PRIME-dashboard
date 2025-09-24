@@ -81,20 +81,20 @@
   
 </div>
 
-<div id="map-state-hospitalizations">
-  <p id="map-state-hospitalizations-title" class="map-state-hospitalizations-title">CDC-Reported State Hospitalizations</p>
-  <p id="map-state-hospitalizations-subtitle" class="map-state-hospitalizations-title">N/A</p>
+<div id="map-state-hospitalizations" class="state-hospitalizations">
+  <p id="map-state-hospitalizations-title" class="state-hospitalizations-title">CDC-Reported State Hospitalizations</p>
+  <p id="map-state-hospitalizations-subtitle" class="state-hospitalizations-subtitle">N/A</p>
   <sl-resize-observer id="map-state-hospitalizations-resizer">
-    <svg id="map-state-hospitalizations-svg" class="map-state-hospitalizations"></svg>
+    <svg id="map-state-hospitalizations-svg" class="state-hospitalizations-svg"></svg>
   </sl-resize-observer>
 </div>
-<sl-dialog id="map-state-hospitalizations-large" class="dialog-width" >
+<sl-dialog id="map-state-hospitalizations-large" class="dialog-width state-hospitalizations" >
   <div slot="label">
-    <p id="map-state-hospitalizations-large-title">CDC-Reported State Hospitalizations</p>
-    <p id="map-state-hospitalizations-large-subtitle">N/A</p>
+    <p id="map-state-hospitalizations-large-title" class="state-hospitalizations-title">CDC-Reported State Hospitalizations</p>
+    <p id="map-state-hospitalizations-large-subtitle" class="state-hospitalizations-subtitle">N/A</p>
   </div>
   <sl-resize-observer id="map-state-hospitalizations-large-resizer">
-    <svg id="map-state-hospitalizations-large-svg" class="map-state-hospitalizations"></svg>
+    <svg id="map-state-hospitalizations-large-svg" class="state-hospitalizations-large-svg"></svg>
   </sl-resize-observer>
 </sl-dialog>
 
@@ -106,7 +106,7 @@
   <svg id="choropleth-legend-svg"></svg>
 </div>
 <div id="map-title-container" class="fill-width">
-  <p id="map-title">Count of COVID-19 Hospitalizations in South Carolina by Region</p>
+  <p id="map-title">Count of COVID-19 All Encounters in South Carolina by Region</p>
   <p id="map-disclaimer"></p>
 </div>
 

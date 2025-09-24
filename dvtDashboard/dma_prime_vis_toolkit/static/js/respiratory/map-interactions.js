@@ -1,5 +1,5 @@
-import { getBoundsOfCoords, drawTooltip } from "/static/js/respiratory/script.js";
-import { map, popup, deckOverlay, selectedItems, redraw, drawStateHospitalizations, drawLargeStateHospitalizations, updateMapTitle, updateMapTooltip } from "/static/js/respiratory/map.js"
+import { getBoundsOfCoords, drawTooltip, drawStateHospitalizations, drawLargeStateHospitalizations } from "/static/js/respiratory/script.js";
+import { map, popup, deckOverlay, selectedItems, redraw, updateMapTooltip } from "/static/js/respiratory/map.js"
 
 
 popup.on("close", e => {
@@ -79,7 +79,7 @@ map.on("click", e => {
     drawTooltip(dataObject.properties,
         ttpSVG, ttpDiv.select(".tooltip-header"), ttpDiv.select(".tooltip-footer"), 
         mapPopulationSelector.value, mapOutcomeVariableSelector.value,
-        mapTypeSwitch.value == "rate", false, false, [])
+        mapTypeSwitch.value, false, false, [])
 
     // Add expand icon button to map tooltip
     var popupContent = d3.select("div.maplibregl-popup-content")
@@ -107,7 +107,7 @@ map.on("click", e => {
                     drawTooltip(ttpData,
                         largeTtp.select(".tooltip-outer-svg"), largeTtp.select(".tooltip-header"), largeTtp.select(".tooltip-footer"),
                         mapPopulationSelector.value, mapOutcomeVariableSelector.value,
-                        mapTypeSwitch.value == "rate", false, true, [])
+                        mapTypeSwitch.value, false, true, [])
                 })
             })
     }
@@ -140,10 +140,9 @@ mapResetButton.addEventListener("click", () => {
     selectedItems.feature = undefined
     if (popup.isOpen()) {
         popup.remove()        
-    } else {
-        dataVersion++
-        redraw()
-    }
+    } 
+    dataVersion++
+    redraw()
 })
 
 mapTypeSwitch.addEventListener("sl-change", (event) => {
@@ -157,7 +156,7 @@ mapTypeSwitch.addEventListener("sl-change", (event) => {
             .text(`Current Week's ${dataVarString} by ${metadata.region_sizes[mapRegionSelector.value]}`)
     }
 
-    drawStateHospitalizations()
+    drawStateHospitalizations(mapDiseaseSelector.value, mapTypeSwitch.value, mapStateHospitalizationsSvg, mapStateHospitalizationsSubtitle)
 
     // update tooltip
     if (selectedItems.feature) {
@@ -176,25 +175,23 @@ mapPopulationSelector.addEventListener("sl-change", (event) => {
 })
 
 mapDiseaseSelector.addEventListener("sl-change", (event) => {
-    drawStateHospitalizations()
+    drawStateHospitalizations(mapDiseaseSelector.value, mapTypeSwitch.value, mapStateHospitalizationsSvg, mapStateHospitalizationsSubtitle)
     selectedItems.feature = undefined
     
     if (popup.isOpen()) {
         popup.remove()        
-    } else {
-        dataVersion++
-        redraw(true, true)
-    }
+    } 
+    dataVersion++
+    redraw(true, true)
 })
 
 mapRegionSelector.addEventListener("sl-change", (event) => {
     selectedItems.feature = undefined
     if (popup.isOpen()) {
         popup.remove()        
-    } else {
-        dataVersion++
-        redraw(true, true)
     }
+    dataVersion++
+    redraw(true, true)
 })
 
 mapOutcomeVariableSelector.addEventListener("sl-change", (event) => {
@@ -209,7 +206,6 @@ mapOutcomeVariableSelector.addEventListener("sl-change", (event) => {
     }
 
     // update tooltip
-    drawStateHospitalizations()
     if (selectedItems.feature) {
         updateMapTooltip(selectedItems.feature.properties)
     }
@@ -261,7 +257,7 @@ communityPartnerIconsToggle.addEventListener("sl-change", () => {
 
 
 mapStateHospitalizationsResizer.addEventListener("sl-resize", () => {
-    drawStateHospitalizations()
+    drawStateHospitalizations(mapDiseaseSelector.value, mapTypeSwitch.value, mapStateHospitalizationsSvg, mapStateHospitalizationsSubtitle)
 })
 
 mapStateHospitalizationsSvg.addEventListener("click", () => {
@@ -269,5 +265,5 @@ mapStateHospitalizationsSvg.addEventListener("click", () => {
 })
 
 mapStateHospitalizationsLargeResizer.addEventListener("sl-resize", () => {
-    drawLargeStateHospitalizations()
+    drawLargeStateHospitalizations(mapDiseaseSelector.value, mapTypeSwitch.value, mapStateHospitalizationsLargeSvg, mapStateHospitalizationsLargeSubtitle)
 })

@@ -3,41 +3,6 @@
     position: relative;
 }
 
-/* state hospitalizations */
-#map-state-hospitalizations {
-    padding: var(--sl-spacing-large) var(--sl-spacing-small);
-}
-
-#map-state-hospitalizations-svg {
-    width: 100%;
-    height: 200px;
-}
-
-#map-state-hospitalizations-large-svg {
-    width: 100%;
-    aspect-ratio: 2;
-}
-
-.map-state-hospitalizations-title {
-    text-align: center;
-}
-
-#map-state-hospitalizations-subtitle {
-    font-size: var(--sl-font-size-x-small);
-}
-
-#map-state-hospitalizations-large-subtitle {
-    font-size: var(--sl-font-size-small);
-}
-
-#map-state-hospitalizations-yaxis-title {
-    font-size: var(--sl-font-size-x-small);
-}
-
-#map-state-hospitalizations-large-yaxis-title {
-    font-size: var(--sl-font-size-medium);
-}
-
 /* map items */
 #map-title-container {
     position: absolute;
