@@ -1,3 +1,7 @@
+#grid-content {
+  background-color: var(--sl-color-neutral-100);
+}
+
 /* grid item container */
 #grid-container {
   /* div containing all the grid items */
@@ -16,7 +20,6 @@
   padding-left: 1.25em;
   padding-right:.25em;
 
-  background-color: var(--sl-color-neutral-200);
 }
 
 
@@ -24,30 +27,24 @@
 #grid-legend {
   /* div that contains the grid legend (line meanings) */
   background-color: var(--sl-color-neutral-0);
-  opacity: .75;
-  display: none;
-  /* display: block; */
-  position: absolute;
-  margin-left: 1em;
-  bottom: 1em;
 }
 
-#grid-legend-svg {
+#grid-legend svg {
   /* svg for grid legend */
-  height: 3em;
+  height: 1.5em;
   width: 200px;
 }
 
-#grid-legend-svg > line {
+#grid-legend line {
   /* lines in grid legend */
-  stroke: currentColor;
+  stroke: black;
 }
 
-#grid-legend-svg > text {
-  fill: currentColor
+#grid-legend > text {
+  fill: black
 }
 
-#grid-legend-state-model-line {
+#grid-secondary-legend > line {
   stroke-dasharray: 5, 5;
 }
 
@@ -55,6 +52,7 @@
 .grid-item {
   /* svg for each grid item */
   display:block;
+  box-shadow: .1em .1em .1em .1em var(--sl-color-neutral-300);
 }
 
 .grid-title {
@@ -143,4 +141,12 @@
 /* other */
 p, text {
   color: var(--sl-color-neutral-1000)
+}
+
+.scrollbar-measure {
+	width: 100px;
+	height: 100px;
+	overflow: scroll;
+	position: absolute;
+	top: -9999px;
 }

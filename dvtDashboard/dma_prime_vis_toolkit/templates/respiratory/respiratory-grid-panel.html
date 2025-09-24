@@ -14,9 +14,9 @@
         <sl-tooltip content="Hospitalizations per 1000 people">
             <sl-radio-button pill value="rate">Rate</sl-radio-button>
         </sl-tooltip>
-        <!-- <sl-tooltip content="Percent change from last week">
+        <sl-tooltip content="Percent change from last week">
             <sl-radio-button pill value="percentDifference">Percent Change</sl-radio-button>
-        </sl-tooltip> -->
+        </sl-tooltip>
     </sl-radio-group>
 
     <!-- disease selector -->
@@ -87,31 +87,38 @@
     <!-- imputation inclusion checkbox -->
     <sl-checkbox id="grid-include-imputations" checked>Include imputated data</sl-checkbox>
 
-    <!-- <p id="grid-summary" class="panel-summary center-self">
-        Weekly count of hospitalizations due to COVID-19, influenza, and respiratory syncytial virus (RSV) from <text
-            id="grid-start-date"></text> to <text id="grid-end-date"></text>.
-        <br />
-        Hospitalization cases are aggregated by zip code tabulation areas (zcta).
-    </p> -->
+    <div id="grid-info">
+        <p id="grid-summary" class="panel-summary center-self"></p>
+        <div id="grid-legend">
+            <svg id="grid-main-legend">
+                <line x1=".5em" x2="3.5em" y1="1em" y2="1em"></line>
+                <text x="4em" y="1.5em">Count</text>
+            </svg>
+            <svg id="grid-secondary-legend" style="display:none">
+                <line x1=".5em" x2="3.5em" y1="1em" y2="1em"></line>
+                <text x="4em" y="1.5em">Count</text>
+            </svg>
+        </div>
+    </div>
 </div>
 
-<!-- <div id="grid-state-hospitalizations">
-    <p id="grid-state-hospitalizations-title" class="grid-state-hospitalizations-title">CDC-Reported State
+<div id="grid-state-hospitalizations" class="state-hospitalizations">
+    <p id="grid-state-hospitalizations-title" class="state-hospitalizations-title">CDC-Reported State
         Hospitalizations</p>
-    <p id="grid-state-hospitalizations-subtitle" class="grid-state-hospitalizations-title">N/A</p>
+    <p id="grid-state-hospitalizations-subtitle" class="state-hospitalizations-subtitle">N/A</p>
     <sl-resize-observer id="grid-state-hospitalizations-resizer">
-        <svg id="grid-state-hospitalizations-svg" class="grid-state-hospitalizations"></svg>
+        <svg id="grid-state-hospitalizations-svg" class="state-hospitalizations-svg"></svg>
     </sl-resize-observer>
 </div>
-<sl-dialog id="grid-state-hospitalizations-large" class="dialog-width">
+<sl-dialog id="grid-state-hospitalizations-large" class="dialog-width state-hospitalizations">
     <div slot="label">
         <p id="grid-state-hospitalizations-large-title">CDC-Reported State Hospitalizations</p>
         <p id="grid-state-hospitalizations-large-subtitle">N/A</p>
     </div>
     <sl-resize-observer id="grid-state-hospitalizations-large-resizer">
-        <svg id="grid-state-hospitalizations-large-svg" class="grid-state-hospitalizations"></svg>
+        <svg id="grid-state-hospitalizations-large-svg" class="state-hospitalizations-large-svg"></svg>
     </sl-resize-observer>
-</sl-dialog> -->
+</sl-dialog>
 
 {% endblock %}
 
@@ -119,14 +126,7 @@
 <sl-resize-observer id="grid-container-resizer">
     <div id="grid-container"></div>
 </sl-resize-observer>
-<div id="grid-legend">
-    <svg id="grid-legend-svg">
-        <line id="grid-legend-state-model-line" x1=".5em" x2="3.5em" y1="1em" y2="1em"></line>
-        <text id="grid-legend-state-model-text" x="4em" y="1.5em">State Prediction</text>
-        <line id="grid-legend-health-system-line" x1=".5em" x2="3.5em" y1="2em" y2="2em"></line>
-        <text id="grid-legend-health-system-text" x="4em" y="2.5em">Health System</text>
-    </svg>
-</div>
+
 
 <div id="grid-alert-container">
     <sl-alert id="grid-mixed-forecast-this-week-alert" variant="warning" class="grid-alert" closable>
@@ -165,10 +165,10 @@
     var gridSort = document.getElementById("grid-sort")
     var gridTextFilter = document.getElementById("grid-text-filter")
 
-
-    // title elements
-    var gridStartDate = document.getElementById("grid-start-date")
-    var gridEndDate = document.getElementById("grid-end-date")
+    // summary elements
+    var gridSummary = document.getElementById("grid-summary")
+    var gridMainLegend = document.getElementById("grid-main-legend")
+    var gridSecondaryLegend = document.getElementById("grid-secondary-legend")
 
     // containing elements
     gridContent = document.getElementById("grid-content")
@@ -176,13 +176,24 @@
     gridContainerResizer = document.getElementById("grid-container-resizer")
 
     // State–level chart elements
-    // gridStateHospitalizationsSubtitle = document.getElementById("grid-state-hospitalizations-subtitle");
-    // gridStateHospitalizationsResizer = document.getElementById("grid-state-hospitalizations-resizer");
-    // gridStateHospitalizationsSvg = document.getElementById("grid-state-hospitalizations-svg");
-    // gridStateHospitalizationsLarge = document.getElementById("grid-state-hospitalizations-large");
-    // gridStateHospitalizationsLargeSubtitle = document.getElementById("grid-state-hospitalizations-large-subtitle");
-    // gridStateHospitalizationsLargeResizer = document.getElementById("grid-state-hospitalizations-large-resizer");
-    // gridStateHospitalizationsLargeSvg = document.getElementById("grid-state-hospitalizations-large-svg");
+    gridStateHospitalizationsSubtitle = document.getElementById("grid-state-hospitalizations-subtitle");
+    gridStateHospitalizationsResizer = document.getElementById("grid-state-hospitalizations-resizer");
+    gridStateHospitalizationsSvg = document.getElementById("grid-state-hospitalizations-svg");
+    gridStateHospitalizationsLarge = document.getElementById("grid-state-hospitalizations-large");
+    gridStateHospitalizationsLargeSubtitle = document.getElementById("grid-state-hospitalizations-large-subtitle");
+    gridStateHospitalizationsLargeResizer = document.getElementById("grid-state-hospitalizations-large-resizer");
+    gridStateHospitalizationsLargeSvg = document.getElementById("grid-state-hospitalizations-large-svg");
+
+    // Get scrollbar width - source: https://stackoverflow.com/questions/28360978/how-can-i-get-browser-scrollbar-width
+    var scrollDiv = document.createElement("div");
+    scrollDiv.className = "scrollbar-measure";
+    document.body.appendChild(scrollDiv);
+
+    // Get the scrollbar width
+    var scrollbarWidth = scrollDiv.offsetWidth - scrollDiv.clientWidth;
+
+    // Delete the div
+    document.body.removeChild(scrollDiv);
 
 </script>
 
