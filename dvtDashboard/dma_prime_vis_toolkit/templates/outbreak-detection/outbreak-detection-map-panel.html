@@ -37,17 +37,24 @@
     <sl-option value="zcta">Zip Code</sl-option>
     <sl-option value="county">County</sl-option>
     <sl-option value="region">Region</sl-option>
+    <!-- <sl-option value="state">State</sl-option> -->
   </sl-select>
 
-  <sl-select value="pos_tests" id="map-column-switch" class="fill-width" size="small">
-    <p slot="label">Data Variable</p>
-    <sl-option value="pos_tests">Positive Tests</sl-option>
-    <sl-option value="encounters">Encounters</sl-option>
-    <sl-option value="encounter_plus_test">Encounters and Positive Tests</sl-option>
+  <sl-select value="positive_tests" id="map-outcome-variable-selector" class="fill-width" size="small">
+    <p slot="label">Outcome Variable</p>
+    <sl-option value="positive_tests">Positive Tests</sl-option>
+    <sl-tooltip content="Unique diagnosis">
+      <sl-option value="encounters">All Encounters</sl-option>
+    </sl-tooltip>
+    <sl-option value="inpatient_hospitalizations">Inpatient Hospitalizations</sl-option>
+    <sl-option value="emergency_department_visits">Emergency Department Visits</sl-option>
+    <sl-tooltip content="Unique recorded diagnoses or positive tests">
+      <sl-option value="unique_records">Unique Records</sl-option>
+    </sl-tooltip>
   </sl-select>
 
   <!-- disease selector -->
-    <sl-details id="map-disease-selector-container" >
+    <sl-details id="map-disease-selector-container" open>
       <p slot="summary">Select a disease or group of diseases</p>
       <sl-checkbox id="map-all-disease-selector" size="small">All Diseases <span id="map-all-count"></span></sl-checkbox>
       {% for disease in metadata['diseases'] %}
@@ -95,7 +102,7 @@
   <svg id="choropleth-legend-svg"></svg>
 </div>
 <div id="map-title-container" class="fill-width">
-  <p id="map-title">Count of Weekly Positive Tests in South Carolina by Zip Code</p>
+  <p id="map-title">Count of Weekly Positive Tests in Prisma and MUSC Health Systems by Zip Code</p>
 </div>
 <div id="map-loading-div">
   <p id="loading-text">Loading</p>
@@ -117,7 +124,7 @@
   mapTimeSwitch = document.getElementById("map-time-switch")
   mapRateSwitch = document.getElementById("map-rate-switch")
   mapRegionSelector = document.getElementById("map-region-selector")
-  mapColumnSwitch = document.getElementById("map-column-switch")
+  mapOutcomeVariableSelector = document.getElementById("map-outcome-variable-selector")
 
   mapWeeklyTooltip = document.getElementById("map-weekly-tooltip")
   mapMonthlyTooltip = document.getElementById("map-monthly-tooltip")

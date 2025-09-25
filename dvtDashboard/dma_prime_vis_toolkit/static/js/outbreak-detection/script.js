@@ -79,7 +79,7 @@ function createBarGraph(svg, data, metadata, height, width, options = {}) {
     var tempRight = svg.append("text").text(d3.format(".0%")(1)).attr("x", 0).attr("y", 0)
 
     margins.left += Math.max(20, tempLeft.node().getBBox().width + 6)
-    if (mapColumnSwitch.value == "pos_tests") {
+    if (mapOutcomeVariableSelector.value == "positive_tests") {
         var percentages = data.data.map((pos_test, i) => pos_test / Math.max(data.other[i], 1))
         margins.right += Math.max(10, tempRight.node().getBBox().width) + (isLargeTooltip ? 1.5*em : .5*em) + 6
     }
@@ -151,7 +151,7 @@ function createBarGraph(svg, data, metadata, height, width, options = {}) {
         .attr("text-anchor", "middle")
         .attr("fill", "var(--sl-color-neutral-1000)")
         .attr("font-size", isLargeTooltip ? "var(--sl-font-size-x-small)" : "var(--sl-font-size-small)")
-        .text(d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html());
+        .text(d3.select(`sl-option[value=${mapOutcomeVariableSelector.value}]`).html());
 
     // Always show all years, slant labels for both tooltips
     xAxis.call(d3.axisBottom(xScale).ticks(d3.timeYear.every(1)).tickFormat(d3.timeFormat("%Y")))
@@ -161,7 +161,7 @@ function createBarGraph(svg, data, metadata, height, width, options = {}) {
         .attr("transform", "rotate(-40)")
         .style("text-anchor", "end");
 
-    if (mapColumnSwitch.value == "pos_tests") {
+    if (mapOutcomeVariableSelector.value == "positive_tests") {
         var yScale2 = d3.scaleLinear()
             .domain([0, 1])
             .nice()
@@ -223,8 +223,8 @@ function createBarGraph(svg, data, metadata, height, width, options = {}) {
         .attr("dominant-baseline", "middle")
         .attr("fill", "var(--sl-color-neutral-1000)")
         .style("font-size", isLargeTooltip ? "var(--sl-font-size-x-small)" : "var(--sl-font-size-small)")
-        .text(d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html());
-    if (mapColumnSwitch.value == "pos_tests") {
+        .text(d3.select(`sl-option[value=${mapOutcomeVariableSelector.value}]`).html());
+    if (mapOutcomeVariableSelector.value == "positive_tests") {
         var percentPosTest = legend.append("g");
         percentPosTest.attr("transform", `translate(0, ${em})`);
         percentPosTest.append("line")

@@ -19,8 +19,8 @@ var selectedItems = {
 }
 
 var choroplethColorMap = d3.scaleLinear()
-    .domain([-100, -50, -10, 0, 10, 50, 100, 500])
-    .range(d3.reverse(d3.schemeRdYlGn[10]).slice(1))
+    .domain([-100, -50, 0, 50, 100, 500])
+    .range(d3.reverse(d3.schemeRdBu[8]).slice(1))
     .unknown(unknownColor).nice()
 
 // Placeholder: actual domain set later via createCountRateChoropleth()
@@ -118,7 +118,7 @@ function redraw() {
         updateTriggers: {
           getFillColor: [
             mapRateSwitch.value,
-            mapColumnSwitch.value,
+            mapOutcomeVariableSelector.value,
             mapTimeSwitch.value,
             selectedItems.diseases,
             selectedItems.dataVersion,
@@ -230,7 +230,7 @@ function redraw() {
       }
       // new encounters when lastWeek = 0 but thisWeek > 0 → light pink
       else {
-        colorObj = d3.rgb('#ffddff');
+        colorObj = d3.rgb('#ff8000');
       }
   
       return [colorObj.r, colorObj.g, colorObj.b];
@@ -272,12 +272,12 @@ function redraw() {
         .attr("height", 50);
 
     const legendLength = 350;
-    const columnLabel = d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html();
+    const columnLabel = d3.select(`sl-option[value=${mapOutcomeVariableSelector.value}]`).html();
 
     if (mapRateSwitch.value === "percent") {
         // ======== PERCENT DIFFERENCE LEGEND ========
-        const colors = d3.reverse(d3.schemeRdYlGn[10]).slice(1);
-        const labels = [-100, -50, -10, 0, 10, 50, 100, 500];
+        const colors = d3.reverse(d3.schemeRdBu[8]).slice(1);
+        const labels = [-100, -50, 0, 50, 100, 500];
 
         // 1) Title centered above the swatch bar
         legend.append("text")
@@ -313,7 +313,7 @@ function redraw() {
         const otherColors = legend.append("g");
         const others = [
             ["white", `No ${columnLabel}`],
-            ["#ffddff", `New ${columnLabel} from Last Period`],
+            ["#ff8000", `New ${columnLabel} from Last Period`],
             [unknownColor, "Unknown"]
         ];
 
@@ -485,18 +485,8 @@ function drawTooltip(dataObject) {
     const thisData = getData(dataObject, "weekly");
   
     // 5) Build the "Encounters ... from X to Y: N" string
-    let encounterString = "";
-    switch (mapColumnSwitch.value) {
-      case "encounters":
-        encounterString += "Encounters";
-        break;
-      case "pos_tests":
-        encounterString += "Positive tests";
-        break;
-      case "encounter_plus_test":
-        encounterString += "Encounters and positive tests";
-        break;
-    }
+    let encounterString = d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html();
+    
     encounterString += " from ";
   
     const endDate = thisData.end_date;
@@ -649,20 +639,10 @@ function drawAggregation() {
     var aggWidth = Math.max(300, document.getElementById("map-sidebar").clientWidth)
     var aggHeight = aggWidth * .5
 
-    aggregatedDiseaseHistoryTitle.innerHTML = `State Wide ${d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html()}`
+    aggregatedDiseaseHistoryTitle.innerHTML = `State Wide ${d3.select(`sl-option[value=${mapOutcomeVariableSelector.value}]`).html()}`
 
-    var encounterString = ""
-    switch (mapColumnSwitch.value) {
-        case "encounters":
-            encounterString += "Encounters"
-            break;
-        case "pos_tests":
-            encounterString += "Positive tests"
-            break;
-        case "encounter_plus_test":
-            encounterString += "Encounters and positive tests"
-            break;
-    }
+    var encounterString = d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()
+
     encounterString += " from "
     var thisWeek = thisData.end_date
     switch (mapTimeSwitch.value) {
@@ -723,19 +703,26 @@ function updateDiseaseCountDisplay() {
     allCount += val;
     allPrev  += prevVal;
 
-    // always compute percent-change
-    const rawPct = prevVal !== 0
-      ? ((val - prevVal) / Math.abs(prevVal)) * 100
-      : 0;
-    const pct  = Math.round(rawPct * 10) / 10;     // one decimal
-    const sign = pct >= 0 ? "+" : "";              // prefix for positives
-
     // round display of val
     const dispVal = Math.round(val * 1000) / 1000;
 
-    // show "(value, +pct%)" in every mode
-    d3.select(`#map-${disease}-count`)
-      .html(`(${dispVal}, ${sign}${pct}%)`);
+    if (prevVal || !(val)) {
+      // always compute percent-change
+      const rawPct = prevVal !== 0
+        ? ((val - prevVal) / Math.abs(prevVal)) * 100
+        : 0;
+      const pct  = Math.round(rawPct * 10) / 10;     // one decimal
+      const sign = pct >= 0 ? "+" : "";              // prefix for positives
+
+
+      // show "(value, +pct%)" in every mode
+      d3.select(`#map-${disease}-count`)
+        .html(`(${dispVal}, ${sign}${pct}%)`);
+    } else {
+      d3.select(`#map-${disease}-count`)
+        .html(`(${dispVal}, New ${d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()})`);
+
+    }
   });
 
   // 3) Same for "All Diseases"
@@ -953,18 +940,7 @@ function drawLargeTooltip(dataObject) {
     const thisData = getData(dataObject, "weekly");
   
     // 5) Build the "Encounters ... from X to Y: N" string
-    let encounterString = "";
-    switch (mapColumnSwitch.value) {
-      case "encounters":
-        encounterString += "Encounters";
-        break;
-      case "pos_tests":
-        encounterString += "Positive tests";
-        break;
-      case "encounter_plus_test":
-        encounterString += "Encounters and positive tests";
-        break;
-    }
+    let encounterString = d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html();
     encounterString += " from ";
   
     const endDate = thisData.end_date;
@@ -1076,20 +1052,9 @@ function drawLargeTooltip(dataObject) {
 function drawLargeAggregation() {
     var thisData = getData(stateFeature, "weekly")
 
-    aggregatedDiseaseHistoryLargeTitle.innerHTML = `State Wide ${d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html()}`
+    aggregatedDiseaseHistoryLargeTitle.innerHTML = `State Wide ${d3.select(`sl-option[value=${mapOutcomeVariableSelector.value}]`).html()}`
 
-    var encounterString = ""
-    switch (mapColumnSwitch.value) {
-        case "encounters":
-            encounterString += "Encounters"
-            break;
-        case "pos_tests":
-            encounterString += "Positive tests"
-            break;
-        case "encounter_plus_test":
-            encounterString += "Encounters and positive tests"
-            break;
-    }
+    var encounterString = d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()
     encounterString += " from "
     var thisWeek = thisData.end_date
     switch (mapTimeSwitch.value) {
@@ -1153,7 +1118,7 @@ function drawLargeAggregation() {
     }
     margins.left += Math.max(20, temp.node().getBBox().width)
 
-    if (mapColumnSwitch.value == "pos_tests") {
+    if (mapOutcomeVariableSelector.value == "positive_tests") {
         var percentages = data.data.map((pos_test, i) => pos_test / Math.max(data.other[i], 1))
         temp.text(d3.format(".0%")(1))
         margins.right += Math.max(10, temp.node().getBBox().width) + .75*em
@@ -1185,8 +1150,7 @@ function drawLargeAggregation() {
         .attr("text-anchor", "middle")
         .attr("fill", "var(--sl-color-neutral-1000)")
         .attr("font-size", "var(--sl-font-size-small)")
-        // .text(mapColumnSwitch.value == "pos_tests" ? "Tests" : d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html())
-        .text(d3.select(`sl-option[value=${mapColumnSwitch.value}]`).html())
+        .text(d3.select(`sl-option[value=${mapOutcomeVariableSelector.value}]`).html())
         
     yAxis.append("g")
         .attr("transform", `translate(${margins.left},0)`)
@@ -1198,7 +1162,7 @@ function drawLargeAggregation() {
     xAxis.call(d3.axisBottom(xScale).tickArguments([d3.timeYear.every(1), d3.timeFormat("%Y")]))
         .attr("transform", `translate(0, ${height - margins.bottom})`)
 
-    if (mapColumnSwitch.value == "pos_tests") {
+    if (mapOutcomeVariableSelector.value == "positive_tests") {
         var yScale2 = d3.scaleLinear()
             .domain([0, 1])
             .nice()
@@ -1291,7 +1255,7 @@ function drawLargeAggregation() {
 async function changeDataColumn() {
     d3.select("#map-loading-div").style("visibility", "visible")
     d3.selectAll("#map-loading-div circle").classed("animate", true)
-    regionData = await d3.json(`/data/outbreak-detection/${mapRegionSelector.value}/${mapColumnSwitch.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`)
+    regionData = await d3.json(`/data/outbreak-detection/${mapRegionSelector.value}/${mapOutcomeVariableSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`)
     stateFeature = regionData.features.find(d => d.properties.identifier == "state")
 
     if (selectedItems.region) {
@@ -1315,9 +1279,9 @@ function update() {
 function updateMapTitle() {
     var titleStart = `${d3.select(mapRateSwitch).select(`*[value=${mapRateSwitch.value}]`).html()} `
     titleStart += `of ${d3.select(mapTimeSwitch).select(`*[value=${mapTimeSwitch.value}]`).html()}ly `
-    titleStart += `${d3.select(mapColumnSwitch).select(`*[value=${mapColumnSwitch.value}]`).html()} `
+    titleStart += `${d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()} `
 
-    var titleEnd = "in South Carolina "
+    var titleEnd = "in Prisma and MUSC Health Systems "
     if (mapRegionSelector.value != "state") {
         titleEnd += "by "
         titleEnd += d3.select(mapRegionSelector).select(`*[value=${mapRegionSelector.value}]`).html() 
