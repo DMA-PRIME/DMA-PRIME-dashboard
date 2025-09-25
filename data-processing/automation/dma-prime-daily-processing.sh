@@ -18,14 +18,14 @@ cd $visualization_data_dir/scripts/automation
 # setup logging
 errors=0
 
-log_file="$visualization_data_dir/scripts/logs/output_log_$(printf '%(%Y-%m-%d)T\n' -1).txt"
+log_file="$visualization_data_dir/scripts/logs/output_log_$(printf '%(%Y-%m-%d %H:%M)T\n' -1).txt"
 touch "$log_file"
-echo "Logs from daily data processing on $(printf '%(%Y-%m-%d)T\n' -1)" > $log_file
+echo "Logs from data processing on $(printf '%(%Y-%m-%d %H:%M)T\n' -1)" > $log_file
 
 updated_dashboards=0
 lior_file="lior.txt"
 touch "$lior_file"
-echo "Report of data processing - $(printf '%(%Y-%m-%d)T\n' -1)" > $lior_file
+echo "Report of data processing - $(printf '%(%Y-%m-%d %H:%M)T\n' -1)" > $lior_file
 echo "Visit dmaprime.clemson.edu/data-approval to preview and approve data." >> $lior_file
 echo "Dashboards updated:" >> $lior_file
 
@@ -57,7 +57,7 @@ else # successful processing, see if new data
         # copy encryption key
         cp $visualization_data_dir/download/supplementary/encrypt_key.bin $visualization_data_dir/download/processed/mhc/
         # update date of last change file
-        printf '%(%Y-%m-%d)T\n' -1 > $visualization_data_dir/download/processed/mhc/date.txt
+        printf '%(%Y-%m-%d %H:%M)T\n' -1 > $visualization_data_dir/download/processed/mhc/date.txt
         
         # logging
         echo "Success" >> $log_file
@@ -84,7 +84,7 @@ if [[ $? -ne 0 ]]; then # new data!
         # copy encryption key
         cp $visualization_data_dir/download/supplementary/encrypt_key.bin $visualization_data_dir/download/processed/opioid_hcv_hiv/
         # update date of last change file
-        printf '%(%Y-%m-%d)T\n' -1 > $visualization_data_dir/download/processed/opioid_hcv_hiv/date.txt
+        printf '%(%Y-%m-%d %H:%M)T\n' -1 > $visualization_data_dir/download/processed/opioid_hcv_hiv/date.txt
         
         # logging
         echo "Success" >> $log_file
@@ -112,7 +112,7 @@ if [[ $? -ne 0 ]]; then # new data!
         # copy encryption key
         cp $visualization_data_dir/download/supplementary/encrypt_key.bin $visualization_data_dir/download/processed/other_infectious_diseases/
         # update date of last change file
-        printf '%(%Y-%m-%d)T\n' -1 > $visualization_data_dir/download/processed/other_infectious_diseases/date.txt
+        printf '%(%Y-%m-%d %H:%M)T\n' -1 > $visualization_data_dir/download/processed/other_infectious_diseases/date.txt
         
         # logging
         echo "Success" >> $log_file
@@ -140,7 +140,7 @@ if [[ $? -ne 0 ]]; then # new data!
         # copy encryption key
         cp $visualization_data_dir/download/supplementary/encrypt_key.bin $visualization_data_dir/download/processed/respiratory/
         # update date of last change file
-        printf '%(%Y-%m-%d)T\n' -1 > $visualization_data_dir/download/processed/respiratory/date.txt
+        printf '%(%Y-%m-%d %H:%M)T\n' -1 > $visualization_data_dir/download/processed/respiratory/date.txt
         # move list of files changed
         mv respiratory_changes.txt $visualization_data_dir/download/processed/respiratory/respiratory_changes.txt
         
@@ -177,7 +177,7 @@ if [[ $? -ne 0 ]]; then # new data!
         # copy encryption key
         cp $visualization_data_dir/download/supplementary/encrypt_key.bin $visualization_data_dir/download/processed/waste_water/
         # update date of last change file
-        printf '%(%Y-%m-%d)T\n' -1 > $visualization_data_dir/download/processed/waste_water/date.txt
+        printf '%(%Y-%m-%d %H:%M)T\n' -1 > $visualization_data_dir/download/processed/waste_water/date.txt
 
         # logging
         echo "Success" >> $log_file
@@ -193,7 +193,7 @@ echo >> $log_file
 
 ### backup ###
 echo "Backing Up" >> $log_file
-backup_dir="$visualization_data_dir/backup/$(printf '%(%Y-%m-%d)T\n' -1)"
+backup_dir="$visualization_data_dir/backup/$(printf '%(%Y-%m-%d %H:%M)T\n' -1)"
 
 mkdir $backup_dir
 
