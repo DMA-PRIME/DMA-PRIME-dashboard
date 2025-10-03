@@ -101,8 +101,11 @@ map.on("click", e => {
                     var allExtendedData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
                     var ttpData = {
                         "id": dataObject.properties.id,
+                        "display_name": dataObject.properties.display_name,
                         "county": dataObject.properties.county,
-                        "data": allExtendedData[dataObject.properties.id]
+                        "data": allExtendedData[dataObject.properties.id],
+                        "facility_type": dataObject.properties.facility_type,
+                        "system": dataObject.properties.system,
                     }
                     drawTooltip(ttpData,
                         largeTtp.select(".tooltip-outer-svg"), largeTtp.select(".tooltip-header"), largeTtp.select(".tooltip-footer"),

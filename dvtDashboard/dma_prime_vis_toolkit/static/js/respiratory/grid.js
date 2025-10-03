@@ -89,8 +89,11 @@ async function updateData() {
                             var allExtendedData = await d3.json(`/data/respiratory/${gridRegionSelector.value}/${gridDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
                             var ttpData = {
                                 "id": location,
+                                "display_name": feature.properties.display_name,
                                 "county": feature.properties.county,
-                                "data": allExtendedData[location]
+                                "data": allExtendedData[location],
+                                "facility_type": feature.properties.facility_type,
+                                "system": feature.properties.system,
                             }
                             drawTooltip(ttpData,
                                 largeTtp.select(".tooltip-outer-svg"), largeTtp.select(".tooltip-header"), largeTtp.select(".tooltip-footer"),
@@ -149,6 +152,10 @@ async function updateData() {
                 .attr("x", 0.25 * em)
                 .attr("y", em)
                 .text(location)
+
+            if (gridRegionSelector.value == "facility") {
+                gridTitle.text(feature.properties.display_name)
+            }
 
             if (gridRegionSelector.value == "zcta") {
                 gridTitle.append("tspan")

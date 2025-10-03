@@ -195,10 +195,10 @@ echo >> $log_file
 echo "Backing Up" >> $log_file
 backup_dir="$visualization_data_dir/backup/$(printf '%(%Y-%m-%d %H:%M)T\n' -1)"
 
-mkdir $backup_dir
+mkdir "$backup_dir"
 
-cp -rp "$visualization_data_dir/raw" $backup_dir &>> $log_file
-cp -rp "$visualization_data_dir/aggregated" $backup_dir &>> $log_file
+cp -rp "$visualization_data_dir/raw" "$backup_dir" &>> $log_file
+cp -rp "$visualization_data_dir/aggregated" "$backup_dir" &>> $log_file
 
 ### Email Results ###
 echo "Num errors: $errors" >> $log_file

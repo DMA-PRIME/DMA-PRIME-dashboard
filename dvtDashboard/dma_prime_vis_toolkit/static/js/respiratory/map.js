@@ -63,27 +63,74 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
     createChoropleth(regionData, mapTypeSwitch.value, mapPopulationSelector.value, mapOutcomeVariableSelector.value, mapIncludeImputations.checked)
     updateMapTitle()
     drawLegend()
-    var layers = [
-        new GeoJsonLayer({
-            id: 'respiratory_choropleth',
-            depthTest: false,
-            pickable: true,
-            data: regionData,
-            stroked: false,
-            stroked: true,
-            filled: true,
-            pointType: 'circle+text',
-            pickable: true,
-            getFillColor: d => getColor(d),
-            lineWidthMinPixels: .75,
-            getLineWidth: 20,
-            getLineColor: [127, 127, 127],
-            updateTriggers: {
-                data: [mapRegionSelector.value, dataVersion],
-                getFillColor: [ mapRegionSelector.value, mapOutcomeVariableSelector.value, dataVersion ],
-            },
-        })
-    ]
+    var layers = []
+    if (mapRegionSelector.value != "facility") {
+        layers.push(
+            new GeoJsonLayer({
+                id: 'respiratory_choropleth',
+                depthTest: false,
+                pickable: true,
+                data: regionData,
+                stroked: true,
+                filled: true,
+                pointType: 'circle+text',
+                pickable: true,
+                getFillColor: d => getColor(d),
+                lineWidthMinPixels: .75,
+                getLineWidth: 20,
+                getLineColor: [127, 127, 127],
+                updateTriggers: {
+                    data: [mapRegionSelector.value, dataVersion],
+                    getFillColor: [ mapRegionSelector.value, mapOutcomeVariableSelector.value, dataVersion ],
+                },
+            })
+        )
+    } else {
+        layers.push(
+            new GeoJsonLayer({
+                id: 'respiratory_facility_background',
+                depthTest: false,
+                pickable: false,
+                data: regionData,                
+                pointType: 'icon+text',
+                iconAtlas: icons.iconAtlas,
+                iconMapping: icons.iconMapping,
+                getIconSize: 22,
+                getIcon: d => d.properties.system,
+                getIconColor: d => {
+                    let val = getFeatureValue(d, mapPopulationSelector.value, mapOutcomeVariableSelector.value, mapTypeSwitch.value, mapIncludeImputations.checked)
+                    if (val === undefined) {
+                        let c = unknownColor.rgb()
+                        return [c.r, c.g, c.b]
+                    } else if (val.length) {
+                        val = val[2]
+                    }
+                    let c = unknownColor.rgb()
+                    return isNaN(val) ? [c.r, c.g, c.b] : [0, 0, 0, 255]},
+                iconSizeMinPixels: 12,
+                updateTriggers: {
+                    data: [mapRegionSelector.value, dataVersion],
+                },
+            }),
+            new GeoJsonLayer({
+                id: 'respiratory_facility',
+                depthTest: false,
+                pickable: true,
+                data: regionData,                
+                pointType: 'icon+text',
+                iconAtlas: icons.iconAtlas,
+                iconMapping: icons.iconMapping,
+                getIconSize: 20,
+                getIcon: d => d.properties.system,
+                getIconColor: d => getColor(d),
+                iconSizeMinPixels: 10,
+                updateTriggers: {
+                    data: [mapRegionSelector.value, dataVersion],
+                    getIconColor: [ mapRegionSelector.value, mapOutcomeVariableSelector.value, dataVersion ],
+                },
+            })
+        )
+    }
     if (selectedItems.icons.length) {
         layers.push(
             new IconLayer({

@@ -227,13 +227,17 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
     var regionInfo = header.select(".tooltip-region-info")
     regionInfo.node().innerHTML = ""
         if (geographicUnit != "state") {
-            regionInfo.append("p").html(`${metadata.region_sizes[geographicUnit]}: ${identifier}`)
+            regionInfo.append("p").attr("class", "ttp-location-name").html(`${metadata.region_sizes[geographicUnit]}: ${identifier}`)
         } else {
-            regionInfo.append("p").html("South Carolina")
+            regionInfo.append("p").attr("class", "ttp-location-name").html("South Carolina")
         }
     if (geographicUnit == "zcta") {
         // TODO: Make county names display correctly (e.g. McCormick instead of Mccormick)
         regionInfo.append("p").html(`County: ${featureData.county[0].toUpperCase()+featureData.county.substring(1)}`)
+    }
+    if (geographicUnit == "facility") {
+        regionInfo.select(".ttp-location-name").html(`${metadata.region_sizes[geographicUnit]}: ${featureData.display_name} (${featureData.facility_type})`)
+        regionInfo.append("p").html(`Health System: ${featureData.system}`)
     }
 
     var dataInfo = header.select(".tooltip-data-info")
@@ -348,10 +352,14 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
                 } else {
                     allExtendedData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
                 }
+                console.log(data)
                 var ttpData = {
                     "id": identifier,
+                    "display_name": data.display_name,
                     "county": data.county,
-                    "data": allExtendedData[identifier]
+                    "data": allExtendedData[identifier],
+                    "facility_type": data.facility_type,
+                    "system": data.system,
                 }
 
                 drawTooltip(ttpData,
