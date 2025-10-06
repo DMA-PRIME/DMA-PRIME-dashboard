@@ -193,6 +193,14 @@ mapRegionSelector.addEventListener("sl-change", (event) => {
     if (popup.isOpen()) {
         popup.remove()        
     }
+
+    if (mapRegionSelector.value == "facility") {
+        hospitalIconsToggle.checked = false
+        selectedItems.icons = selectedItems.icons.filter(check => check !== "hospital")
+        d3.select(hospitalIconsToggle).attr("disabled", "")
+    } else {
+        d3.select(hospitalIconsToggle).attr("disabled", null)
+    }
     dataVersion++
     redraw(true, true)
 })

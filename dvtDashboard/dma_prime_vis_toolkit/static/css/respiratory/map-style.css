@@ -47,10 +47,12 @@ path.map-zcta {
 }
 
 /* legend components */
-#choropleth-legend {
+#map-legend {
     position: absolute;
     bottom: var(--sl-spacing-small);
     left: var(--sl-spacing-x-large);
+    display: flex;
+    flex-direction: column;
 }
 
 .map-legend-background {

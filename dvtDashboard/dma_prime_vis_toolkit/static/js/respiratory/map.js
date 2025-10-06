@@ -249,14 +249,16 @@ function createChoropleth(data, mapType, population, outcomeVariable, imputation
 
 function drawLegend() {
     var legendMargins = {
-        "top": 8,
-        "bottom": 8,
+        "top": 12,
+        "bottom": 16,
         "left": 8,
         "right": 8,
     }
 
     // Add components for choropleth legend
     choroplethLegendSVG.innerHTML = ""
+
+    d3.select(mapShapeLegend).attr("display", mapRegionSelector.value == "facility" ? "initial" : "none")
 
     if (mapTypeSwitch.value == "percentDifference") {
 
@@ -266,18 +268,18 @@ function drawLegend() {
         var legend = d3.select(choroplethLegendSVG)
             .attr("overflow", "visible")
 
-        legend.attr("transform", `translate(0, 16)`)
+        legend //.attr("transform", `translate(0, 16)`)
             .attr("width", legendLength)
-            .attr("height", 50)
+            .attr("height", 140)
 
         legend.append("text")
             .attr("x", legendLength/2)
-            .attr("y", -em/2)
+            .attr("y", 100 - em/2)
             .attr("text-anchor", "middle")
             .style("font-size", 'var(--sl-font-size-x-small)')
             .text(`Percent Change of ${d3.select(`sl-option[value=${mapDiseaseSelector.value}]`).html()} from Last Week`)
         
-        legend.append("g").selectAll("rect")
+        legend.append("g").attr("transform", "translate(0, 100)").selectAll("rect")
             .data(colors)
             .enter()
             .append("rect")
@@ -287,7 +289,7 @@ function drawLegend() {
             .attr("height", 15)
             .attr("fill", d => d)
         
-        legend.append("g").selectAll("text")
+        legend.append("g").attr("transform", "translate(0, 100)").selectAll("text")
             .data(labels)
             .enter()
             .append("text")
@@ -304,7 +306,7 @@ function drawLegend() {
 
         others.forEach((d, i) => {
             let group = otherColors.append("g")
-                .attr("transform", `translate(0, ${(i+1) * -20 - 2*em})`)
+                .attr("transform", `translate(0, ${(i+1) * 20})`)
             group.append("rect")
                 .attr("x", 0)
                 .attr("y", 0)
@@ -343,13 +345,9 @@ function drawLegend() {
             var xDomain = [edges[0], edges[edges.length - 1]]
             var xScale = d3.scaleLinear().domain(xDomain).range([0, legendWidth])
 
-            // add background
-            colorLegend.append("rect")
-                .attr("class", "map-legend-background")
-                .attr("width", legendWidth + legendMargins.left + legendMargins.right)
-                .attr("height", 3*em + legendMargins.top + legendMargins.bottom)
-
-            var content = colorLegend.append("g").attr("id", "map-color-legend-contents")
+            var content = colorLegend.append("g")
+                .attr("transform", "translate(0, 8)")
+                .attr("id", "map-color-legend-contents")
 
             content.selectAll("rect.bin")
                 .data(bins)

@@ -104,7 +104,13 @@
 
 {% block contents %}
 <div class="fill-width fill-height" id="map-div"></div>
-<div id="choropleth-legend">
+<div id="map-legend">
+  <svg id="map-shape-legend" height="34px" width="200" display="none">
+    <rect x="2" y="0" height="12" width="12" fill="#CCCCCC" stroke="black"></rect>
+    <text x="20" y="11" font-size="var(--sl-font-size-small)">PRISMA Health System</text>
+    <circle cx="8" cy="26" r="6" fill="#CCCCCC" stroke="black"></circle>
+    <text x="20" y="31" font-size="var(--sl-font-size-small)">MUSC Health System</text>
+  </svg>
   <svg id="choropleth-legend-svg"></svg>
 </div>
 <div id="map-title-container" class="fill-width">
@@ -174,6 +180,7 @@
 
     // Main map, legend, title & tooltip
     mapDiv                        = document.getElementById("map-div");
+    mapShapeLegend              = document.getElementById("map-shape-legend")
     choroplethLegendSVG           = document.getElementById("choropleth-legend-svg");
     mapTitle                      = document.getElementById("map-title");
     mapDisclaimer                = document.getElementById("map-disclaimer")
