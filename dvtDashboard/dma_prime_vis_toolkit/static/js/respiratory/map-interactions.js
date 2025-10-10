@@ -1,5 +1,7 @@
 import { getBoundsOfCoords, drawTooltip, drawStateHospitalizations, drawLargeStateHospitalizations } from "/static/js/respiratory/script.js";
-import { map, popup, deckOverlay, selectedItems, redraw, updateMapTooltip } from "/static/js/respiratory/map.js"
+import { map, popup, deckOverlay, selectedItems, redraw, updateMapTooltip,
+    updateMapOutcomeVariableOptions, updateMapPopulationOptions, updateMapGeographicUnitOptions
+} from "/static/js/respiratory/map.js"
 
 
 popup.on("close", e => {
@@ -8,7 +10,7 @@ popup.on("close", e => {
     redraw(false, false, true)
 })
 
-map.on('zoom', _ => {if (mapRegionSelector.value == "zcta") { redraw() }})
+map.on('zoom', _ => {if (mapGeographicUnitSelector.value == "zcta") { redraw() }})
 
 map.on("click", e => {
     var temp = {x: e.point.x, y: e.point.y}
@@ -94,11 +96,11 @@ map.on("click", e => {
             .style("cursor", "pointer")
             .on("click", () => {
                 d3.select(modelExplorationButtonTooltipLarge).on("click", () => {
-                    window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapRegionSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
+                    window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapGeographicUnitSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
                 })
                 var largeTtp = d3.select(tooltipLarge)
                 tooltipLarge.show().then(async () => {
-                    var allExtendedData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
+                    var allExtendedData = await d3.json(`/data/respiratory/${mapGeographicUnitSelector.value}/${mapDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
                     var ttpData = {
                         "id": dataObject.properties.id,
                         "display_name": dataObject.properties.display_name,
@@ -124,7 +126,7 @@ map.on("click", e => {
             .style("color", "black")
             .style("cursor", "pointer")
             .on("click", () => {
-                window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapRegionSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
+                window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapGeographicUnitSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
             })
     }
     dataVersion++
@@ -153,10 +155,10 @@ mapTypeSwitch.addEventListener("sl-change", (event) => {
     // update legend title
     if (mapTypeSwitch.value == "rate"){
         d3.select("#map-legend-title")
-            .text(`Current Week's ${dataVarString} Rates by ${metadata.region_sizes[mapRegionSelector.value]}`)
+            .text(`Current Week's ${dataVarString} Rates by ${metadata.region_sizes[mapGeographicUnitSelector.value]}`)
     } else {
         d3.select("#map-legend-title")
-            .text(`Current Week's ${dataVarString} by ${metadata.region_sizes[mapRegionSelector.value]}`)
+            .text(`Current Week's ${dataVarString} by ${metadata.region_sizes[mapGeographicUnitSelector.value]}`)
     }
 
     drawStateHospitalizations(mapDiseaseSelector.value, mapTypeSwitch.value, mapStateHospitalizationsSvg, mapStateHospitalizationsSubtitle)
@@ -169,15 +171,8 @@ mapTypeSwitch.addEventListener("sl-change", (event) => {
     redraw()
 })
 
-mapPopulationSelector.addEventListener("sl-change", (event) => {
-    if (selectedItems.feature) {
-        updateMapTooltip(selectedItems.feature.properties)
-    }
-    dataVersion++
-    redraw(true)
-})
-
-mapDiseaseSelector.addEventListener("sl-change", (event) => {
+mapDiseaseSelector.addEventListener("sl-change", async(event) => {
+    await updateMapGeographicUnitOptions()
     drawStateHospitalizations(mapDiseaseSelector.value, mapTypeSwitch.value, mapStateHospitalizationsSvg, mapStateHospitalizationsSubtitle)
     selectedItems.feature = undefined
     
@@ -188,13 +183,16 @@ mapDiseaseSelector.addEventListener("sl-change", (event) => {
     redraw(true, true)
 })
 
-mapRegionSelector.addEventListener("sl-change", (event) => {
+mapGeographicUnitSelector.addEventListener("sl-change", async(event) => {
+    await updateMapPopulationOptions()
+    mapGeographicUnit = mapGeographicUnitSelector.value
+
     selectedItems.feature = undefined
     if (popup.isOpen()) {
         popup.remove()        
     }
 
-    if (mapRegionSelector.value == "facility") {
+    if (mapGeographicUnitSelector.value == "facility") {
         hospitalIconsToggle.checked = false
         selectedItems.icons = selectedItems.icons.filter(check => check !== "hospital")
         d3.select(hospitalIconsToggle).attr("disabled", "")
@@ -205,15 +203,28 @@ mapRegionSelector.addEventListener("sl-change", (event) => {
     redraw(true, true)
 })
 
+mapPopulationSelector.addEventListener("sl-change", async (event) => {
+    await updateMapOutcomeVariableOptions()
+    mapPopulation = mapPopulationSelector.value
+
+    if (selectedItems.feature) {
+        updateMapTooltip(selectedItems.feature.properties)
+    }
+    dataVersion++
+    redraw(true)    
+})
+
 mapOutcomeVariableSelector.addEventListener("sl-change", (event) => {
+    mapOutcomeVariable = mapOutcomeVariableSelector.value
+    
     var dataVarString = d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()
     // update legend title
     if (mapTypeSwitch.value == "rate"){
         d3.select("#map-legend-title")
-            .text(`Current Week's ${dataVarString} Rates by ${metadata.region_sizes[mapRegionSelector.value]}`)
+            .text(`Current Week's ${dataVarString} Rates by ${metadata.region_sizes[mapGeographicUnitSelector.value]}`)
     } else {
         d3.select("#map-legend-title")
-            .text(`Current Week's ${dataVarString} by ${metadata.region_sizes[mapRegionSelector.value]}`)
+            .text(`Current Week's ${dataVarString} by ${metadata.region_sizes[mapGeographicUnitSelector.value]}`)
     }
 
     // update tooltip

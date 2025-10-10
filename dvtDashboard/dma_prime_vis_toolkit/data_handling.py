@@ -45,11 +45,11 @@ def get_all_respiratory_hospitalizations(region_size='zcta', disease='covid-19')
 
 @bp.route('/respiratory/model/<disease>/<geographic_unit>/<population>/<outcome_variable>/<location>', methods=['GET'])
 @login_required
-def get_respiratory_model(location, disease='covid_19', geographic_unit='region', population='state', outcome_variable='encounters'):
+def get_respiratory_model(location, disease='covid_19', geographic_unit='region', population='state', outcome_variable='all_encounters'):
     # model information for given combo of option selections
     data_version = get_data_version_from_request(request, current_user)
     outcome_variable_crosswalk = {
-        'encounters': 'Weekly_Encounters',
+        'all_encounters': 'Weekly_Encounters',
         'inpatient_hospitalizations': 'Weekly_Inpatient_Hospitalizations',
         'emergency_department_visits': 'Weekly_ED_Visits',
         'positive_tests': 'Weekly_Positive_Tests',

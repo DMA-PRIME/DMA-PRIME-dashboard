@@ -4,6 +4,7 @@ import geojson
 import math
 import os
 import glob
+from collections import OrderedDict
 
 from supporting_files.utility import *
 
@@ -23,14 +24,15 @@ from supporting_files.utility import *
 
 # outcome variables = Variable: Display Name
 outcome_variables = {
-    'Weekly_Encounters': 'Encounters',
+    'encounters_all': 'All Encounters',
+    'Weekly_Encounters': 'All Encounters',
     'Weekly_Inpatient_Hospitalizations': 'Inpatient Hospitalizations',
     'Weekly_ED_Visits': 'Emergency Department Visits',
     'Weekly_Positive_Tests': 'Positive Tests',
     'rt': 'Rate of Transmission',
 }
 
-outcome_variables_code_friendly = {k:'_'.join(v.lower().split()) for k, v in outcome_variables.items()}
+outcome_variables_code_friendly = {k:'_'.join(v.lower().split()) for k, v in list(OrderedDict.fromkeys(outcome_variables.items()))}
 
 # data sources
 data_sources = {
@@ -84,7 +86,6 @@ value_columns = ['value', 'imputed']
 
 # useful to have in one place, to be saved to a file at the end
 metadata = {
-    'outcome_variables': {outcome_variables_code_friendly[k]:v for k, v in outcome_variables.items()},
     'diseases': diseases,
 
     'region_sizes': {
@@ -92,7 +93,64 @@ metadata = {
         'region': 'Region',
         'county': 'County',
         'zcta': 'Zip-Code Tabulation Area (ZCTA)',
+        'facility': 'Facility',
     },
+
+    'populations': {
+        'general_population': 'General Population',
+        'health_system': 'Health System (PRISMA/MUSC)'
+    },
+    'populations_tooltips': {
+        'general_population': 'All South Carolina residents in the selected geography',
+        'health_system': 'South Carolina residents in the selected geography served by the PRISMA or MUSC health system'
+    },
+
+    'outcome_variables': {outcome_variables_code_friendly[k]:v for k, v in outcome_variables.items()},
+    'outcome_variables_tooltips': {outcome_variables_code_friendly[k]:v[0]+v[1:].lower() for k, v in outcome_variables.items()},
+
+    'available_models': {
+        'covid_19': {
+            'region': {
+                'general_population': ['all_encounters'],
+                'health_system': ['positive_tests', 'rate_of_transmission'] },
+            'county': {
+                'general_population': ['all_encounters'],
+                'health_system': ['positive_tests', 'rate_of_transmission'] },
+            'zcta': {
+                'general_population': ['all_encounters'],
+                'health_system': ['positive_tests', 'rate_of_transmission'] },
+            'facility': {
+                'health_system': ['positive_tests', 'rate_of_transmission'] },
+        },
+        'influenza': {
+            'region': {
+                'general_population': ['all_encounters'],
+                'health_system': ['positive_tests', 'rate_of_transmission'] },
+            'county': {
+                'general_population': ['all_encounters'],
+                'health_system': ['positive_tests', 'rate_of_transmission'] },
+            'zcta': {
+                'general_population': ['all_encounters'],
+                'health_system': ['positive_tests', 'rate_of_transmission'] },
+            'facility': {
+                'health_system': ['positive_tests', 'rate_of_transmission'] },
+        },
+        'RSV': {
+            'region': {
+                'general_population': ['all_encounters'] },
+
+        },
+        'respiratory_diseases': {
+            'region': {
+                'general_population': ['all_encounters'] },
+            'county': {
+                'general_population': ['all_encounters'] },
+            'zcta': {
+                'general_population': ['all_encounters'] },
+        },
+
+    }
+
 
     # need list of state, regions, counties, zctas
     # need current, first, start_short_historical, and last dates
@@ -193,7 +251,7 @@ def process_disease_location(data, disease_data, disease_data_all):
                 disease_data_all[population][outcome_variable]['historical']['values'] = pandas_to_json_safe_list(temp_data_values.reindex(all_historical_dates, level='target_end_date'))
                 disease_data_all[population][outcome_variable]['historical']['imputed'] = bool(temp_data_imputations.reindex(all_historical_dates, level='target_end_date').any())
                 
-                if outcome_variable in ['encounters', 'inpatient_hospitalizations', 'emergency_department_visits']:
+                if outcome_variable in ['all_encounters', 'inpatient_hospitalizations', 'emergency_department_visits']:
                     # yes estimated, then HS/RFA is extra (button names come from data source)
                     for data_source, data_source_code_friendly in data_sources.items():
                         try:
@@ -281,6 +339,7 @@ def get_facility_data(facility, extended_historical_data):
 facility_info = pd.read_csv(f'{scripts_supporting_files_dir}/Cross-WALK-LOCATIONS-temp.csv')
 extended_historical_data = {}
 
+print('facility')
 for disease in diseases.keys():
     all_disease_data = geojson.FeatureCollection(facility_info.apply(get_facility_data, args=[extended_historical_data], axis=1).to_list())
     # create dirs if needed and save off file
@@ -397,6 +456,9 @@ df.to_json(out_path, orient='columns')
 
 ######## 5 ########
 with open(f'{processed_data_dir}/respiratory/metadata.json', 'w') as f:
+
+    metadata['outcome_variables_tooltips']['all_encounters'] = 'Inpatient and outpatient hospitalizations and emergency department visits'
+    metadata['outcome_variables_tooltips']['rate_of_transmission'] = 'Average effective reproductive number'
 
     metadata['current_date'] = current_date.strftime('%Y-%m-%d')
     metadata['first_date'] = first_date.strftime('%Y-%m-%d')

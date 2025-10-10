@@ -1,6 +1,9 @@
 const { GeoJsonLayer, IconLayer, TextLayer, MapboxOverlay } = deck;
 import { outcomeVariableStringCrosswalk, populationColorMap, unknownColor, getCenter, getFeatureValue, getAllFeaturesValue, drawTooltip, drawStateHospitalizations } from "/static/js/respiratory/script.js";
-export { map, popup, selectedItems, deckOverlay, redraw, updateMapTitle, updateMapTooltip }
+export { map, popup, selectedItems, deckOverlay, 
+    redraw, updateMapTitle, updateMapTooltip,
+    updateMapOutcomeVariableOptions, updateMapPopulationOptions, updateMapGeographicUnitOptions
+ }
 
 var icons = {
     data: await d3.csv('/data/health-care-facility'),
@@ -29,7 +32,9 @@ const map = new maplibregl.Map({
     zoom: 7,
 })
 
-await map.once('load')
+await map.once('load', d => {
+    d3.selectAll(".map-option").attr("disabled", null)
+})
 
 var popup = new maplibregl.Popup({focusAfterOpen: false, closeOnClick: false})
 d3.select(popup.getElement()).style("color", "var(--sl-color-neutral-0)")
@@ -47,7 +52,7 @@ await Promise.allSettled([ // wait for following to be defined/load in
     customElements.whenDefined('sl-button'),
 ])
 
-var regionData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`)
+var regionData = await d3.json(`/data/respiratory/${mapGeographicUnitSelector.value}/${mapDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`)
 
 redraw(true, true)
 drawStateHospitalizations(mapDiseaseSelector.value, mapTypeSwitch.value, mapStateHospitalizationsSvg, mapStateHospitalizationsSubtitle)
@@ -55,16 +60,17 @@ drawStateHospitalizations(mapDiseaseSelector.value, mapTypeSwitch.value, mapStat
 async function redraw(resetWarnings=false, fetchData=false, center=false) {
     updateMapTitle()
     if (fetchData == true) {
-        regionData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`) 
+        d3.select("#map-loading-div").style("visibility", "visible")
+        d3.selectAll("#map-loading-div circle").classed("animate", true)
+        regionData = await d3.json(`/data/respiratory/${mapGeographicUnitSelector.value}/${mapDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`) 
     }
     if (resetWarnings) {
         updateMapWarnings()
     }
     createChoropleth(regionData, mapTypeSwitch.value, mapPopulationSelector.value, mapOutcomeVariableSelector.value, mapIncludeImputations.checked)
-    updateMapTitle()
     drawLegend()
     var layers = []
-    if (mapRegionSelector.value != "facility") {
+    if (mapGeographicUnitSelector.value != "facility") {
         layers.push(
             new GeoJsonLayer({
                 id: 'respiratory_choropleth',
@@ -80,8 +86,8 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
                 getLineWidth: 20,
                 getLineColor: [127, 127, 127],
                 updateTriggers: {
-                    data: [mapRegionSelector.value, dataVersion],
-                    getFillColor: [ mapRegionSelector.value, mapOutcomeVariableSelector.value, dataVersion ],
+                    data: [mapGeographicUnitSelector.value, dataVersion],
+                    getFillColor: [ mapGeographicUnitSelector.value, mapOutcomeVariableSelector.value, dataVersion ],
                 },
             })
         )
@@ -109,7 +115,7 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
                     return isNaN(val) ? [c.r, c.g, c.b] : [0, 0, 0, 255]},
                 iconSizeMinPixels: 12,
                 updateTriggers: {
-                    data: [mapRegionSelector.value, dataVersion],
+                    data: [mapGeographicUnitSelector.value, dataVersion],
                 },
             }),
             new GeoJsonLayer({
@@ -125,8 +131,8 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
                 getIconColor: d => getColor(d),
                 iconSizeMinPixels: 10,
                 updateTriggers: {
-                    data: [mapRegionSelector.value, dataVersion],
-                    getIconColor: [ mapRegionSelector.value, mapOutcomeVariableSelector.value, dataVersion ],
+                    data: [mapGeographicUnitSelector.value, dataVersion],
+                    getIconColor: [ mapGeographicUnitSelector.value, mapOutcomeVariableSelector.value, dataVersion ],
                 },
             })
         )
@@ -151,7 +157,7 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
             }),
         )
     }
-    if (mapRegionSelector.value != "state" && mapOptionsGeographicLabelsToggle.checked) {
+    if (mapGeographicUnitSelector.value != "state" && mapOptionsGeographicLabelsToggle.checked) {
         layers.push(
             new TextLayer({
                 id: 'labels',
@@ -165,7 +171,7 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
                 getBackgroundColor: [255, 255, 255, 32],
                 backgroundBorderRadius: 2,
                 backgroundPadding: [4, 4],
-                getSize: mapRegionSelector.value == "zcta" ? Math.min(Math.max(8, map.getZoom()*1.5), 16) : 16,
+                getSize: mapGeographicUnitSelector.value == "zcta" ? Math.min(Math.max(8, map.getZoom()*1.5), 16) : 16,
                 fontFamily:getComputedStyle(document.head).getPropertyValue("--sl-font-sans").replace(/\s/g,'').split(',') ,
                 collisionGroup: 'labels',
                 collisionTestProps: {sizeScale: 2.5},
@@ -178,6 +184,9 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
     deckOverlay.setProps({
         layers: layers
     })
+
+    d3.select("#map-loading-div").style("visibility", "hidden")
+    d3.selectAll("#map-loading-div circle").classed("animate", false)
 
     if (center) {
         map.flyTo({
@@ -224,7 +233,7 @@ function createChoropleth(data, mapType, population, outcomeVariable, imputation
         .unknown(unknownColor)
     } else {
         var arr = []
-        if (mapRegionSelector.value == "state") {
+        if (mapGeographicUnitSelector.value == "state") {
             var thisData = data.features[0].properties.data[population][outcomeVariable]['historical']
             if (mapType == "rate") {
                 arr =  thisData.map(d => d/ data.features[0].properties.population * 1000)
@@ -258,7 +267,7 @@ function drawLegend() {
     // Add components for choropleth legend
     choroplethLegendSVG.innerHTML = ""
 
-    d3.select(mapShapeLegend).attr("display", mapRegionSelector.value == "facility" ? "initial" : "none")
+    d3.select(mapShapeLegend).attr("display", mapGeographicUnitSelector.value == "facility" ? "initial" : "none")
 
     if (mapTypeSwitch.value == "percentDifference") {
 
@@ -380,7 +389,7 @@ function drawLegend() {
                 .attr("class", `map-legend title`)
                 .attr("x", legendWidth/2 + legendMargins.left)
                 .attr("y", 3*em + legendMargins.top)
-                .text(`Current Week's ${metadata.outcome_variables[mapOutcomeVariableSelector.value]} by ${metadata.region_sizes[mapRegionSelector.value]}`)
+                .text(`Current Week's ${metadata.outcome_variables[mapOutcomeVariableSelector.value]} by ${metadata.region_sizes[mapGeographicUnitSelector.value]}`)
         } else {
             // Continuous gradient legend (default)
             var colorLegendDefs = colorLegend.append("defs")
@@ -429,7 +438,7 @@ function drawLegend() {
                 .attr("class", `map-legend title`)
                 .attr("x", legendWidth/2 + legendMargins.left)
                 .attr("y", 3*em + legendMargins.top)
-                .text(`Current Week's ${metadata.outcome_variables[mapOutcomeVariableSelector.value]} by ${metadata.region_sizes[mapRegionSelector.value]}`)
+                .text(`Current Week's ${metadata.outcome_variables[mapOutcomeVariableSelector.value]} by ${metadata.region_sizes[mapGeographicUnitSelector.value]}`)
         }
 
     }
@@ -441,9 +450,9 @@ function updateMapTitle() {
     titleStart += `${d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()} `
 
     var titleEnd = "in South Carolina "
-    if (mapRegionSelector.value != "state") {
+    if (mapGeographicUnitSelector.value != "state") {
         titleEnd += "by "
-        titleEnd += d3.select(mapRegionSelector).select(`*[value=${mapRegionSelector.value}]`).html() 
+        titleEnd += d3.select(mapGeographicUnitSelector).select(`*[value=${mapGeographicUnitSelector.value}]`).html() 
     } 
 
     var newTitle
@@ -532,4 +541,78 @@ function updateMapWarnings() {
     // no forecast this week: all start_date != current_week where projection has length
     // some forecast this week: some start_date != current_week
     // all forecast updated: all start_date = current_week (and some projections have length)
+}
+
+async function updateMapGeographicUnitOptions() {
+    d3.selectAll(".map-geographic-unit-option").remove()
+    var availableGeographicUnits = Object.keys(metadata.available_models[mapDiseaseSelector.value])
+    d3.select(mapGeographicUnitSelector)
+        .selectAll(".map-geographic-unit-option")
+        .data(availableGeographicUnits)
+        .enter()
+        .append("sl-option")
+        .attr("class", "map-geographic-unit-option")
+        .attr("value", d => d)
+        .html(d => metadata.region_sizes[d])
+
+    if (availableGeographicUnits.includes(mapGeographicUnit)) {
+        // do nothing
+    } else {
+        mapGeographicUnit = availableGeographicUnits[0]
+        mapGeographicUnitSelector.value = mapGeographicUnit
+    }
+
+    updateMapPopulationOptions()
+}
+
+async function updateMapPopulationOptions() {
+    d3.selectAll(".map-population-tooltip").remove()
+    var availablePopulations = Object.keys(metadata.available_models[mapDiseaseSelector.value][mapGeographicUnitSelector.value])
+    d3.select(mapPopulationSelector)
+        .selectAll(".map-population-tooltip")
+        .data(availablePopulations)
+        .enter()
+        .append("sl-tooltip")
+        .attr("class", "map-population-tooltip")
+        .attr("content", d => metadata.populations_tooltips[d])
+        .attr("triger", "hover")
+        .attr("hoist", "")
+        .append("sl-option")
+        .attr("class", "map-population-option")
+        .attr("value", d => d)
+        .html(d => metadata.populations[d])
+
+    if (availablePopulations.includes(mapPopulation)) {
+        // do nothing
+    } else {
+        mapPopulation = availablePopulations[0]
+        mapPopulationSelector.value = mapPopulation
+    }
+
+    updateMapOutcomeVariableOptions()
+}
+
+async function updateMapOutcomeVariableOptions() {
+    d3.selectAll(".map-outcome-tooltip").remove()
+    var availableOutcomeVariables = metadata.available_models[mapDiseaseSelector.value][mapGeographicUnitSelector.value][mapPopulationSelector.value]
+    d3.select(mapOutcomeVariableSelector)
+        .selectAll(".map-outcome-tooltip")
+        .data(availableOutcomeVariables)
+        .enter()
+        .append("sl-tooltip")
+        .attr("class", "map-outcome-tooltip")
+        .attr("content", d => metadata.outcome_variables_tooltips[d])
+        .attr("triger", "hover")
+        .attr("hoist", "")
+        .append("sl-option")
+        .attr("class", "map-outcome-option")
+        .attr("value", d => d)
+        .html(d => metadata.outcome_variables[d])
+
+    if (availableOutcomeVariables.includes(mapOutcomeVariable)) {
+        // do nothing
+    } else {
+        mapOutcomeVariable = availableOutcomeVariables[0]
+        mapOutcomeVariableSelector.value = mapOutcomeVariable
+    }
 }

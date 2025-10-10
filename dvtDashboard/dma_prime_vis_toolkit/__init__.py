@@ -171,7 +171,7 @@ def create_app(development=False, dataDir=None):
         if population is None:
             population = 'general_population'
         if outcome_variable is None:
-            outcome_variable = 'encounters'
+            outcome_variable = 'all_encounters'
         if location is None:
             location = ''
 

@@ -89,7 +89,7 @@
   document.getElementById("nav-bar").addEventListener("sl-tab-show", (event) => {
     if (event.detail.name == "map") {
       d3.select(modelExplorationButtonTooltipLarge).on("click", () => {
-        window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapRegionSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
+        window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapGeographicUnitSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
       })
     } else if (event.detail.name == "grid") {
       d3.select(modelExplorationButtonTooltipLarge).on("click", () => {
@@ -99,7 +99,7 @@
   })
 
   d3.select(modelExplorationButtonTooltipLarge).on("click", () => {
-    window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapRegionSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
+    window.open(`/respiratory-model-exploration?disease=${mapDiseaseSelector.value}&geographic-unit=${mapGeographicUnitSelector.value}&population=${mapPopulationSelector.value}&outcome-variable=${mapOutcomeVariableSelector.value}&location=${dataObject.properties.id}`)
   })
 
 </script>

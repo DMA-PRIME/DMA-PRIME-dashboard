@@ -4,35 +4,35 @@
 {% block options %}
 <div id="map-options" class="sidebar-container">
   <!-- reset map button (zoom & zcta selection) -->
-  <sl-button pill id="map-reset-button" class="center-self" size="small">Reset Map</sl-button>
+  <sl-button pill id="map-reset-button" class="center-self map-option" size="small" disabled>Reset Map</sl-button>
   <sl-divider class="options-divider"></sl-divider>
 
   <!-- count vs rate switch -->
-  <sl-radio-group value="count" id="map-rate-switch" class="center-self" size="small">
+  <sl-radio-group value="count" id="map-rate-switch" class="center-self" size="small" >
     <sl-tooltip content="Count of hospitalizations">
-      <sl-radio-button pill value="count">Count</sl-radio-button>
+      <sl-radio-button class="map-option" value="count" pill disabled>Count</sl-radio-button>
     </sl-tooltip>
     <sl-tooltip content="Hospitalizations per 1000 people">
-      <sl-radio-button pill value="rate">Rate</sl-radio-button>
+      <sl-radio-button class="map-option" value="rate" pill disabled>Rate</sl-radio-button>
     </sl-tooltip>
     <sl-tooltip content="Percent change from last period">
-      <sl-radio-button pill value="percent">Percent Change</sl-radio-button>
+      <sl-radio-button class="map-option" value="percent" pill disabled>Percent Change</sl-radio-button>
     </sl-tooltip>
   </sl-radio-group>
 
   <sl-radio-group value="weekly" id="map-time-switch" class="center-self" size="small">
     <sl-tooltip id="map-weekly-tooltip" content="Count for the week">
-      <sl-radio-button pill value="weekly">Week</sl-radio-button>
+      <sl-radio-button class="map-option" value="weekly" pill disabled>Week</sl-radio-button>
     </sl-tooltip>
     <sl-tooltip id="map-monthly-tooltip" content="Count for the past 4 weeks">
-      <sl-radio-button pill value="monthly">Month</sl-radio-button>
+      <sl-radio-button class="map-option" value="monthly" pill disabled>Month</sl-radio-button>
     </sl-tooltip>
     <sl-tooltip id="map-yearly-tooltip" content="Count for the past 52 weeks">
-      <sl-radio-button pill value="yearly">Year</sl-radio-button>
+      <sl-radio-button class="map-option" value="yearly" pill disabled>Year</sl-radio-button>
     </sl-tooltip>
   </sl-radio-group>
 
-  <sl-select value="zcta" id="map-region-selector" class="fill-width" size="small">
+  <sl-select value="zcta" id="map-region-selector" class="fill-width map-option" size="small" disabled>
     <p slot="label">Geographic unit</p>
     <sl-option value="zcta">Zip Code</sl-option>
     <sl-option value="county">County</sl-option>
@@ -40,7 +40,7 @@
     <sl-option value="state">State</sl-option>
   </sl-select>
 
-  <sl-select value="positive_tests" id="map-outcome-variable-selector" class="fill-width" size="small">
+  <sl-select value="positive_tests" id="map-outcome-variable-selector" class="fill-width map-option" size="small" disabled>
     <p slot="label">Outcome Variable</p>
     <sl-option value="positive_tests">Positive Tests</sl-option>
     <sl-tooltip content="Unique diagnosis">
@@ -54,24 +54,25 @@
   </sl-select>
 
   <!-- disease selector -->
-    <sl-details id="map-disease-selector-container" open>
-      <p slot="summary">Select a disease or group of diseases</p>
-      <sl-checkbox id="map-all-disease-selector" size="small">All Diseases <span id="map-all-count"></span></sl-checkbox>
-      {% for disease in metadata['diseases'] %}
-      <sl-checkbox id="map-{{ disease['disease-name'] }}-selector" class="disease-checkbox" disease="{{ disease['disease-name'] }}" size="small">{{ disease['display-name'] }} <span id="map-{{ disease['disease-name'] }}-count"></span></sl-checkbox>
-      {% endfor %}
-    </sl-details>  
+  <sl-details id="map-disease-selector-container" open>
+    <p slot="summary">Select a disease or group of diseases</p>
+    <p id="disease-explanation">Disease (<sl-tooltip content="Please be advised, the numbers shown here reflect the current state of the data. They may differ from the previous week due to reporting delay."><tspan class="disease-last-week-value">Last Week*</tspan></sl-tooltip>, <tspan class="disease-current-week-value">Current Week</tspan>, <tspan class="disease-current-week-value">Percent Change</tspan>)</p>
+    <sl-checkbox id="map-all-disease-selector" class="map-option" size="small" disabled>All Diseases <span id="map-all-count"></span></sl-checkbox>
+    {% for disease in metadata['diseases'] %}
+    <sl-checkbox id="map-{{ disease['disease-name'] }}-selector" class="disease-checkbox map-option" disease="{{ disease['disease-name'] }}" size="small" disabled>{{ disease['display-name'] }} <span id="map-{{ disease['disease-name'] }}-count"></span></sl-checkbox>
+    {% endfor %}
+  </sl-details>  
   
   <sl-divider class="options-divider"></sl-divider>
   
   <!-- map icon inclusion checkboxes (hospital, mobile health clinic, community partners) -->
   <p style="margin-top: 1em; margin-bottom: 0.5em; font-weight: bold;">Map Resources</p>
-  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle" size="small">Hospitals</sl-checkbox>
-  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle" size="small">Mobile Health Clinics</sl-checkbox>
-  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-icons-toggle" size="small">Community Partners</sl-checkbox>
+  <sl-checkbox id="map-options-hospital-icons-toggle" class="map-icons-toggle map-option" size="small" disabled>Hospitals</sl-checkbox>
+  <sl-checkbox id="map-options-mobile-clinic-icons-toggle" class="map-icons-toggle map-option" size="small" disabled>Mobile Health Clinics</sl-checkbox>
+  <sl-checkbox id="map-options-community-partner-icons-toggle" class="map-icons-toggle map-option" size="small" disabled>Community Partners</sl-checkbox>
 
   <sl-divider class="options-divider"></sl-divider>
-  <sl-checkbox id="map-options-geographic-labels-toggle" class="map-toggle" size="small">Geography Labels</sl-checkbox>
+  <sl-checkbox id="map-options-geographic-labels-toggle" class="map-toggle map-option" size="small" disabled>Geography Labels</sl-checkbox>
   
 
 </div>

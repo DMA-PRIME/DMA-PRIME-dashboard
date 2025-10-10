@@ -1,5 +1,7 @@
 import { drawStateHospitalizations, drawLargeStateHospitalizations } from "/static/js/respiratory/script.js";
-import { updateGrid, sortGridItems, filterGridItems, setupGridTooltip } from "/static/js/respiratory/grid.js";
+import { updateGrid, sortGridItems, filterGridItems, setupGridTooltip,
+    updateGridOutcomeVariableOptions, updateGridPopulationOptions, updateGridGeographicUnitOptions
+} from "/static/js/respiratory/grid.js";
 
 gridContainerResizer.addEventListener("sl-resize", updateGrid)
 
@@ -24,7 +26,9 @@ gridTypeSwitch.addEventListener("sl-change", (event) => {
     updateGrid()
 })
 
-gridDiseaseSelector.addEventListener("sl-change", (event) => {
+gridDiseaseSelector.addEventListener("sl-change", async (event) => {
+    await updateGridGeographicUnitOptions()
+
     d3.select(gridContainer).selectAll("sl-tooltip[open]")
         .each(function(d, i) {
             setupGridTooltip(d3.select(this), true)
@@ -33,11 +37,17 @@ gridDiseaseSelector.addEventListener("sl-change", (event) => {
     drawStateHospitalizations(gridDiseaseSelector.value, gridTypeSwitch.value, gridStateHospitalizationsSvg, gridStateHospitalizationsSubtitle)
 })
 
-gridRegionSelector.addEventListener("sl-change", (event) => {
+gridGeographicUnitSelector.addEventListener("sl-change", async (event) => {
+    await updateGridPopulationOptions()
+    gridGeographicUnit = gridGeographicUnitSelector.value
+
     updateGrid(true)
 })
 
-gridPopulationSelector.addEventListener("sl-change", (event) => {
+gridPopulationSelector.addEventListener("sl-change", async (event) => {
+    await updateGridOutcomeVariableOptions()
+    gridPopulation = gridPopulationSelector.value
+
     d3.select(gridContainer).selectAll("sl-tooltip[open]")
         .each(function(d, i) {
             setupGridTooltip(d3.select(this), true)
@@ -46,6 +56,8 @@ gridPopulationSelector.addEventListener("sl-change", (event) => {
 })
 
 gridOutcomeVariableSelector.addEventListener("sl-change", (event) => {
+    gridOutcomeVariable = gridOutcomeVariableSelector.value
+
     d3.select(gridContainer).selectAll("sl-tooltip[open]")
         .each(function(d, i) {
             setupGridTooltip(d3.select(this), true)

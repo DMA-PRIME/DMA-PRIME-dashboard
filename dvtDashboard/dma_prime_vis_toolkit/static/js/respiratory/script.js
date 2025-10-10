@@ -41,7 +41,7 @@ var populationColorMap = {
 // }
 
 var outcomeVariableStringCrosswalk = {
-    "encounters": "All Encounters",
+    "all_encounters": "All Encounters",
     "inpatient_hospitalizations": "Inpatient Hospitalizations",
     "emergency_department_visits": "Emergency Department Visits",
     "positive_tests": "Positive Tests",
@@ -204,7 +204,7 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
     if (grid) {
         geographicUnit = gridRegionSelector.value
     } else {
-        geographicUnit = mapRegionSelector.value
+        geographicUnit = mapGeographicUnitSelector.value
     }
 
     var historicalDatesArray = allDates ? allHistoricalDates : shortHistoryDates
@@ -282,7 +282,7 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
                         text += " (projected)"
                     }
                 } else {
-                    if (outcomeVariable == "encounters") {
+                    if (outcomeVariable == "all_encounters") {
                         text = "All Historical Encounters"
                     } else {
                         text = "Historical " + text
@@ -309,7 +309,7 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
             .attr("color", "black")
             .text(() => {
                 var text = outcomeVariableString
-                if (outcomeVariable == "encounters") {
+                if (outcomeVariable == "all_encounters") {
                     text = "All Historical Encounters"
                 } else {
                     text = "Historical " + text
@@ -328,7 +328,7 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
             .attr("color", "black")
             .text(() => {
                 var text = outcomeVariableString
-                if (outcomeVariable == "encounters") {
+                if (outcomeVariable == "all_encounters") {
                     text = "All Historical Encounters"
                 } else {
                     text = "Historical " + text
@@ -350,9 +350,8 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
                 if (grid) {
                     allExtendedData = await d3.json(`/data/respiratory/${gridRegionSelector.value}/${gridDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
                 } else {
-                    allExtendedData = await d3.json(`/data/respiratory/${mapRegionSelector.value}/${mapDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
+                    allExtendedData = await d3.json(`/data/respiratory/${mapGeographicUnitSelector.value}/${mapDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
                 }
-                console.log(data)
                 var ttpData = {
                     "id": identifier,
                     "display_name": data.display_name,
@@ -370,7 +369,7 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
         })
     }
 
-    if (['encounters', 'inpatient_hospitalizations', 'emergency_department_visits'].includes(outcomeVariable)) {
+    if (['all_encounters', 'inpatient_hospitalizations', 'emergency_department_visits'].includes(outcomeVariable)) {
         function ttpOptionsHandler(extraSources, dataSource) {
             // toggle data source-var combo
             if (extraSources.includes(dataSource)) {

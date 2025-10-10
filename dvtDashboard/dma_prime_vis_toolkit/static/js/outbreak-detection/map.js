@@ -45,7 +45,6 @@ function createCountRateChoropleth(data) {
   })
   } else {
     arr = getData(data.features[0], mapTimeSwitch.value).data
-    console.log(data.features[0], arr)
   }
 
   // 2) If "Rate" is selected, push a small nonzero so domain covers per-1000 scale:
@@ -71,7 +70,9 @@ const map = new maplibregl.Map({
     zoom: 7,
 })
 
-await map.once('load')
+await map.once('load', d => {
+    d3.selectAll(".map-option").attr("disabled", null)
+})
 
 var popup = new maplibregl.Popup({focusAfterOpen: false, closeOnClick: false})
 
@@ -724,10 +725,10 @@ function updateDiseaseCountDisplay() {
 
       // show "(value, +pct%)" in every mode
       d3.select(`#map-${disease}-count`)
-        .html(`(${dispVal}, ${sign}${pct}%)`);
+        .html(`(<tspan class="disease-last-week-value">${prevVal}</tspan>, <tspan class="disease-current-week-value">${dispVal}</tspan>, <tspan class="disease-current-week-value">${sign}${pct}%</tspan>)`);
     } else {
       d3.select(`#map-${disease}-count`)
-        .html(`(${dispVal}, New ${d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()})`);
+        .html(`(<tspan class="disease-last-week-value">${prevVal}</tspan>, <tspan class="disease-current-week-value">${dispVal}</tspan>, <tspan class="disease-current-week-value">New ${d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()}</tspan>)`);
 
     }
   });
@@ -741,7 +742,7 @@ function updateDiseaseCountDisplay() {
   const dispAll = Math.round(allCount * 1000) / 1000;
 
   d3.select("#map-all-count")
-    .html(`(N=${dispAll}, ${signAll}${pctAll}%)`);
+    .html(`(<tspan class="disease-last-week-value">${allPrev}</tspan>, <tspan class="disease-current-week-value">${dispAll}</tspan>, <tspan class="disease-current-week-value">${signAll}${pctAll}%</tspan>)`);
 }
 
 

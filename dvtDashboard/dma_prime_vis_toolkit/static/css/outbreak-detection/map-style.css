@@ -25,9 +25,21 @@
     padding-top: 0px;
 }
 
+#disease-explanation {
+  font-size: var(--sl-font-size-x-small);
+}
+
 .disease-checkbox {
     /* ensures 1 disease per "line" */
     width: 100%;
+}
+
+.disease-last-week-value {
+  color: var(--sl-color-neutral-400)
+}
+
+.disease-current-week-value {
+  font-weight: var(--sl-font-weight-bold);
 }
 
 .map-toggle::part(control--checked) {

@@ -1,6 +1,8 @@
 
 import { populationColorMap, unknownColor, getFeatureValue, getAllValuesFromFeature, getAllFeaturesValue, drawTooltip, drawStateHospitalizations } from "/static/js/respiratory/script.js";
-export { updateGrid, sortGridItems, filterGridItems, setupGridTooltip }
+export { updateGrid, sortGridItems, filterGridItems, setupGridTooltip,
+    updateGridOutcomeVariableOptions, updateGridPopulationOptions, updateGridGeographicUnitOptions
+ }
 
 var margins = {
     top: 1.5 * em,
@@ -16,7 +18,7 @@ await Promise.allSettled([ // wait for following to be defined/load in
     customElements.whenDefined('sl-button'),
 ])
 
-var regionData = await d3.json(`/data/respiratory/${gridRegionSelector.value}/${gridDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
+var regionData = await d3.json(`/data/respiratory/${gridGeographicUnitSelector.value}/${gridDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
 
 updateGrid(true)
 drawStateHospitalizations(gridDiseaseSelector.value, gridTypeSwitch.value, gridStateHospitalizationsSvg, gridStateHospitalizationsSubtitle)
@@ -29,7 +31,7 @@ drawStateHospitalizations(gridDiseaseSelector.value, gridTypeSwitch.value, gridS
 // popup (div slot=content)
 
 async function updateData() {
-    regionData = await d3.json(`/data/respiratory/${gridRegionSelector.value}/${gridDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
+    regionData = await d3.json(`/data/respiratory/${gridGeographicUnitSelector.value}/${gridDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
     gridContainer.innerHTML = ""
 
     var gridContainerD3 = d3.select(gridContainer)
@@ -44,7 +46,7 @@ async function updateData() {
 
             var county = null
 
-            if (gridRegionSelector.value == "zcta") {
+            if (gridGeographicUnitSelector.value == "zcta") {
                 county = feature.properties.county
             }
 
@@ -82,11 +84,11 @@ async function updateData() {
                     .attr("class", "grid-open-expanded-tooltip-button grid-tooltip-toolbar-button")
                     .on("click", () => {
                         d3.select(modelExplorationButtonTooltipLarge).on("click", () => {
-                            window.open(`/respiratory-model-exploration?disease=${gridDiseaseSelector.value}&geographic-unit=${gridRegionSelector.value}&population=${gridPopulationSelector.value}&outcome-variable=${gridOutcomeVariableSelector.value}&location=${location}`)
+                            window.open(`/respiratory-model-exploration?disease=${gridDiseaseSelector.value}&geographic-unit=${gridGeographicUnitSelector.value}&population=${gridPopulationSelector.value}&outcome-variable=${gridOutcomeVariableSelector.value}&location=${location}`)
                         })
                         var largeTtp = d3.select(tooltipLarge)
                         tooltipLarge.show().then(async () => {
-                            var allExtendedData = await d3.json(`/data/respiratory/${gridRegionSelector.value}/${gridDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
+                            var allExtendedData = await d3.json(`/data/respiratory/${gridGeographicUnitSelector.value}/${gridDiseaseSelector.value}/extended?data_version=${metadata.data_version}&${parseInt(Math.random() * 9999999999)}`)
                             var ttpData = {
                                 "id": location,
                                 "display_name": feature.properties.display_name,
@@ -106,7 +108,7 @@ async function updateData() {
                     .attr("name", "info-circle")
                     .attr("class", "grid-tooltip-toolbar-button grid-model-exploration-icon-button")
                     .on("click", () => {
-                        window.open(`/respiratory-model-exploration?disease=${gridDiseaseSelector.value}&geographic-unit=${gridRegionSelector.value}&population=${gridPopulationSelector.value}&ouctome-variable=${gridOutcomeVariableSelector.value}&location=${location}`)
+                        window.open(`/respiratory-model-exploration?disease=${gridDiseaseSelector.value}&geographic-unit=${gridGeographicUnitSelector.value}&population=${gridPopulationSelector.value}&ouctome-variable=${gridOutcomeVariableSelector.value}&location=${location}`)
                     })
 
 
@@ -153,11 +155,11 @@ async function updateData() {
                 .attr("y", em)
                 .text(location)
 
-            if (gridRegionSelector.value == "facility") {
+            if (gridGeographicUnitSelector.value == "facility") {
                 gridTitle.text(feature.properties.display_name)
             }
 
-            if (gridRegionSelector.value == "zcta") {
+            if (gridGeographicUnitSelector.value == "zcta") {
                 gridTitle.append("tspan")
                     .attr("class", "grid-subtitle")
                     .html(` (${county.toUpperCase()})`)
@@ -190,7 +192,7 @@ async function updateGrid(fetchData = true) {
     gridSummaryText += d3.select(gridDiseaseSelector).select(`*[value=${gridDiseaseSelector.value}]`).html()
     gridSummaryText += ` from ${d3.timeFormat("%B %d, %Y")(startShortHistory)} to ${d3.timeFormat("%B %d, %Y")(shortHistoryDates[expectedShortHistoryDataPoints-1])}.<br/>`
     gridSummaryText += `${outcomeVariableString[0]}${outcomeVariableString.toLowerCase().slice(1)} are aggregated by `
-    gridSummaryText += d3.select(gridRegionSelector).select(`*[value=${gridRegionSelector.value}]`).html().toLowerCase().replace("zcta", "ZCTA")
+    gridSummaryText += d3.select(gridGeographicUnitSelector).select(`*[value=${gridGeographicUnitSelector.value}]`).html().toLowerCase().replace("zcta", "ZCTA")
     gridSummaryText += `.`
     gridSummary.innerHTML = gridSummaryText
 
@@ -487,4 +489,78 @@ function filterGridItems() {
         })
 
     gridContainerResizer.addEventListener("sl-resize", updateGrid)
+}
+
+async function updateGridGeographicUnitOptions() {
+    d3.selectAll(".grid-geographic-unit-option").remove()
+    var availableGeographicUnits = Object.keys(metadata.available_models[gridDiseaseSelector.value])
+    d3.select(gridGeographicUnitSelector)
+        .selectAll(".grid-geographic-unit-option")
+        .data(availableGeographicUnits)
+        .enter()
+        .append("sl-option")
+        .attr("class", "grid-geographic-unit-option")
+        .attr("value", d => d)
+        .html(d => metadata.region_sizes[d])
+
+    if (availableGeographicUnits.includes(gridGeographicUnit)) {
+        // do nothing
+    } else {
+        gridGeographicUnit = availableGeographicUnits[0]
+        gridGeographicUnitSelector.value = gridGeographicUnit
+    }
+
+    updateGridPopulationOptions()
+}
+
+async function updateGridPopulationOptions() {
+    d3.selectAll(".grid-population-tooltip").remove()
+    var availablePopulations = Object.keys(metadata.available_models[gridDiseaseSelector.value][gridGeographicUnitSelector.value])
+    d3.select(gridPopulationSelector)
+        .selectAll(".grid-population-tooltip")
+        .data(availablePopulations)
+        .enter()
+        .append("sl-tooltip")
+        .attr("class", "grid-population-tooltip")
+        .attr("content", d => metadata.populations_tooltips[d])
+        .attr("triger", "hover")
+        .attr("hoist", "")
+        .append("sl-option")
+        .attr("class", "grid-population-option")
+        .attr("value", d => d)
+        .html(d => metadata.populations[d])
+
+    if (availablePopulations.includes(gridPopulation)) {
+        // do nothing
+    } else {
+        gridPopulation = availablePopulations[0]
+        gridPopulationSelector.value = gridPopulation
+    }
+
+    updateGridOutcomeVariableOptions()
+}
+
+async function updateGridOutcomeVariableOptions() {
+    d3.selectAll(".grid-outcome-tooltip").remove()
+    var availableOutcomeVariables = metadata.available_models[gridDiseaseSelector.value][gridGeographicUnitSelector.value][gridPopulationSelector.value]
+    d3.select(gridOutcomeVariableSelector)
+        .selectAll(".grid-outcome-tooltip")
+        .data(availableOutcomeVariables)
+        .enter()
+        .append("sl-tooltip")
+        .attr("class", "grid-outcome-tooltip")
+        .attr("content", d => metadata.outcome_variables_tooltips[d])
+        .attr("triger", "hover")
+        .attr("hoist", "")
+        .append("sl-option")
+        .attr("class", "grid-outcome-option")
+        .attr("value", d => d)
+        .html(d => metadata.outcome_variables[d])
+
+    if (availableOutcomeVariables.includes(gridOutcomeVariable)) {
+        // do nothing
+    } else {
+        gridOutcomeVariable = availableOutcomeVariables[0]
+        gridOutcomeVariableSelector.value = gridOutcomeVariable
+    }
 }
