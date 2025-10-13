@@ -64,10 +64,16 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
         d3.selectAll("#map-loading-div circle").classed("animate", true)
         regionData = await d3.json(`/data/respiratory/${mapGeographicUnitSelector.value}/${mapDiseaseSelector.value}?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`) 
     }
+<<<<<<< HEAD
     if (resetWarnings) {
         updateMapWarnings()
     }
     createChoropleth(regionData, mapTypeSwitch.value, mapPopulationSelector.value, mapOutcomeVariableSelector.value, mapIncludeImputations.checked)
+=======
+
+    console.log(regionData)
+    createChoropleth(regionData, mapTypeSwitch.value, mapDataSourceSelector.value, mapDataVariableSelector.value, mapIncludeImputations.checked)
+>>>>>>> dyhan-development
     drawLegend()
     var layers = []
     if (mapGeographicUnitSelector.value != "facility") {

@@ -48,7 +48,6 @@ def decrypt(file_name, encrypt_key):
         if values['header'] == b'.html':
             return plaintext.decode('utf-8')
 
-
         return json.loads(plaintext)
         
     except (ValueError, KeyError) as e:
