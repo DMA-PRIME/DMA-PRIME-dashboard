@@ -113,12 +113,12 @@
       }
 
       .left-card-wrap {
-  position: absolute;
-  z-index: 1;
-  top: 50%;
-  left: clamp(2rem, 3vw, 60px);
-  transform: translateY(-60%);   
-}
+        position: absolute;
+        z-index: 1;
+        top: 50%;
+        left: clamp(2rem, 3vw, 60px);
+        transform: translateY(-60%);
+      }
       /* ===== 3) Left card (title + tabs): pinned at top-left ===== */
       .left-card {
         /* position: absolute; */
@@ -127,24 +127,13 @@
         /* top: 50%; */
         /* left: clamp(2rem, 3vw, 60px); */
         width: 40vw;
-        /* height: 75vh; */
         max-height: 75vh;
-        /* height:fit-content;  */
-        /* overflow-y: auto;  */
 
         background: rgba(255, 255, 255, 0.8);
         border: 2px solid rgba(255, 165, 0, 0.8);
         border-radius: 1rem;
         box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
         backdrop-filter: blur(2px);
-        /* transform: translate(0%, -60%); */
-        /* padding: 1.25rem; */
-
-        /* Important: split into two rows (title + tabs) and clip inner content */
-        /* display: block; */
-        /* grid-template-rows: auto 1fr; */
-        /* overflow: hidden; */
-        /* background-clip: padding-box; */
       }
 
       sl-tab-panel,
@@ -166,11 +155,6 @@
         scrollbar-color: rgba(0, 0, 0, 0.45) transparent;
         /* thumb track */
       }
-
-      /* sl-tab-group::part(base) {
-        flex: 1 1 auto;
-        max-height: 100%;
-      } */
 
       /* scrolling container inside the panel */
       .panel-scroll {
@@ -267,7 +251,7 @@
         font-size: clamp(1.1rem, 2.2vw, 1.5rem);
         margin: 0;
         font-weight: bold;
-        margin-top: .3rem;
+        margin-top: 0.3rem;
         /* font-family: var(--sl-font-sans); */
       }
 
@@ -357,79 +341,81 @@
       <div class="background"></div>
 
       <!-- Left card: title + scrollable tabs -->
-<div class="left-card-wrap">
-      <div class="left-card">
-        <sl-tab-group
-          style="--indicator-color: orangered; --track-color: lightgray"
-        >
-          <sl-tab slot="nav" panel="objective">Research Objective</sl-tab>
-          <sl-tab slot="nav" panel="feature">System Features</sl-tab>
-          <sl-tab slot="nav" panel="information" disabled>Information</sl-tab>
+      <div class="left-card-wrap">
+        <div class="left-card">
+          <sl-tab-group
+            style="--indicator-color: orangered; --track-color: lightgray"
+          >
+            <sl-tab slot="nav" panel="objective">Research Objective</sl-tab>
+            <sl-tab slot="nav" panel="feature">System Features</sl-tab>
+            <sl-tab slot="nav" panel="information" disabled>Information</sl-tab>
 
-          <!-- Panel 1: Scrollable -->
-          <sl-tab-panel name="objective">
-            <!-- <div class="panel-scroll"> -->
-            <ul>
-              <li>
-                <b>● Integrate Multisource Data for Forecasting: </b>
-                Combine heterogeneous, real-time data streams including EHRs,
-                wastewater surveillance, search trends, and mobile health
-                records into a unified analytic framework.
-              </li>
-              <br />
-              <li>
-                <b>● Develop and Validate Predictive Models:</b>
-                Advance a suite of forecasting models (deep learning, ensemble,
-                probabilistic) trained on continuously updated South Carolina
-                data to predict respiratory disease dynamics at multiple spatial
-                scales.
-              </li>
-              <br />
-              <li>
-                <b>● Enhance Public Health Decision-Making:</b>
-                Collaborate with state, local, and national public health
-                partners to support timely interventions and equitable health
-                responses.
-              </li>
-            </ul>
-            <!-- </div> -->
-          </sl-tab-panel>
-
-          <!-- Panel 2 -->
-          <sl-tab-panel name="feature">
-            <div class="panel-scroll">
+            <!-- Panel 1: Scrollable -->
+            <sl-tab-panel name="objective">
+              <!-- <div class="panel-scroll"> -->
               <ul>
                 <li>
-                  <b>● Robust Partnership Network: </b>
-                  Active collaborations with state and local agencies (SCDPH,
-                  Prisma Health, MUSC, CRH, CRPH, SC State Veterinarian, and
-                  Clemson LPH) and national partners (CDC CFA, Insight Net) for
-                  data sharing and dissemination.
-                </li><br />
+                  <b>● Integrate Multisource Data for Forecasting: </b>
+                  Combine heterogeneous, real-time data streams including EHRs,
+                  wastewater surveillance, search trends, and mobile health
+                  records into a unified analytic framework.
+                </li>
+                <br />
                 <li>
-                  <b>● Rich, Continuously Updated Data Streams: </b>
-                  Integration of clinical, environmental, behavioral, and
-                  contextual datasets covering over half of South Carolina’s
-                  population with fine spatial and temporal granularity.
-                </li><br />
+                  <b>● Develop and Validate Predictive Models:</b>
+                  Advance a suite of forecasting models (deep learning,
+                  ensemble, probabilistic) trained on continuously updated South
+                  Carolina data to predict respiratory disease dynamics at
+                  multiple spatial scales.
+                </li>
+                <br />
                 <li>
-                  <b>● Comprehensive Modeling Framework: </b>
-                  A modular platform supporting multiple forecasting paradigms
-                  regularly retrained for adaptive accuracy.
+                  <b>● Enhance Public Health Decision-Making:</b>
+                  Collaborate with state, local, and national public health
+                  partners to support timely interventions and equitable health
+                  responses.
                 </li>
               </ul>
-            </div>
-          </sl-tab-panel>
+              <!-- </div> -->
+            </sl-tab-panel>
 
-          <!-- Panel 3 -->
-          <sl-tab-panel name="information">
-            <div class="panel-scroll">
-              <p>Information content…</p>
-            </div>
-          </sl-tab-panel>
-        </sl-tab-group>
+            <!-- Panel 2 -->
+            <sl-tab-panel name="feature">
+              <div class="panel-scroll">
+                <ul>
+                  <li>
+                    <b>● Robust Partnership Network: </b>
+                    Active collaborations with state and local agencies (SCDPH,
+                    Prisma Health, MUSC, CRH, CRPH, SC State Veterinarian, and
+                    Clemson LPH) and national partners (CDC CFA, Insight Net)
+                    for data sharing and dissemination.
+                  </li>
+                  <br />
+                  <li>
+                    <b>● Rich, Continuously Updated Data Streams: </b>
+                    Integration of clinical, environmental, behavioral, and
+                    contextual datasets covering over half of South Carolina’s
+                    population with fine spatial and temporal granularity.
+                  </li>
+                  <br />
+                  <li>
+                    <b>● Comprehensive Modeling Framework: </b>
+                    A modular platform supporting multiple forecasting paradigms
+                    regularly retrained for adaptive accuracy.
+                  </li>
+                </ul>
+              </div>
+            </sl-tab-panel>
+
+            <!-- Panel 3 -->
+            <sl-tab-panel name="information">
+              <div class="panel-scroll">
+                <p>Information content…</p>
+              </div>
+            </sl-tab-panel>
+          </sl-tab-group>
+        </div>
       </div>
-</div>
       <!-- Right-middle login card -->
       <aside class="login-card">
         <div id="login-component-container" class="row">
