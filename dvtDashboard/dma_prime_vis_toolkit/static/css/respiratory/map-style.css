@@ -55,6 +55,10 @@ path.map-zcta {
     flex-direction: column;
 }
 
+#choropleth-legend-svg {
+  overflow: visible;
+}
+
 .map-legend-background {
     /* legend backgrounds */
     fill: var(--sl-color-neutral-50);
@@ -68,7 +72,7 @@ text.map-legend {
 
 #map-legend-title {
     /* titles for the legends */
-    font-size: var(--sl-font-size-medium);
+    font-size: var(--sl-font-size-small);
     text-anchor: middle;
     fill: currentColor;
 }
