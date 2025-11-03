@@ -42,15 +42,15 @@
 
   <sl-select value="positive_tests" id="map-outcome-variable-selector" class="fill-width map-option" size="small" disabled>
     <p slot="label">Outcome Variable</p>
-    <sl-option value="positive_tests">Positive Tests</sl-option>
-    <sl-tooltip content="Unique diagnosis">
-      <sl-option value="encounters">All Encounters</sl-option>
-    </sl-tooltip>
-    <sl-option value="inpatient_hospitalizations">Inpatient Hospitalizations</sl-option>
-    <sl-option value="emergency_department_visits">Emergency Department Visits</sl-option>
     <sl-tooltip content="Unique recorded diagnoses or positive tests">
-      <sl-option value="unique_records">Unique Records</sl-option>
+      <sl-option value="encounters">Encounters</sl-option>
     </sl-tooltip>
+    <sl-tooltip content="Unique diagnosis">
+      <sl-option value="diagnoses">Diagnoses</sl-option>
+    </sl-tooltip>
+    <sl-option value="positive_tests">Positive Tests</sl-option>
+    <sl-option value="emergency_department_visits">Emergency Department Visits</sl-option>
+    <sl-option value="inpatient_hospitalizations">Inpatient Hospitalizations</sl-option>
   </sl-select>
 
   <!-- disease selector -->
@@ -103,7 +103,7 @@
   <svg id="choropleth-legend-svg"></svg>
 </div>
 <div id="map-title-container" class="fill-width">
-  <p id="map-title">Count of Weekly Positive Tests in Prisma and MUSC Health Systems by ZCTA Code</p>
+  <p id="map-title">Count of Weekly Positive Tests in Prisma and MUSC Health Systems by State</p>
 </div>
 <div id="map-loading-div">
   <p id="loading-text">Loading</p>

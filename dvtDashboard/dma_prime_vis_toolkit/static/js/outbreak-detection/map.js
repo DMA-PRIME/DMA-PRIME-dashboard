@@ -2,8 +2,7 @@ const { GeoJsonLayer, IconLayer, TextLayer, MapboxOverlay } = deck;
 
 export { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn, update, updateMapTitle }
 
-var regionData = await d3.json(`/data/outbreak-detection/zcta/positive_tests?data_version=${metadata.data_version}&${parseInt(Math.random()*9999999999)}`)
-var stateFeature = regionData.features.find(d => d.properties.identifier == "state")
+var regionData, stateFeature
 
 var icons = {
     data: await d3.csv('/data/health-care-facility'),
@@ -84,6 +83,7 @@ map.addControl(deckOverlay)
 map.addControl(new maplibregl.NavigationControl())
 
 await Promise.allSettled([ // wait for following to be defined/load in
+    customElements.whenDefined('sl-select'),
     customElements.whenDefined('sl-checkbox'),
     customElements.whenDefined('sl-button'),
 ])
@@ -97,9 +97,7 @@ styleSheet.insertRule(`
     ,0)   
 
 document.adoptedStyleSheets = [styleSheet]
-drawAggregation()
-updateDiseaseCountDisplay()
-redraw()
+changeDataColumn()
 
 function redraw() {
     // 1) Recompute the Count/Rate color scale from the actual data:
@@ -563,6 +561,8 @@ function drawTooltip(dataObject) {
     // ─── "County: YYY" on its own line, directly under the header ───
     //
     if (mapRegionSelector.value == "zcta") {
+      leftHeaderCol
+        .html(`ZCTA: ${dataObject.properties.identifier}`)
       ttpDiv
         .append("p")
         .attr("class", "tooltip-subtitle")
@@ -643,6 +643,9 @@ function drawTooltip(dataObject) {
 
 
 function drawAggregation() {
+  var diseases = selectedItems.diseases
+  if (diseases.length > 0) {
+    d3.select(aggregatedDiseaseHistoryContainer).style("display", "initial")
     var thisData = getData(stateFeature, "weekly")
     var aggWidth = Math.max(300, document.getElementById("map-sidebar").clientWidth)
     var aggHeight = aggWidth * .5
@@ -687,6 +690,9 @@ function drawAggregation() {
     aggSVG.html("")
     
     createBarGraph(aggSVG, thisData, regionData.metadata, aggHeight, aggWidth)
+  } else {
+    d3.select(aggregatedDiseaseHistoryContainer).style("display", "none")
+  }
 }
 
 function updateDiseaseCountDisplay() {
@@ -712,6 +718,7 @@ function updateDiseaseCountDisplay() {
     allPrev  += prevVal;
 
     // round display of val
+    const dispPrevVal = Math.round(prevVal * 1000) / 1000;
     const dispVal = Math.round(val * 1000) / 1000;
 
     if (prevVal || !(val)) {
@@ -725,10 +732,10 @@ function updateDiseaseCountDisplay() {
 
       // show "(value, +pct%)" in every mode
       d3.select(`#map-${disease}-count`)
-        .html(`(<tspan class="disease-last-week-value">${prevVal}</tspan>, <tspan class="disease-current-week-value">${dispVal}</tspan>, <tspan class="disease-current-week-value">${sign}${pct}%</tspan>)`);
+        .html(`(<tspan class="disease-last-week-value">${dispPrevVal}</tspan>, <tspan class="disease-current-week-value">${dispVal}</tspan>, <tspan class="disease-current-week-value">${sign}${pct}%</tspan>)`);
     } else {
       d3.select(`#map-${disease}-count`)
-        .html(`(<tspan class="disease-last-week-value">${prevVal}</tspan>, <tspan class="disease-current-week-value">${dispVal}</tspan>, <tspan class="disease-current-week-value">New ${d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()}</tspan>)`);
+        .html(`(<tspan class="disease-last-week-value">${dispPrevVal}</tspan>, <tspan class="disease-current-week-value">${dispVal}</tspan>, <tspan class="disease-current-week-value">New ${d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()}</tspan>)`);
 
     }
   });
@@ -739,10 +746,11 @@ function updateDiseaseCountDisplay() {
     : 0;
   const pctAll  = Math.round(rawAll * 10) / 10;
   const signAll = pctAll >= 0 ? "+" : "";
+  const dispPrevAll = Math.round(allPrev * 1000) / 1000;
   const dispAll = Math.round(allCount * 1000) / 1000;
 
   d3.select("#map-all-count")
-    .html(`(<tspan class="disease-last-week-value">${allPrev}</tspan>, <tspan class="disease-current-week-value">${dispAll}</tspan>, <tspan class="disease-current-week-value">${signAll}${pctAll}%</tspan>)`);
+    .html(`(<tspan class="disease-last-week-value">${dispPrevAll}</tspan>, <tspan class="disease-current-week-value">${dispAll}</tspan>, <tspan class="disease-current-week-value">${signAll}${pctAll}%</tspan>)`);
 }
 
 
@@ -1114,7 +1122,7 @@ function drawLargeAggregation() {
     
     var minMaxVal = mapRateSwitch.value == "rate" ? 1000.0/data.population : 1
     var maxVal = d3.max(data.data) ? d3.max(data.data) : minMaxVal
-    maxVal = d3.max(data.other) ? Math.max(maxVal, d3.max(data.other)) : maxVal
+    // maxVal = d3.max(data.other) ? Math.max(maxVal, d3.max(data.other)) : maxVal
     
     // figure out how much space is needed for the y-axis text
     var temp = svg.append("text").text(d3.format(".2r")(maxVal)).attr("x", 0).attr("y", 0)
@@ -1181,9 +1189,9 @@ function drawLargeAggregation() {
         
         var percentageGroup = graphSVG.append("g")
 
-          const line = d3.line()
-            .x((_, i) => xScale(d3.timeDay.offset(start_date, (7 * i))))
-            .y((d) => yScale2(d))
+        const line = d3.line()
+          .x((_, i) => xScale(d3.timeDay.offset(start_date, (7 * i))))
+          .y((d) => yScale2(d))
 
         percentageGroup.append("path")
             .attr("d", line(percentages))
@@ -1223,24 +1231,9 @@ function drawLargeAggregation() {
             .attr("fill", "var(--sl-color-neutral-1000)")
             .style("font-size", "var(--sl-font-size-small)")
             .text("Positive Tests")
-        // var test = legend.append("g")
-        // test.attr("transform", `translate(0, ${em})`)
-        // test.append("rect")
-        //     .attr("height", .5*em)
-        //     .attr("width", .5*em)
-        //     .attr("x", 0)
-        //     .attr("y", .5*em/4)
-        //     .attr("fill", "var(--sl-color-neutral-400)")
-        // test.append("text")
-        //     .attr("x", .5*1.5*em)
-        //     .attr("y", em/2)
-        //     .attr("dominant-baseline", "middle")
-        //     .attr("fill", "var(--sl-color-neutral-1000)")
-        //     .style("font-size", "var(--sl-font-size-small)")
-        //     .text("Tests")
+
         var percentPosTest = legend.append("g")
         percentPosTest.attr("transform", `translate(0, ${em})`)
-        // percentPosTest.attr("transform", `translate(0, ${2*em})`)
         percentPosTest.append("line")
             .attr("x1", 0)
             .attr("x2", .5*em)
