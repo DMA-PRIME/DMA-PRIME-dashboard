@@ -1,4 +1,4 @@
-import { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, changeDataColumn, update, updateMapTitle } from "/static/js/outbreak-detection/map.js"
+import { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, changeDataColumn, update } from "/static/js/outbreak-detection/map.js"
 
 mapResetButton.addEventListener("click", () => {
     // reset map zoom and center

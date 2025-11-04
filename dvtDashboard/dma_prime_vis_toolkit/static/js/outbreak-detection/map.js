@@ -1,6 +1,6 @@
 const { GeoJsonLayer, IconLayer, TextLayer, MapboxOverlay } = deck;
 
-export { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, drawLegend, updateDiseaseCountDisplay, getData, changeDataColumn, update, updateMapTitle }
+export { styleSheet, selectedItems, map, deckOverlay, popup, redraw, drawTooltip, drawAggregation, drawLargeAggregation, changeDataColumn, update }
 
 var regionData, stateFeature
 
@@ -495,7 +495,7 @@ function drawTooltip(dataObject) {
     
     encounterString += " from ";
   
-    const endDate = thisData.end_date;
+    const endDate = parseDate(regionData.metadata.end_date);
     const fmt     = d3.timeFormat("%b %d, %Y");
   
     if (mapTimeSwitch.value === "weekly") {
@@ -536,23 +536,15 @@ function drawTooltip(dataObject) {
     const headerContainer = ttpDiv
       .append("div")
       .attr("class", "tooltip-header")
-      .style("display", "flex")
-      .style("justify-content", "space-between")
-      .style("align-items", "baseline")   // keep left & right on same baseline
-      .style("margin-bottom", "8px");
   
     // 7a) LEFT SIDE of header: ZCTA (or whatever region)
     const leftHeaderCol = headerContainer
       .append("div")
       .attr("class", "tooltip-left-col")
-      .style("flex", "1")
-      .style("font-size", "var(--sl-font-size-small)")
-      .style("line-height", "1.4em");
   
     leftHeaderCol
       .append("p")
       .attr("class", "tooltip-title")
-      .style("margin", "0px")  // remove default <p> margin
       .html(
         `${d3.select(`sl-option[value=${mapRegionSelector.value}]`).html()}: ${dataObject.properties.identifier}`
       );
@@ -566,9 +558,6 @@ function drawTooltip(dataObject) {
       ttpDiv
         .append("p")
         .attr("class", "tooltip-subtitle")
-        .style("margin", "0px")
-        .style("font-size", "var(--sl-font-size-small)")
-        .style("line-height", "1.4em")
         .html(
           `County: ${dataObject.properties.county[0].toUpperCase() + dataObject.properties.county.slice(1)}`
         );
@@ -585,15 +574,10 @@ function drawTooltip(dataObject) {
     const rightHeaderCol = headerContainer
       .append("div")
       .attr("class", "tooltip-right-col")
-      .style("text-align", "right")
-      .style("font-size", "var(--sl-font-size-small)")
-      .style("line-height", "1.4em");
   
     rightHeaderCol
       .append("p")
-      .attr("class", "tooltip-percent-change")
-      .style("margin", "0px")
-      
+      .attr("class", "tooltip-percent-change")      
       .html(percentLabel);
   
   
@@ -603,9 +587,6 @@ function drawTooltip(dataObject) {
     ttpDiv
       .append("p")
       .attr("class", "tooltip-subtitle")
-      .style("margin", "4px 0 8px 0") // small spacing above/below
-      .style("font-size", "var(--sl-font-size-small)")
-      .style("line-height", "1.4em")
       .html(encounterString);
   
     //
@@ -618,22 +599,27 @@ function drawTooltip(dataObject) {
       .attr("width", mapTooltipWidth)
       .attr("height", mapTooltipHeight);
   
-    createBarGraph(ttpSVG, thisData, regionData.metadata, mapTooltipHeight, mapTooltipWidth);
+    thisData.data = thisData.data.slice(thisData.data.length-1-18*4)
+    thisData.other = thisData.other.slice(thisData.other.length-1-18*4)
+    createBarGraph(ttpSVG, thisData, regionData.metadata);
 
     // Add expand button to popup (like respiratory)
     var expandPopupButton = d3.select("div.maplibregl-popup-content").append("sl-icon-button")
         .attr("name", "zoom-in")
-        .style("font-size", "9px")
+        .style("font-size", "12px")
         .style("cursor", "pointer")
         .style("position", "absolute")
         .style("right", "18px")
-        .style("top", 0);
+        .style("top", "4px");
     expandPopupButton.node().updateComplete.then(() => {
         d3.select(expandPopupButton.node().shadowRoot).select("button").node().style.padding = "4px";
     });
     expandPopupButton.on("click", () => {
-      drawLargeTooltip(dataObject);
-      document.getElementById("map-tooltip-large").show();
+      mapTooltipLarge.show();
+      mapTooltipLarge.addEventListener("sl-after-show", () => {
+        drawLargeTooltip(dataObject);
+
+      }, {once: true})
     });
     
 }
@@ -647,15 +633,13 @@ function drawAggregation() {
   if (diseases.length > 0) {
     d3.select(aggregatedDiseaseHistoryContainer).style("display", "initial")
     var thisData = getData(stateFeature, "weekly")
-    var aggWidth = Math.max(300, document.getElementById("map-sidebar").clientWidth)
-    var aggHeight = aggWidth * .5
 
     aggregatedDiseaseHistoryTitle.innerHTML = `State Wide ${d3.select(`sl-option[value=${mapOutcomeVariableSelector.value}]`).html()}`
 
     var encounterString = d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()
 
     encounterString += " from "
-    var thisWeek = thisData.end_date
+    var thisWeek = parseDate(regionData.metadata.end_date)
     switch (mapTimeSwitch.value) {
         case "weekly":
             var formatDate = d3.timeFormat("%b %d, %Y")
@@ -688,8 +672,11 @@ function drawAggregation() {
 
     var aggSVG = d3.select(aggregatedDiseaseHistory)
     aggSVG.html("")
-    
-    createBarGraph(aggSVG, thisData, regionData.metadata, aggHeight, aggWidth)
+
+    thisData.data = thisData.data.slice(thisData.data.length-1-18*4)
+    thisData.other = thisData.other.slice(thisData.other.length-1-18*4)
+
+    createBarGraph(aggSVG, thisData, regionData.metadata)
   } else {
     d3.select(aggregatedDiseaseHistoryContainer).style("display", "none")
   }
@@ -762,8 +749,6 @@ function getLatestDatum(feature, timeFrame="weekly") {
     data: NaN,
     other: NaN,
     population: feature.properties.population,
-    start_date: dayjs().toDate(),
-    end_date: dayjs().toDate(),
   };
 
   if (diseases.length > 0) {
@@ -780,13 +765,7 @@ function getLatestDatum(feature, timeFrame="weekly") {
       )
       .map(([_, obj]) => obj);
 
-    // 1b) Grab the metadata dates
-    var earliestDate = parseDate(regionData.metadata.start_date);
-    var latestDate   = parseDate(regionData.metadata.end_date);
-    thisData.start_date = earliestDate;
-    thisData.end_date   = latestDate;
-
-    // 1c) Sum up the "latest" values (last entry in each array)
+    // 1b) Sum up the "latest" values (last entry in each array)
     if (dataDicts.length > 0) {
       thisData.data  = 0;
       thisData.other = 0;
@@ -818,8 +797,6 @@ function getLastWeekDatum(feature, timeFrame="weekly") {
     data: NaN,
     other: NaN,
     population: feature.properties.population,
-    start_date: dayjs().toDate(),
-    end_date: dayjs().toDate(),
   };
 
   if (diseases.length > 0) {
@@ -834,11 +811,6 @@ function getLastWeekDatum(feature, timeFrame="weekly") {
         diseases.includes(disease) && obj[timeFrame].length > 0
       )
       .map(([_, obj]) => obj);
-
-    var earliestDate = parseDate(regionData.metadata.start_date);
-    var latestDate   = parseDate(regionData.metadata.end_date);
-    thisData.start_date = earliestDate;
-    thisData.end_date   = latestDate;
 
     if (dataDicts.length > 0) {
       thisData.data  = 0;
@@ -872,8 +844,6 @@ function getData(feature, timeFrame="weekly") {
         "data": [],
         "other": [],
         "population": feature.properties.population,
-        "start_date": dayjs().toDate(),
-        "end_date": dayjs().toDate(),
     }
 
     if (diseases.length > 0) {
@@ -885,8 +855,6 @@ function getData(feature, timeFrame="weekly") {
 
         var earliestDate = parseDate(regionData.metadata.start_date)
         var latestDate = parseDate(regionData.metadata.end_date)
-        thisData.start_date = earliestDate
-        thisData.end_date = latestDate
         var periods
         if (dataDicts.length > 0) {
             switch (timeFrame) {
@@ -959,7 +927,7 @@ function drawLargeTooltip(dataObject) {
     let encounterString = d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html();
     encounterString += " from ";
   
-    const endDate = thisData.end_date;
+    const endDate = parseDate(regionData.metadata.end_date);
     const fmt     = d3.timeFormat("%b %d, %Y");
   
     if (mapTimeSwitch.value === "weekly") {
@@ -985,8 +953,8 @@ function drawLargeTooltip(dataObject) {
   
     // 6) Prepare dimensions and clear existing tooltip
     // Use a fixed, compact size for large tooltip
-    const maxWidth = Math.min(600, mapDiv.clientWidth * 0.4);
-    const maxHeight = Math.min(350, mapDiv.clientHeight * 0.23);
+    const maxWidth = Math.max(600, mapDiv.clientWidth * .75);
+    const maxHeight = Math.max(350, mapDiv.clientHeight * .75);
     const ttpWidth  = maxWidth;
     // Add extra bottom margin for slanted x-axis labels
     const ttpHeight = maxHeight + 40;
@@ -1003,21 +971,12 @@ function drawLargeTooltip(dataObject) {
     const headerContainer = ttpDiv
       .append("div")
       .attr("class", "tooltip-header")
-      .style("display", "flex")
-      .style("justify-content", "space-between")
-      .style("align-items", "baseline")
-      .style("margin-bottom", "8px");
     const leftHeaderCol = headerContainer
       .append("div")
       .attr("class", "tooltip-left-col")
-      .style("flex", "1")
-      .style("font-size", "var(--sl-font-size-x-small)")
-      .style("line-height", "1.4em");
     leftHeaderCol
       .append("p")
       .attr("class", "tooltip-title")
-      .style("margin", "0px")
-      .style("font-size", "var(--sl-font-size-x-small)")
       .html(
         `${d3.select(`sl-option[value=${mapRegionSelector.value}]`).html()}: ${dataObject.properties.identifier}`
       );
@@ -1025,9 +984,6 @@ function drawLargeTooltip(dataObject) {
       ttpDiv
         .append("p")
         .attr("class", "tooltip-subtitle")
-        .style("margin", "0px")
-        .style("font-size", "var(--sl-font-size-x-small)")
-        .style("line-height", "1.4em")
         .html(
           `County: ${dataObject.properties.county[0].toUpperCase() + dataObject.properties.county.slice(1)}`
         );
@@ -1039,30 +995,20 @@ function drawLargeTooltip(dataObject) {
     const rightHeaderCol = headerContainer
       .append("div")
       .attr("class", "tooltip-right-col")
-      .style("text-align", "right")
-      .style("font-size", "var(--sl-font-size-x-small)")
-      .style("line-height", "1.4em");
     rightHeaderCol
       .append("p")
       .attr("class", "tooltip-percent-change")
-      .style("margin", "0px")
-      .style("font-size", "var(--sl-font-size-x-small)")
       .html(percentLabel);
     ttpDiv
       .append("p")
       .attr("class", "tooltip-subtitle")
-      .style("margin", "4px 0 8px 0")
-      .style("font-size", "var(--sl-font-size-x-small)")
-      .style("line-height", "1.4em")
       .html(encounterString);
     // SVG with extra bottom margin
     const ttpSVG = ttpDiv
       .append("svg")
-      .attr("id", "map-tooltip-svg")
+      .attr("id", "map-tooltip-large-svg")
       .attr("class", "tooltip-outer-svg")
-      .attr("width", ttpWidth)
-      .attr("height", ttpHeight);
-    createBarGraph(ttpSVG, thisData, regionData.metadata, ttpHeight, ttpWidth, { isLargeTooltip: true });
+    createBarGraph(ttpSVG, thisData, regionData.metadata, { isLargeTooltip: true });
 }
 
 function drawLargeAggregation() {
@@ -1072,7 +1018,7 @@ function drawLargeAggregation() {
 
     var encounterString = d3.select(mapOutcomeVariableSelector).select(`*[value=${mapOutcomeVariableSelector.value}]`).html()
     encounterString += " from "
-    var thisWeek = thisData.end_date
+    var thisWeek = parseDate(regionData.metadata.end_date)
     switch (mapTimeSwitch.value) {
         case "weekly":
             var formatDate = d3.timeFormat("%b %d, %Y")
@@ -1105,151 +1051,8 @@ function drawLargeAggregation() {
 
     var svg = d3.select(aggregatedDiseaseHistoryLargeSvg)
     svg.html("")
-    var data = thisData
-    var regionMetadata = regionData.metadata
-    var width = aggregatedDiseaseHistoryLargeSvg.clientWidth
-    var height = aggregatedDiseaseHistoryLargeSvg.clientHeight
 
-    var graphSVG = svg.append("svg")
-        .attr("class", "tooltip-graph-svg")
-        .attr("height", height)
-        .attr("width", width)
-
-    var yAxis = svg.append("g")
-        .attr("class", "y-axis")
-    var xAxis = svg.append("g")
-        .attr("class", "x-axis")
-    
-    var minMaxVal = mapRateSwitch.value == "rate" ? 1000.0/data.population : 1
-    var maxVal = d3.max(data.data) ? d3.max(data.data) : minMaxVal
-    // maxVal = d3.max(data.other) ? Math.max(maxVal, d3.max(data.other)) : maxVal
-    
-    // figure out how much space is needed for the y-axis text
-    var temp = svg.append("text").text(d3.format(".2r")(maxVal)).attr("x", 0).attr("y", 0)
-    var margins = {
-        "top": .5*em, 
-        "bottom": 1.5*em,
-        "left": 1.25*em,
-        "right": .5*em,
-    }
-    margins.left += Math.max(20, temp.node().getBBox().width)
-
-    if (mapOutcomeVariableSelector.value == "positive_tests") {
-        var percentages = data.data.map((pos_test, i) => pos_test / Math.max(data.other[i], 1))
-        temp.text(d3.format(".0%")(1))
-        margins.right += Math.max(10, temp.node().getBBox().width) + .75*em
-    }
-
-    var yScale = d3.scaleLinear()
-        .domain([0, maxVal])
-        .nice()
-        .range([height-margins.bottom, margins.top])
-
-    var start_date = parseDate(regionMetadata.start_date)
-    var xScale = d3.scaleTime()
-        .domain([start_date, parseDate(regionMetadata.end_date)])
-        .nice()
-        .range([margins.left, width - margins.right])
-
-    graphSVG.append("g").selectAll("rect")
-        .data(data.data)
-        .enter()
-        .append("rect")
-        .attr("x", (d, i) => xScale(d3.timeDay.offset(start_date, (7 * i))))
-        .attr("y", d => yScale(d))
-        .attr("height", d => yScale(0) - yScale(d))
-        .attr("width", (width - (margins.left + margins.right)) / data.data.length)
-        .attr("fill", "var(--sl-color-neutral-1000)")
-
-    yAxis.append("text")
-        .attr("transform", `translate(${1*em},${yScale(d3.mean(yScale.domain()))})rotate(-90)`)
-        .attr("text-anchor", "middle")
-        .attr("fill", "var(--sl-color-neutral-1000)")
-        .attr("font-size", "var(--sl-font-size-small)")
-        .text(d3.select(`sl-option[value=${mapOutcomeVariableSelector.value}]`).html())
-        
-    yAxis.append("g")
-        .attr("transform", `translate(${margins.left},0)`)
-        .call(d3.axisLeft(yScale).ticks(5).tickSize(4))
-        .selectAll("text")
-        .attr("class", "tooltip-label")
-        .attr("fill", "var(--sl-color-neutral-1000)")
-
-    xAxis.call(d3.axisBottom(xScale).tickArguments([d3.timeYear.every(1), d3.timeFormat("%Y")]))
-        .attr("transform", `translate(0, ${height - margins.bottom})`)
-
-    if (mapOutcomeVariableSelector.value == "positive_tests") {
-        var yScale2 = d3.scaleLinear()
-            .domain([0, 1])
-            .nice()
-            .range([height-margins.bottom, margins.top])
-
-        var yAxis2 = svg.append("g")
-            .attr("class", "y-axis")
-        
-        var percentageGroup = graphSVG.append("g")
-
-        const line = d3.line()
-          .x((_, i) => xScale(d3.timeDay.offset(start_date, (7 * i))))
-          .y((d) => yScale2(d))
-
-        percentageGroup.append("path")
-            .attr("d", line(percentages))
-            .style("stroke", "blue")
-            .attr("fill", "none")
-            .attr("stroke-width", 1)
-
-        yAxis2.append("text")
-            .attr("transform", `translate(${width-em},${yScale(d3.mean(yScale.domain()))})rotate(90)`)
-            .attr("text-anchor", "middle")
-            .attr("fill", "blue")
-            .attr("font-size", "var(--sl-font-size-small)")
-            .text("Percent Positive Tests")
-            
-        var yAxis2Axis = yAxis2.append("g")
-            .attr("transform", `translate(${xScale.range()[1]},0)`)
-            .call(d3.axisRight(yScale2).ticks(5, ".0%").tickSize(4))
-        yAxis2Axis.selectAll("text")
-            .attr("class", "tooltip-label")
-            .attr("fill", "blue")
-        yAxis2Axis.selectAll("line,path")
-            .style("stroke", "blue")
-        
-        var legend = svg.append("g")
-        legend.attr("transform", `translate(${xScale.range()[0] + .5*em}, 0)`)
-        var posTest = legend.append("g")
-        posTest.append("rect")
-            .attr("height", .5*em)
-            .attr("width", .5*em)
-            .attr("x", 0)
-            .attr("y", .5*em/4)
-            .attr("fill", "var(--sl-color-neutral-1000)")
-        posTest.append("text")
-            .attr("x", .5*1.5*em)
-            .attr("y", em/2)
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "var(--sl-color-neutral-1000)")
-            .style("font-size", "var(--sl-font-size-small)")
-            .text("Positive Tests")
-
-        var percentPosTest = legend.append("g")
-        percentPosTest.attr("transform", `translate(0, ${em})`)
-        percentPosTest.append("line")
-            .attr("x1", 0)
-            .attr("x2", .5*em)
-            .attr("y1", .5*em)
-            .attr("y2", .5*em)
-            .attr("stroke", "blue")
-        percentPosTest.append("text")
-            .attr("x", .5*1.5*em)
-            .attr("y", em/2)
-            .attr("dominant-baseline", "middle")
-            .attr("fill", "blue")
-            .style("font-size", "var(--sl-font-size-small)")
-            .text("Percent Positive Tests")
-    }
-    
-    temp.remove()
+    createBarGraph(svg, thisData, regionData.metadata, {isLargeTooltip: true})
     
 }
 
