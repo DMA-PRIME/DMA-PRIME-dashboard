@@ -706,6 +706,7 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
             .attr("d", d3.line()
                 .x((_, i) => xScale(historicalDatesArray[i]))
                 .y((d, i) => yScale(d))
+                .defined(d => d || d == 0)
                 .curve(d3.curveMonotoneX)(data.extra[ds])
             )
             .attr("stroke", dataSourceColorMap[ds])

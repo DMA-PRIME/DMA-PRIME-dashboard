@@ -84,7 +84,7 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
                 getFillColor: d => getColor(d),
                 lineWidthMinPixels: .75,
                 getLineWidth: 20,
-                getLineColor: [127, 127, 127],
+                getLineColor: [64, 64, 64],
                 updateTriggers: {
                     data: [mapGeographicUnitSelector.value, dataVersion],
                     getFillColor: [ mapGeographicUnitSelector.value, mapOutcomeVariableSelector.value, dataVersion ],
