@@ -80,7 +80,7 @@ window.addEventListener("keydown", (event) => {
 document.adoptedStyleSheets = [styleSheet]
 
 function getFeatureValue(feature, population, outcomeVariable, panelType, imputations) {
-    let thisData = feature.properties.data[population][outcomeVariable]["historical"]
+    let thisData = feature.properties.data[population][outcomeVariable]["projected"]
 
     if (!imputations && thisData.imputed) {
         if (panelType == "percentDifference") {
@@ -89,22 +89,27 @@ function getFeatureValue(feature, population, outcomeVariable, panelType, imputa
         return NaN
     }
 
+    var dateIndex = dayjs(currentDate).diff(thisData.start_date, 'week')
+    var thisWeekDatum = parseFloat(thisData.values.at(dateIndex))
+
+    if (panelType == "rate") {
+        thisWeekDatum = thisWeekDatum / feature.properties.population * 1000
+    }
+
     if (panelType == "percentDifference") {
-        var thisWeekDatum = parseFloat(thisData.values.at(expectedShortHistoryDataPoints-1))
-        var lastWeekDatum = parseFloat(thisData.values.at(expectedShortHistoryDataPoints-2))
+        var lastWeekDatum
+        if (dateIndex == 0) {
+            lastWeekDatum = parseFloat(feature.properties.data[population][outcomeVariable]["historical"].values.at(expectedShortHistoryDataPoints-1))
+        } else {
+            lastWeekDatum = parseFloat(thisData.values.at(dateIndex-1))
+        }
         var percentDifference = undefined
         if (isNaN(thisWeekDatum) || lastWeekDatum) {
             percentDifference = (thisWeekDatum - lastWeekDatum) / Math.abs(lastWeekDatum) * 100
         }
         return [lastWeekDatum, thisWeekDatum, percentDifference]
     } else {
-        var value
-        if (panelType == "rate") {
-            value = thisData.values.at(expectedShortHistoryDataPoints-1) / feature.properties.population * 1000
-        } else {
-            value = thisData.values.at(expectedShortHistoryDataPoints-1)
-        }
-        return value
+        return thisWeekDatum
     }
 }
 
@@ -139,15 +144,6 @@ function getAllValuesFromFeature(featureProperties, population, outcomeVariable,
         let thisWeekDatum = thisData.values[0] 
         if (isNaN(thisWeekDatum) || lastWeekDatum) {
             newData[0] = (thisWeekDatum - lastWeekDatum) / Math.abs(lastWeekDatum) * 100
-        }
-
-        // last historical
-        thisWeekDatum = lastWeekDatum
-        lastWeekDatum = featureProperties.data[population][outcomeVariable]["historical"].values.at(-2)
-        if (isNaN(thisWeekDatum) || lastWeekDatum) {
-            newData.unshift((thisWeekDatum - lastWeekDatum) / Math.abs(lastWeekDatum) * 100)
-        } else {
-            newData.unshift(NaN)
         }
     }
     return newData
@@ -515,11 +511,11 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
                         .range([ttpMargins.left + 1, ttpMargins.left + ttpGraphWidth*ttpHistoryWidthPercentage]) 
     }
     var xScaleForwardProjection = d3.scaleTime()
-        .domain([d3.timeDay.offset(currentDate, -7), lastDate])
+        .domain([d3.timeDay.offset(currentDate, -6), lastDate])
         .range([ttpMargins.left + ttpGraphWidth*ttpHistoryWidthPercentage, ttpWidth - ttpMargins.right]) 
 
     var xScale = function(date) {
-        if (dayjs(date).isBefore(d3.timeDay.offset(currentDate, -7))) {
+        if (dayjs(date).isBefore(d3.timeDay.offset(currentDate, -6))) {
             return xScaleHistorical(date)
         } else {
             return xScaleForwardProjection(date)
@@ -959,7 +955,7 @@ async function drawStateBarChart(disease, panelType, svgDOM, subtitleDOM, stateM
         .attr("width", barWidth)
         .attr("stroke", "var(--sl-color-neutral-1000)")
         .attr("stroke-width", 1)
-        .attr("fill", d => dayjs(d["Date"]).isAfter(currentDate) ? "var(--sl-color-neutral-600)" : "var(--sl-color-neutral-100)")
+        .attr("fill", "var(--sl-color-neutral-100)")
         .attr("transform", `translate(-${barWidth}, 0)`)
         .on("mouseover", function(event, d) {
             var formatDate = d3.timeFormat("%b %d, %Y")

@@ -235,7 +235,7 @@ async function updateGrid(fetchData = true) {
     }
 
     var xScale = d3.scaleTime()
-        .domain([startShortHistory, shortHistoryDates[expectedShortHistoryDataPoints - 1]])
+        .domain([startShortHistory, currentDate])
         .range([0, gridItemWidth * .75])
 
     gridContainerD3.selectAll("div.grid-container").each(function (feature) {
@@ -285,6 +285,7 @@ async function updateGrid(fetchData = true) {
             .domain([0, countMax])
             .nice()
             .range([gridItemHeight - 2, margins.top])
+            .clamp(true)
 
 
         if (gridTypeSwitch.value == "percentDifference") {
@@ -310,22 +311,21 @@ async function updateGrid(fetchData = true) {
         // draw historical line chart
         var historicalGroup = gridSVG.select(".grid-item-historical-line")
         historicalGroup
-            // .transition()
-            // .duration(1000)
             .attr("d", d3.line()
-                .x((_, i) => xScale(shortHistoryDates[i]))
+                .x((_, i) => xScale(d3.timeDay.offset(startShortHistory, 7*i)))
                 .y((d) => yScale(d))
                 .defined(d => d || d == 0)
-                .curve(d3.curveMonotoneX)(data.historical.values)
+                .curve(d3.curveMonotoneX)(data.historical.values.concat([data.projected.values[0]]))
             )
 
         if (gridTypeSwitch.value == "percentDifference") {
+            percentDifferenceValues.push(value[2])
             historicalGroup.attr("stroke-dasharray", "3")
                 .attr("stroke", "#444444")
             gridSVG.append("path")
                 .attr("d", d3.line()
                     .defined(d => d || d == 0)
-                    .x((_, i) => xScale(shortHistoryDates[i]))
+                    .x((_, i) => xScale(d3.timeDay.offset(startShortHistory, 7*i)))
                     .y((d, i) => yScale2(d))
                     .curve(d3.curveMonotoneX)(percentDifferenceValues)
                 )
@@ -336,53 +336,45 @@ async function updateGrid(fetchData = true) {
 
         // place value label and dot 
         var lastValueMarker = gridSVG.select(".grid-item-value")
-        var dotPlacementX = xScale.range()[1]
-        var valuePlacementX = dotPlacementX + 4
+        var placementX = xScale.range()[1]
+        let displayValue
         var dotPlacementY, valuePlacementY
         if (gridTypeSwitch.value == "percentDifference") {
-
-            if (value[2]) {
-                lastValueMarker.attr("opacity", 1)
-                dotPlacementY = Math.max(yScale2(value[2]), 0)
-                valuePlacementY = Math.min(Math.max(dotPlacementY + 6, em), gridItemHeight - 3)
-
-                lastValueMarker.select("text")
-                    .attr("x", valuePlacementX)
-                    .attr("y", valuePlacementY)
-                    .text(value[2].toFixed(1))
-
-                lastValueMarker.select("circle")
-                    .attr("cx", dotPlacementX)
-                    .attr("cy", dotPlacementY)
-
-                lastValueMarker.select("line")
-                    .attr("display", "none")
-            } else {
-                lastValueMarker.attr("opacity", 0)
-            }
-
+            displayValue = value[2]
+            dotPlacementY = yScale2(displayValue)
+            dotPlacementY = Math.max(dotPlacementY, yScale2.range()[1])
+            dotPlacementY = Math.min(dotPlacementY, yScale2.range()[0])
         } else {
-            if (value) {
-                lastValueMarker.attr("opacity", 1)
-                dotPlacementY = Math.max(yScale(value), 0)
-                valuePlacementY = Math.min(Math.max(dotPlacementY + 6, em), gridItemHeight - 3)
-
-                lastValueMarker.select("text")
-                    .attr("x", valuePlacementX)
-                    .attr("y", valuePlacementY)
-                    .text(value.toFixed(1))
-
-                lastValueMarker.select("circle")
-                    .attr("cx", dotPlacementX)
-                    .attr("cy", dotPlacementY)
-
-                lastValueMarker.select("line")
-                    .attr("display", "none")
-
-            } else {
-                lastValueMarker.attr("opacity", 0)
-            }
+            displayValue = value
+            dotPlacementY = yScale(displayValue)
         }
+
+        if (displayValue) {
+            valuePlacementY = .25 * em
+            if (dotPlacementY < .625*em) {
+                valuePlacementY = .625*em - dotPlacementY
+            } else if (dotPlacementY + 1.125*em > adjustedHeight) {
+                valuePlacementY = adjustedHeight - (dotPlacementY + 1.125*em)
+            }
+
+            lastValueMarker.attr("opacity", 1)
+                .attr("transform", `translate(${placementX}, ${dotPlacementY})`)
+
+            lastValueMarker.select("text")
+                .attr("x", 4)
+                .attr("y", valuePlacementY)
+                .text(displayValue.toFixed(1))
+
+            lastValueMarker.select("circle")
+                .attr("cx", 0)
+                .attr("cy", 0)
+
+            lastValueMarker.select("line")
+                .attr("display", "none")
+        } else {
+            lastValueMarker.attr("opacity", 0)
+        }
+        
     })
 
     sortGridItems()

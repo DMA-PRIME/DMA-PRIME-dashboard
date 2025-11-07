@@ -10,7 +10,8 @@
 }
 
 #map-title {
-    text-align: center
+    text-align: center;
+    color: black;
 }
 
 .map-toggle::part(control--checked) {
@@ -65,16 +66,22 @@ path.map-zcta {
     fill-opacity: .5;
 }
 
-text.map-legend {
-    /* legend text */
-    font-size: var(--sl-font-size-x-small);
+#map-legend g path,
+#map-legend g line {
+    /* legend "axis" */
+    stroke: black;
+}
+
+#map-legend g text {
+    /* legend "axis" */
+    fill: black;
 }
 
 #map-legend-title {
     /* titles for the legends */
     font-size: var(--sl-font-size-small);
     text-anchor: middle;
-    fill: currentColor;
+    fill: black;
 }
 
 .legend-other-colors {

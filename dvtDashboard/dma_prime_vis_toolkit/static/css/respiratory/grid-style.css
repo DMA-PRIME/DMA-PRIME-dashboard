@@ -37,11 +37,11 @@
 
 #grid-legend line {
   /* lines in grid legend */
-  stroke: black;
+  stroke: var(--sl-color-neutral-1000);
 }
 
-#grid-legend > text {
-  fill: black
+#grid-legend text {
+  fill: var(--sl-color-neutral-1000);
 }
 
 #grid-secondary-legend > line {
