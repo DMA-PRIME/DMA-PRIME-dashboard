@@ -15,7 +15,7 @@ other_column = {
     'inpatient_hospitalizations': None,
     'emergency_department_visits': None,
     'positive_tests': 'tests',
-    'unique_records': None,
+    'diagnoses': None,
 }
 
 region_file_identifiers = {'state': 'State', 'county': 'County', 'region': 'Region', 'zcta': 'ZCTA'}

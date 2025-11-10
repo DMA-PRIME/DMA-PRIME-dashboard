@@ -526,11 +526,13 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
     function createDataPointTooltip(event, groupStartDate) {
         dataPointTTP.html("")
 
+        let tooltipDateFormat = d3.timeFormat("%b %d")
+
         let thisDataPointShape = event.target
         let dataShapeBBox = thisDataPointShape.getBBox()
 
         let date = d3.timeDay.offset(groupStartDate, 7*(d3.select(thisDataPointShape.parentNode).selectAll('.ttp-data-point').nodes().indexOf(thisDataPointShape)))
-        let dateStr = formatDate(date)
+        let dateStr = `${tooltipDateFormat(d3.timeDay.offset(date, -6))} - ${tooltipDateFormat(date)}`
 
         let value = d3.select(thisDataPointShape).datum() 
         let valueStr = panelType == "rate" ? `${value.toFixed(2)} per 1000` : value.toFixed(2).toString()
@@ -551,7 +553,7 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
                 break;
         } 
         
-        dataPointTTP.append("text").text(`Date: ${dateStr}`)
+        dataPointTTP.append("text").text(dateStr)
         dataPointTTP.append("text").text(`${valueTypeStr}: ${valueStr}`)
             .attr("transform", `translate(0, ${.75*em})`)
 
@@ -958,8 +960,9 @@ async function drawStateBarChart(disease, panelType, svgDOM, subtitleDOM, stateM
         .attr("fill", "var(--sl-color-neutral-100)")
         .attr("transform", `translate(-${barWidth}, 0)`)
         .on("mouseover", function(event, d) {
-            var formatDate = d3.timeFormat("%b %d, %Y")
-            var dateStr = formatDate(d["Date"])
+            let tooltipDateFormat = d3.timeFormat("%b %d")
+            let date = d["Date"]
+            let dateStr = `${tooltipDateFormat(d3.timeDay.offset(date, -6))} - ${tooltipDateFormat(date)}`
             var countStr = panelType == "rate" ? `${d["count"].toFixed(2)} per 1000` : d["count"].toString()
             
             // Create tooltip element
@@ -974,7 +977,7 @@ async function drawStateBarChart(disease, panelType, svgDOM, subtitleDOM, stateM
                 .style("pointer-events", "none")
                 .style("z-index", "1000")
             
-            tooltip.append("div").text(`Date: ${dateStr}`)
+            tooltip.append("div").text(dateStr)
             tooltip.append("div").text(`Count: ${countStr}`)
             
             // Position tooltip
