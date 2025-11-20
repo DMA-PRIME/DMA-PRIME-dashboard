@@ -437,9 +437,6 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
         .attr("class", "tooltip-graph-svg")
         .attr("height", ttpHeight)
         .attr("width", ttpWidth)
-    ttpSVG.append("line")
-        .attr("class", "tooltip-prediction-separator")
-        .style("pointer-events", "none")
 
     var yAxis = ttpSVG.append("g")
         .attr("class", "y-axis")
@@ -598,13 +595,7 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
             })
     }
 
-// draw line and box for future projections
-    ttpSVG.select(".tooltip-prediction-separator")
-        .attr("x1", xScaleForwardProjection.range()[0])
-        .attr("y1", ttpMargins.top)
-        .attr("x2", xScaleForwardProjection.range()[0])
-        .attr("y2", ttpHeight - ttpMargins.bottom)
-
+// draw box to highlight future projections
     graphSVG.append("rect")
         .attr("class", "tooltip-prediction-highlighter")
         .attr("x", xScaleForwardProjection.range()[0])

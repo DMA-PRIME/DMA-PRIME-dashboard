@@ -94,6 +94,16 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
     } else {
         layers.push(
             new GeoJsonLayer({
+                id: 'state_outline',
+                pickable: false,
+                data: d3.json('/data/map/state'),
+                stroked: true,
+                filled: false,
+                lineWidthMinPixels: 1,
+                getLineWidth: 20,
+                getLineColor: [64, 64, 64],
+            }),
+            new GeoJsonLayer({
                 id: 'respiratory_facility_background',
                 depthTest: false,
                 pickable: false,
@@ -157,29 +167,55 @@ async function redraw(resetWarnings=false, fetchData=false, center=false) {
             }),
         )
     }
-    if (mapGeographicUnitSelector.value != "state" && mapOptionsGeographicLabelsToggle.checked) {
-        layers.push(
-            new TextLayer({
-                id: 'labels',
-                data: regionData.features,
-                getPosition: d => getCenter(d),
-                getText: d => d.properties.id.toString(),
-                getAlignmentBaseline: 'center',
-                getTextAnchor: 'middle',
-                getColor: [0, 0, 0],
-                background: true,
-                getBackgroundColor: [255, 255, 255, 32],
-                backgroundBorderRadius: 2,
-                backgroundPadding: [4, 4],
-                getSize: mapGeographicUnitSelector.value == "zcta" ? Math.min(Math.max(8, map.getZoom()*1.5), 16) : 16,
-                fontFamily:getComputedStyle(document.head).getPropertyValue("--sl-font-sans").replace(/\s/g,'').split(',') ,
-                collisionGroup: 'labels',
-                collisionTestProps: {sizeScale: 2.5},
-                updateTriggers: {
-                    getSize: [map.getZoom()],
-                },
-            })
-        )
+    if (mapOptionsGeographicLabelsToggle.checked) {
+        if (mapGeographicUnitSelector.value == "facility") {
+            layers.push(
+                new TextLayer({
+                    id: 'labels',
+                    data: regionData.features,
+                    getPosition: d => getCenter(d),
+                    getText: d => d.properties.display_name,
+                    maxWidth: 10,
+                    getAlignmentBaseline: 'center',
+                    getTextAnchor: 'middle',
+                    getColor: [0, 0, 0],
+                    background: true,
+                    getBackgroundColor: [255, 255, 255, 128],
+                    backgroundBorderRadius: 10,
+                    backgroundPadding: [2, 2],
+                    getSize: 12,
+                    fontFamily:getComputedStyle(document.head).getPropertyValue("--sl-font-sans").replace(/\s/g,'').split(',') ,
+                    collisionGroup: 'labels',
+                    collisionTestProps: {sizeScale: 2.5},
+                    updateTriggers: {
+                        getSize: [map.getZoom()],
+                    },
+                })
+            )
+        } else if (mapGeographicUnitSelector.value != "state") {
+            layers.push(
+                new TextLayer({
+                    id: 'labels',
+                    data: regionData.features,
+                    getPosition: d => getCenter(d),
+                    getText: d => d.properties.id.toString(),
+                    getAlignmentBaseline: 'center',
+                    getTextAnchor: 'middle',
+                    getColor: [0, 0, 0],
+                    background: true,
+                    getBackgroundColor: [255, 255, 255, 32],
+                    backgroundBorderRadius: 2,
+                    backgroundPadding: [4, 4],
+                    getSize: mapGeographicUnitSelector.value == "zcta" ? Math.min(Math.max(8, map.getZoom()*1.5), 16) : 16,
+                    fontFamily:getComputedStyle(document.head).getPropertyValue("--sl-font-sans").replace(/\s/g,'').split(',') ,
+                    collisionGroup: 'labels',
+                    collisionTestProps: {sizeScale: 2.5},
+                    updateTriggers: {
+                        getSize: [map.getZoom()],
+                    },
+                })
+            )
+        }
     }
     deckOverlay.setProps({
         layers: layers

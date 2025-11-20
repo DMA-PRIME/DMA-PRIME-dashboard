@@ -20,7 +20,7 @@
     </sl-radio-group>
 
     <!-- disease selector -->
-    <sl-select value="covid_19" id="grid-disease-selector" class="fill-width grid-option" size="small" >
+    <sl-select value="respiratory_diseases" id="grid-disease-selector" class="fill-width grid-option" size="small" >
         <p slot="label">Select a disease or group of diseases</p>
         {% for disease, name in metadata['diseases'].items() %}
         <sl-option value="{{ disease }}" class="grid-disease-option">{{ name }}</sl-option>
@@ -28,7 +28,7 @@
     </sl-select>
 
     <!-- region selector -->
-    <sl-select value="region" id="grid-geographic-unit-selector" class="fill-width grid-option" size="small" >
+    <sl-select value="county" id="grid-geographic-unit-selector" class="fill-width grid-option" size="small" >
         <p slot="label">Geographic unit</p>
         {% for region in metadata['available_models']['covid_19'].keys() %}
         <sl-option class="grid-geographic-unit-option" value="{{ region }}">{{ metadata['region_sizes'][region]
@@ -62,12 +62,12 @@
 
     <!-- grid item sort selection -->
     <sl-select value="alphabetical-low" id="grid-sort" class="fill-width" size="small">
-        <p slot="label">Sort zctas</p>
+        <p slot="label">Sort Locations</p>
         <sl-option value="value-high">Value (count or rate) High-Low</sl-option>
         <sl-option value="value-low">Value (count or rate) Low-High</sl-option>
         <sl-option value="alphabetical-low">Alphanumerical A-Z-0-9</sl-option>
         <sl-option value="alphabetical-high">Alphanumerical 9-0-Z-A </sl-option>
-    </sl-select>
+    </sl-select> 
 
     <!-- grid item filtration (text) -->
     <sl-input id="grid-text-filter" clearable size="small">
