@@ -167,14 +167,6 @@ map.on("click", e => {
 
     popup.setLngLat(coordinates)
         .setHTML(`<div id='map-tooltip-div' class='tooltip-div'>
-            <div class="tooltip-header">
-                <div class="tooltip-region-info"></div>
-                <div class="tooltip-data-info"></div>
-            </div>
-            <svg id="map-tooltip-svg" class="tooltip-outer-svg"></svg>
-            <div class="tooltip-footer">
-                <div class="tooltip-options"></div>
-            </div>
             </div>`)
 
     if (!popup.isOpen()) {

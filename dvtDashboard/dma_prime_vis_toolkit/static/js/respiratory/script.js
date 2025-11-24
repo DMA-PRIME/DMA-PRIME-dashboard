@@ -549,19 +549,23 @@ function drawTooltip(d, ttpSVG, header, footer, population, outcomeVariable, pan
                 valueTypeStr = "Count"
                 break;
         } 
+
+        var dx = dataShapeBBox.x + dataShapeBBox.width/2 + thisDataPointShape.getCTM().e
+        var dy = 1*em
                 
         dataPointTTP.append("text").text(dateStr)
+            .attr("x", dx)
+            .attr("y", dy)
         dataPointTTP.append("text").text(`${valueTypeStr}: ${valueStr}`)
-            .attr("transform", `translate(0, ${.75*em})`)
-        dataPointTTP.append("path")
+            .attr("x", dx)
+            .attr("y", dy + .75*em)
+        dataPointTTP.append("line")
             .attr("stroke", "black")
             .attr("stroke-width", 1)
-            .attr("d", `M 0 0 l 0 ${ttpHeight - (ttpMargins.bottom + 2*em )}`)
-            .attr("transform", `translate(0, ${1*em})`)
-
-
-        dataPointTTP.attr("transform", `translate(${dataShapeBBox.x + dataShapeBBox.width/2 + thisDataPointShape.getCTM().e}, ${1*em})`)
-        console.log(thisDataPointShape)
+            .attr("x1", dx)
+            .attr("y1", dy + 1*em)
+            .attr("x2", dx)
+            .attr("y2", ttpHeight - ttpMargins.bottom)
     }
 
 // visualize historical

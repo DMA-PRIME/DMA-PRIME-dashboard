@@ -621,6 +621,31 @@ function drawTooltip(dataObject) {
 
       }, {once: true})
     });
+
+    var ttpLegend = ttpDiv.append("div").attr("id", "tooltip-legend")
+    var ttpLegendGroupItem = ttpLegend.append("div")
+        .attr("class", `tooltip-legend-group-item`)
+    ttpLegendGroupItem.append("sl-icon")
+        .attr("name", "square-fill")
+        .style("color", "var(--sl-color-neutral-1000)")
+    ttpLegendGroupItem.append("p")
+        .attr("class", "tooltip-label")
+        .attr("font-size", "var(--sl-font-size-small)")
+        .attr("color", "var(--sl-color-neutral-1000)")
+        .text(d3.select(`sl-option[value=${mapOutcomeVariableSelector.value}]`).html())
+
+    if (mapOutcomeVariableSelector.value == "positive_tests") {
+        ttpLegendGroupItem = ttpLegend.append("div")
+            .attr("class", `tooltip-legend-group-item`)
+        ttpLegendGroupItem.append("sl-icon")
+            .attr("name", "dash-lg")
+            .style("color", secondaryColor)
+        ttpLegendGroupItem.append("p")
+            .attr("class", "tooltip-label")
+            .attr("font-size", "var(--sl-font-size-small)")
+            .attr("color", secondaryColor)
+            .text("Percent Positive Tests")
+    }
     
 }
 
@@ -886,9 +911,9 @@ function getData(feature, timeFrame="weekly") {
     // rate applied at end
     if (mapRateSwitch.value == "rate") {
         thisData.data = thisData.data.map((val) => 
-            (parseFloat(val) / (thisData.population / 1000.0)) || 0)
+            (parseFloat(val) / thisData.population) * 1000.0)
         thisData.other = thisData.other.map((val) => 
-            (parseFloat(val) / (thisData.population / 1000.0)) || 0)
+            (parseFloat(val) / thisData.population) * 1000.0)
     }
 
     return thisData
@@ -1009,6 +1034,31 @@ function drawLargeTooltip(dataObject) {
       .attr("id", "map-tooltip-large-svg")
       .attr("class", "tooltip-outer-svg")
     createBarGraph(ttpSVG, thisData, regionData.metadata, { isLargeTooltip: true });
+
+    var ttpLegend = ttpDiv.append("div").attr("id", "large-tooltip-legend")
+    var ttpLegendGroupItem = ttpLegend.append("div")
+        .attr("class", `tooltip-legend-group-item`)
+    ttpLegendGroupItem.append("sl-icon")
+        .attr("name", "square-fill")
+        .style("color", "var(--sl-color-neutral-1000)")
+    ttpLegendGroupItem.append("p")
+        .attr("class", "tooltip-label")
+        .attr("font-size", "var(--sl-font-size-large)")
+        .attr("color", "var(--sl-color-neutral-1000)")
+        .text(d3.select(`sl-option[value=${mapOutcomeVariableSelector.value}]`).html())
+
+    if (mapOutcomeVariableSelector.value == "positive_tests") {
+        ttpLegendGroupItem = ttpLegend.append("div")
+            .attr("class", `tooltip-legend-group-item`)
+        ttpLegendGroupItem.append("sl-icon")
+            .attr("name", "dash-lg")
+            .style("color", secondaryColor)
+        ttpLegendGroupItem.append("p")
+            .attr("class", "tooltip-label")
+            .attr("font-size", "var(--sl-font-size-large)")
+            .attr("color", secondaryColor)
+            .text("Percent Positive Tests")
+    }
 }
 
 function drawLargeAggregation() {

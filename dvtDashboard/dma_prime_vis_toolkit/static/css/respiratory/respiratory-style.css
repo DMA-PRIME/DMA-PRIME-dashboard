@@ -18,7 +18,7 @@
 }
 
 /* for ttp */
-.tooltip-outer-svg {
+.tooltip-outer-svg, .tooltip-graph-svg {
   overflow: visible;
 }
 
