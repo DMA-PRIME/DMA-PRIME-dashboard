@@ -7,6 +7,8 @@ DMA-PRIME (Disease Monitoring, Analytics, and Prediction Infrastructure for Publ
 ** As DMA-PRIME contains HIPAA-compliant healthcare data and predictive analytics results, access is restricted to authorized users.
 
 ## DMA-PRIME Modules
+<img width="1328" height="760" alt="dmaprime-overview-page" src="https://github.com/user-attachments/assets/d4afbd7e-4720-4c8d-8294-5e5cca522a43" />
+
 Currently, DMA-PRIME provides the following dashboard modules.
 
 * **Respiratory Prediction Dashboard**: Provides weekly monitoring, nowcasting, and forecasting for major respiratory diseases including COVID-19, Influenza, and RSV.
@@ -20,6 +22,8 @@ Currently, DMA-PRIME provides the following dashboard modules.
 
 ## Respiratory Prediction Dashboard
 The Respiratory Virus Forecasting Dashboard is designed to support both nowcasting and forecasting of respiratory disease activity.
+
+<img width="1037" height="659" alt="dmaprime-respiratory-page" src="https://github.com/user-attachments/assets/69b43aa3-ffbd-4c43-95da-41f3495797cf" />
 
 The dashboard helps public health professionals:
 
@@ -44,6 +48,8 @@ Key Features
 
 ## Outbreak Detection Dashboard
 The Outbreak Detection Dashboard is designed to identify and monitor potential infectious disease outbreaks through interactive spatial analysis.
+
+<img width="2000" height="1039" alt="dmaprime-outbreak-page" src="https://github.com/user-attachments/assets/d846d4f9-8629-427f-9b41-203e82725146" />
 
 The dashboard enables users to explore disease activity at multiple geographic and temporal scales and quickly identify areas experiencing elevated disease burden.
 
