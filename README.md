@@ -49,7 +49,7 @@ Key Features
 ## Outbreak Detection Dashboard
 The Outbreak Detection Dashboard is designed to identify and monitor potential infectious disease outbreaks through interactive spatial analysis. The dashboard enables users to explore disease activity at multiple geographic and temporal scales and quickly identify areas experiencing elevated disease burden.
 
-<img width="2000" height="1039" alt="dmaprime-outbreak-page" src="https://github.com/user-attachments/assets/d846d4f9-8629-427f-9b41-203e82725146" />
+<img width="2000" height="1039" alt="dmaprime-outbreak-page" src="https://github.com/user-attachments/assets/66ff4191-bf26-46c8-a5ce-f275c49915be" />
 
 Key Features
 * Support for more than 20 infectious diseases
